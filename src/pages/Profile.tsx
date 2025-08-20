@@ -220,7 +220,29 @@ export default function Profile() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-purple-50">
+      {/* ===== Banner full-width com imagem e caixa escura só atrás do texto ===== */}
+      <section className="relative w-full h-48 sm:h-64 lg:h-80 flex items-center">
+        <img
+          src="https://i.ibb.co/xtPW4mv4/fundo.webp"
+          alt="Banner Perfil do Usuário"
+          className="absolute inset-0 w-full h-full object-cover object-top"
+        />
+
+        {/* caixa de texto com fundo escuro apenas na área do texto */}
+        <div className="relative container mx-auto px-4 sm:px-6">
+          <div className="inline-block rounded-xl bg-black/55 px-4 py-3 sm:px-6 sm:py-4 backdrop-blur-[1px] ring-1 ring-white/10">
+            <h1 className="text-white text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight">
+              Meu Perfil
+            </h1>
+            <p className="mt-2 text-white/90 text-sm sm:text-base max-w-2xl">
+              Gerencie suas informações pessoais, altere senhas e visualize suas estatísticas de uso.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <div className="container mx-auto px-4 py-8">
       {/* Debug Info */}
       <div className="mb-4 p-4 bg-yellow-100 border border-yellow-300 rounded-lg">
         <p className="text-sm text-yellow-800">
@@ -518,6 +540,7 @@ export default function Profile() {
             </CardContent>
           </Card>
         </motion.div>
+      </div>
       </div>
     </div>
   );

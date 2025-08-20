@@ -101,7 +101,29 @@ export default function Favoritos() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-purple-50">
+      {/* ===== Banner full-width com imagem e caixa escura só atrás do texto ===== */}
+      <section className="relative w-full h-48 sm:h-64 lg:h-80 flex items-center">
+        <img
+          src="https://i.ibb.co/b5SmSFzS/Chat-GPT-Image-9-de-abr-de-2025-17-30-51.webp"
+          alt="Banner Repositório de Receitas"
+          className="absolute inset-0 w-full h-full object-cover object-top"
+        />
+
+        {/* caixa de texto com fundo escuro apenas na área do texto */}
+        <div className="relative container mx-auto px-4 sm:px-6">
+          <div className="inline-block rounded-xl bg-black/55 px-4 py-3 sm:px-6 sm:py-4 backdrop-blur-[1px] ring-1 ring-white/10">
+            <h1 className="text-white text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight">
+              Meus Favoritos
+            </h1>
+            <p className="mt-2 text-white/90 text-sm sm:text-base max-w-2xl">
+              Acesse rapidamente seus óleos, doenças e conteúdos favoritos salvos para consulta posterior.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <div className="container mx-auto px-4 py-8">
       {/* Header Section */}
       <motion.div 
         className="text-center mb-12"
@@ -286,6 +308,7 @@ export default function Favoritos() {
           </div>
         </motion.div>
       )}
+      </div>
     </div>
   );
 }

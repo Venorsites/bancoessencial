@@ -77,7 +77,29 @@ export default function Doencas() {
   }, {} as Record<string, typeof mockDiseases>);
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-purple-50">
+      {/* ===== Banner full-width com imagem e caixa escura só atrás do texto ===== */}
+      <section className="relative w-full h-48 sm:h-64 lg:h-80 flex items-center">
+        <img
+          src="https://i.ibb.co/N6Nq66d8/Guia-de-Consulta-Doen-as-Condi-es-x-leos-Essenciais-de-A-a-Z.webp"
+          alt="Banner Guia de Consulta - Doenças"
+          className="absolute inset-0 w-full h-full object-cover object-top"
+        />
+
+        {/* caixa de texto com fundo escuro apenas na área do texto */}
+        <div className="relative container mx-auto px-4 sm:px-6">
+          <div className="inline-block rounded-xl bg-black/55 px-4 py-3 sm:px-6 sm:py-4 backdrop-blur-[1px] ring-1 ring-white/10">
+            <h1 className="text-white text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight">
+              Guia de Doenças
+            </h1>
+            <p className="mt-2 text-white/90 text-sm sm:text-base max-w-2xl">
+              Encontre recomendações de óleos essenciais para diferentes condições de saúde e bem-estar.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <div className="container mx-auto px-4 py-8">
       {/* Header Section */}
       <motion.div 
         className="text-center mb-12"
@@ -261,6 +283,7 @@ export default function Doencas() {
           </p>
         </motion.div>
       )}
+      </div>
     </div>
   );
 }

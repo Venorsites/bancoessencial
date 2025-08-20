@@ -74,7 +74,29 @@ const chemicalGroups = [
 
 export default function Quimica() {
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-purple-50">
+      {/* ===== Banner full-width com imagem e caixa escura só atrás do texto ===== */}
+      <section className="relative w-full h-48 sm:h-64 lg:h-80 flex items-center">
+        <img
+          src="https://i.ibb.co/twk59f8d/DALLE-2024-11-19-17-34-33-A-wide-artistic-watercolor-representation-of-essential-oil-chemical-groups.webp"
+          alt="Banner Grupos Químicos"
+          className="absolute inset-0 w-full h-full object-cover object-top"
+        />
+
+        {/* caixa de texto com fundo escuro apenas na área do texto */}
+        <div className="relative container mx-auto px-4 sm:px-6">
+          <div className="inline-block rounded-xl bg-black/55 px-4 py-3 sm:px-6 sm:py-4 backdrop-blur-[1px] ring-1 ring-white/10">
+            <h1 className="text-white text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight">
+              Grupos Químicos
+            </h1>
+            <p className="mt-2 text-white/90 text-sm sm:text-base max-w-3xl">
+              Compreenda a química dos óleos essenciais e como diferentes grupos de compostos influenciam suas propriedades terapêuticas.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <div className="container mx-auto px-4 py-8">
       {/* Header Section */}
       <motion.div 
         className="text-center mb-12"
@@ -215,6 +237,7 @@ export default function Quimica() {
           para orientações específicas.
         </p>
       </motion.div>
+      </div>
     </div>
   );
 }

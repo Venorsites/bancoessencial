@@ -150,6 +150,62 @@ All colors MUST be HSL.
   .animate-gentle-pulse {
     animation: gentle-pulse 4s ease-in-out infinite;
   }
+
+  /* Line clamp utility */
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Calendar styles */
+  .calendar-day {
+    @apply cursor-pointer transition-all duration-200;
+  }
+
+  .calendar-day:hover {
+    @apply bg-slate-100;
+  }
+
+  .calendar-day.current {
+    @apply bg-purple-500 text-white font-semibold;
+  }
+
+  /* Card hover effects */
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+  }
+
+  /* Section headers */
+  .section-header {
+    @apply flex items-center justify-between mb-6;
+  }
+
+  .section-title {
+    @apply text-2xl font-bold text-slate-800 flex items-center;
+  }
+
+  .section-icon {
+    @apply w-6 h-6 mr-3;
+  }
+
+  /* Content grid */
+  .content-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 gap-4;
+  }
+
+  .social-grid {
+    @apply grid grid-cols-1 md:grid-cols-3 gap-4;
+  }
+
+  .contact-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 gap-4;
+  }
+
+  .course-grid {
+    @apply grid grid-cols-1 md:grid-cols-3 gap-4;
+  }
 }
 
 @layer components {
@@ -171,6 +227,61 @@ All colors MUST be HSL.
   
   .gradient-subtle {
     background: var(--gradient-subtle);
+  }
+
+  /* Dashboard specific styles */
+  .dashboard-card {
+    @apply bg-white hover:shadow-lg transition-all duration-300 cursor-pointer;
+  }
+
+  .dashboard-icon {
+    @apply w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0;
+  }
+
+  .dashboard-content {
+    @apply flex-1 min-w-0;
+  }
+
+  .dashboard-title {
+    @apply font-semibold text-slate-800 text-sm leading-tight transition-colors;
+  }
+
+  .dashboard-description {
+    @apply text-xs text-slate-600 mt-1 line-clamp-2;
+  }
+
+  /* Header styles */
+  .dashboard-header {
+    @apply bg-white border-b border-slate-200 py-4;
+  }
+
+  .header-logo {
+    @apply w-10 h-10 bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg flex items-center justify-center;
+  }
+
+  .header-title {
+    @apply text-xl font-bold text-slate-800;
+  }
+
+  .header-subtitle {
+    @apply text-sm text-slate-600;
+  }
+
+  /* Date display styles */
+  .date-display {
+    @apply bg-gradient-to-br from-purple-500 to-purple-600 text-white;
+  }
+
+  .date-number {
+    @apply text-4xl font-bold mb-2;
+  }
+
+  .date-month {
+    @apply text-lg font-medium;
+  }
+
+  .date-weekday {
+    @apply text-sm opacity-90;
   }
 }
 
