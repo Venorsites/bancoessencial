@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Lock, Mail, Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
+import { useUser } from "@/contexts/UserContext";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -16,6 +17,14 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { login, user } = useUser();
+
+  // Redirecionar se já estiver autenticado
+  useEffect(() => {
+    if (user) {
+      navigate("/profile");
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,11 +33,19 @@ export default function Login() {
     // Simulação de login (remover quando conectar com backend real)
     setTimeout(() => {
       if (email && password) {
+        // Usar o contexto do usuário para fazer login
+        login({
+          name: "João Silva",
+          email: email,
+          joinDate: new Date().toISOString(),
+          lastLogin: new Date().toISOString()
+        });
+        
         toast({
           title: "Login realizado com sucesso!",
           description: "Bem-vindo(a) à área de membros.",
         });
-        navigate("/");
+        navigate("/profile");
       } else {
         toast({
           title: "Erro no login",
@@ -39,6 +56,18 @@ export default function Login() {
       setIsLoading(false);
     }, 1500);
   };
+
+  // Mostrar loading se já estiver autenticado
+  if (user) {
+    return (
+      <div className="min-h-screen bg-gradient-subtle flex items-center justify-center px-4">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Redirecionando para o perfil...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-subtle flex items-center justify-center px-4">

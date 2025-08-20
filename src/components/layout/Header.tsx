@@ -1,10 +1,19 @@
-import { useState } from "react";
-import { Search, Moon, Sun, Heart, Menu, X } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Search, Moon, Sun, Heart, Menu, X, User, Settings, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useUser } from "@/contexts/UserContext";
 
 interface HeaderProps {
   isDark: boolean;
@@ -15,6 +24,8 @@ export function Header({ isDark, toggleTheme }: HeaderProps) {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useUser();
 
   const navItems = [
     { href: "/oleos", label: "Óleos Essenciais", active: location.pathname === "/oleos" },
@@ -89,6 +100,60 @@ export function Header({ isDark, toggleTheme }: HeaderProps) {
                 </Badge>
               </Button>
             </Link>
+
+            {/* User Profile Dropdown */}
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="rounded-xl">
+                    <Avatar className="w-8 h-8">
+                      <AvatarImage src={user.avatar || undefined} alt={user.name} />
+                      <AvatarFallback className="bg-primary text-primary-foreground font-medium">
+                        {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <div className="flex items-center justify-start gap-2 p-2">
+                    <Avatar className="w-10 h-10">
+                      <AvatarImage src={user.avatar || undefined} alt={user.name} />
+                      <AvatarFallback className="bg-primary text-primary-foreground font-medium">
+                        {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{user.name}</p>
+                      <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                    </div>
+                  </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate("/profile")}>
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Meu Perfil</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/favoritos")}>
+                    <Heart className="w-4 h-4 mr-2" />
+                    <span>Meus Favoritos</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => {
+                    logout();
+                    navigate("/login");
+                  }}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Sair</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Link to="/login">
+                <Button variant="outline" className="rounded-xl">
+                  <User className="w-4 h-4 mr-2" />
+                  Entrar
+                </Button>
+              </Link>
+            )}
 
             <Button 
               variant="ghost" 
@@ -167,23 +232,68 @@ export function Header({ isDark, toggleTheme }: HeaderProps) {
               </div>
 
               {/* Mobile Actions */}
-              <div className="flex items-center justify-between pt-2">
-                <Link to="/favoritos">
-                  <Button variant="ghost" className="rounded-xl">
-                    <Heart className="w-4 h-4 mr-2" />
-                    Favoritos
-                    <Badge variant="destructive" className="ml-2">3</Badge>
-                  </Button>
-                </Link>
+              <div className="space-y-2 pt-2">
+                {user ? (
+                  <>
+                    <Link to="/profile">
+                      <Button variant="ghost" className="w-full justify-start rounded-xl">
+                        <User className="w-4 h-4 mr-2" />
+                        Meu Perfil
+                      </Button>
+                    </Link>
+                    
+                    <Link to="/favoritos">
+                      <Button variant="ghost" className="w-full justify-start rounded-xl">
+                        <Heart className="w-4 h-4 mr-2" />
+                        Favoritos
+                        <Badge variant="destructive" className="ml-2">3</Badge>
+                      </Button>
+                    </Link>
 
-                <Button 
-                  variant="ghost" 
-                  onClick={toggleTheme}
-                  className="rounded-xl"
-                >
-                  {isDark ? <Sun className="w-4 h-4 mr-2" /> : <Moon className="w-4 h-4 mr-2" />}
-                  {isDark ? "Modo Claro" : "Modo Escuro"}
-                </Button>
+                    <div className="flex items-center justify-between">
+                      <Button 
+                        variant="ghost" 
+                        onClick={toggleTheme}
+                        className="rounded-xl"
+                      >
+                        {isDark ? <Sun className="w-4 h-4 mr-2" /> : <Moon className="w-4 h-4 mr-2" />}
+                        {isDark ? "Modo Claro" : "Modo Escuro"}
+                      </Button>
+
+                      <Button 
+                        variant="ghost" 
+                        onClick={() => {
+                          logout();
+                          navigate("/login");
+                        }}
+                        className="rounded-xl text-destructive"
+                      >
+                        <LogOut className="w-4 h-4 mr-2" />
+                        Sair
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <Link to="/login">
+                      <Button variant="outline" className="w-full justify-start rounded-xl">
+                        <User className="w-4 h-4 mr-2" />
+                        Entrar
+                      </Button>
+                    </Link>
+
+                    <div className="flex justify-center">
+                      <Button 
+                        variant="ghost" 
+                        onClick={toggleTheme}
+                        className="rounded-xl"
+                      >
+                        {isDark ? <Sun className="w-4 h-4 mr-2" /> : <Moon className="w-4 h-4 mr-2" />}
+                        {isDark ? "Modo Claro" : "Modo Escuro"}
+                      </Button>
+                    </div>
+                  </>
+                )}
               </div>
             </motion.div>
           )}
