@@ -1,6 +1,8 @@
+
 import { useState, useEffect } from "react";
 import { Header } from "./Header";
 import { motion } from "framer-motion";
+import { useLocation } from "react-router-dom";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -8,6 +10,10 @@ interface LayoutProps {
 
 export function Layout({ children }: LayoutProps) {
   const [isDark, setIsDark] = useState(false);
+  const location = useLocation();
+  
+  // Check if user is on login page
+  const isLoginPage = location.pathname === "/login";
 
   useEffect(() => {
     // Check for saved theme or default to light
@@ -35,7 +41,7 @@ export function Layout({ children }: LayoutProps) {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header isDark={isDark} toggleTheme={toggleTheme} />
+      {!isLoginPage && <Header isDark={isDark} toggleTheme={toggleTheme} />}
       <motion.main 
         className="flex-1"
         initial={{ opacity: 0 }}

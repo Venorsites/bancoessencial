@@ -54,10 +54,10 @@ export default function Login() {
             <Lock className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-foreground mb-2">
-            Área de Membros
+            Banco de Dados
           </h1>
           <p className="text-muted-foreground">
-            Faça login para acessar conteúdos exclusivos
+            Faça login para acessar a plataforma
           </p>
         </motion.div>
 
@@ -145,28 +145,6 @@ export default function Login() {
                   disabled={isLoading}
                 >
                   {isLoading ? "Entrando..." : "Entrar"}
-                </Button>
-
-                {/* Divider */}
-                <div className="relative my-6">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t border-border/50" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">
-                      Ou continue explorando
-                    </span>
-                  </div>
-                </div>
-
-                {/* Free Access Button */}
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full rounded-2xl border-border/50 hover:bg-muted/50 transition-colors"
-                  onClick={() => navigate("/")}
-                >
-                  Explorar conteúdo gratuito
                 </Button>
               </form>
             </CardContent>
