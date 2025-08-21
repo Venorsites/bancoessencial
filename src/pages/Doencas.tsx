@@ -1,80 +1,54 @@
-import { useState } from "react";
-import { Search, Heart, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Heart, ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useState } from "react";
 
-const mockDiseases = [
+const aromaterapiaCategories = [
   {
-    id: 1,
-    name: "Ansiedade",
-    category: "Mental",
-    description: "Estado emocional caracterizado por preocupação excessiva e tensão.",
-    recommendedOils: ["Lavanda", "Bergamota", "Ylang Ylang"],
-    symptoms: ["Nervosismo", "Tensão muscular", "Insônia"],
+    id: "geral",
+    title: "Geral",
+    description: "Guia completo de doenças e condições com recomendações de óleos essenciais para saúde geral e bem-estar.",
+    image: "https://i.ibb.co/N6Nq66d8/Guia-de-Consulta-Doen-as-Condi-es-x-leos-Essenciais-de-A-a-Z.webp",
+    href: "/doencas/geral",
     isFavorite: false,
   },
   {
-    id: 2,
-    name: "Acne",
-    category: "Pele",
-    description: "Condição inflamatória da pele que causa espinhas e cravos.",
-    recommendedOils: ["Tea Tree", "Lavanda", "Manjericão"],
-    symptoms: ["Espinhas", "Cravos", "Vermelhidão"],
-    isFavorite: true,
-  },
-  {
-    id: 3,
-    name: "Gripe",
-    category: "Respiratório",
-    description: "Infecção viral que afeta o sistema respiratório.",
-    recommendedOils: ["Eucalipto", "Limão", "Ravensara"],
-    symptoms: ["Febre", "Tosse", "Congestão nasal"],
+    id: "pediatrica",
+    title: "Aromaterapia Pediátrica",
+    description: "Especializada em cuidados com crianças, incluindo dosagens seguras e aplicações específicas para cada idade.",
+    image: "https://i.ibb.co/8LVrD6ZM/Lavanda-Francesa.webp",
+    href: "/doencas/pediatrica",
     isFavorite: false,
   },
   {
-    id: 4,
-    name: "Insônia",
-    category: "Sono",
-    description: "Dificuldade para adormecer ou manter o sono.",
-    recommendedOils: ["Lavanda", "Camomila", "Cedro"],
-    symptoms: ["Dificuldade para dormir", "Despertar frequente", "Cansaço"],
+    id: "gestacao",
+    title: "Aromaterapia na Gestação",
+    description: "Focada na saúde da gestante e do bebê, com óleos seguros para uso durante a gravidez e pós-parto.",
+    image: "https://i.ibb.co/S7XSps0y/Tea-tree.webp",
+    href: "/doencas/gestacao",
+    isFavorite: false,
+  },
+  {
+    id: "menopausa",
+    title: "Aromaterapia na Menopausa",
+    description: "Especializada em sintomas da menopausa, equilíbrio hormonal e bem-estar durante esta fase da vida.",
+    image: "https://i.ibb.co/qMWzfMvN/Eucalipito-Citriodora.webp",
+    href: "/doencas/menopausa",
     isFavorite: false,
   },
 ];
 
-const alphabetLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
-
 export default function Doencas() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedLetter, setSelectedLetter] = useState("");
-  const [diseases, setDiseases] = useState(mockDiseases);
+  const [favorites, setFavorites] = useState<Record<string, boolean>>({});
 
-  const toggleFavorite = (id: number) => {
-    setDiseases(diseases.map(disease => 
-      disease.id === id ? { ...disease, isFavorite: !disease.isFavorite } : disease
-    ));
+  const toggleFavorite = (id: string) => {
+    setFavorites(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
   };
-
-  const filteredDiseases = diseases.filter(disease => {
-    const matchesSearch = disease.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         disease.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesLetter = selectedLetter === "" || disease.name.charAt(0).toUpperCase() === selectedLetter;
-    
-    return matchesSearch && matchesLetter;
-  });
-
-  const groupedDiseases = alphabetLetters.reduce((acc, letter) => {
-    const diseasesForLetter = filteredDiseases.filter(disease => 
-      disease.name.charAt(0).toUpperCase() === letter
-    );
-    if (diseasesForLetter.length > 0) {
-      acc[letter] = diseasesForLetter;
-    }
-    return acc;
-  }, {} as Record<string, typeof mockDiseases>);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-purple-50">
@@ -88,189 +62,98 @@ export default function Doencas() {
       </section>
 
       <div className="container mx-auto px-4 py-8">
-      {/* Header Section */}
-      <motion.div 
-        className="text-center mb-12"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-          Guia de Doenças
-        </h1>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Encontre recomendações de óleos essenciais para diferentes condições de saúde e bem-estar.
-        </p>
-      </motion.div>
-
-      {/* Search */}
-      <motion.div 
-        className="mb-8"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.2 }}
-      >
-        <div className="relative max-w-md mx-auto">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-          <Input
-            placeholder="Buscar doença ou sintoma..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 pr-4 rounded-2xl shadow-soft"
-          />
-        </div>
-      </motion.div>
-
-      {/* Alphabet Filter */}
-      <motion.div 
-        className="mb-8"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.3 }}
-      >
-        <div className="flex flex-wrap justify-center gap-2">
-          <Button
-            variant={selectedLetter === "" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setSelectedLetter("")}
-            className="rounded-xl"
-          >
-            Todos
-          </Button>
-          {alphabetLetters.map((letter) => (
-            <Button
-              key={letter}
-              variant={selectedLetter === letter ? "default" : "outline"}
-              size="sm"
-              onClick={() => setSelectedLetter(letter)}
-              className="rounded-xl w-10 h-10 p-0"
-              disabled={!Object.keys(groupedDiseases).includes(letter)}
-            >
-              {letter}
-            </Button>
-          ))}
-        </div>
-      </motion.div>
-
-      {/* Results Count */}
-      <motion.div 
-        className="mb-6"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.6, delay: 0.4 }}
-      >
-        <p className="text-muted-foreground text-center">
-          {filteredDiseases.length} doença{filteredDiseases.length !== 1 ? 's' : ''} encontrada{filteredDiseases.length !== 1 ? 's' : ''}
-        </p>
-      </motion.div>
-
-      {/* Diseases by Letter */}
-      <motion.div 
-        className="space-y-8"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.6, delay: 0.5 }}
-      >
-        {Object.entries(groupedDiseases).map(([letter, letterDiseases]) => (
-          <div key={letter}>
-            <h2 className="text-2xl font-bold text-foreground mb-4 flex items-center">
-              <span className="w-12 h-12 rounded-2xl gradient-primary flex items-center justify-center text-white mr-4">
-                {letter}
-              </span>
-              {letter}
-            </h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {letterDiseases.map((disease, index) => (
-                <motion.div
-                  key={disease.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.4, delay: 0.1 * index }}
-                >
-                  <Card className="card-organic rounded-3xl hover:shadow-medium transition-all duration-300 cursor-pointer">
-                    <CardHeader className="pb-4">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <h3 className="text-lg font-semibold text-foreground">
-                              {disease.name}
-                            </h3>
-                            <Badge variant="secondary" className="rounded-xl text-xs">
-                              {disease.category}
-                            </Badge>
-                          </div>
-                          <p className="text-sm text-muted-foreground">
-                            {disease.description}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => toggleFavorite(disease.id)}
-                            className="rounded-xl"
-                          >
-                            <Heart 
-                              className={`w-4 h-4 ${disease.isFavorite ? 'fill-red-500 text-red-500' : ''}`} 
-                            />
-                          </Button>
-                          <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                        </div>
-                      </div>
-                    </CardHeader>
-
-                    <CardContent className="space-y-3">
-                      <div>
-                        <h4 className="font-medium text-foreground mb-2 text-sm">Óleos Recomendados:</h4>
-                        <div className="flex flex-wrap gap-1">
-                          {disease.recommendedOils.map((oil) => (
-                            <Badge 
-                              key={oil} 
-                              variant="default" 
-                              className="text-xs rounded-lg"
-                            >
-                              {oil}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div>
-                        <h4 className="font-medium text-foreground mb-2 text-sm">Sintomas Comuns:</h4>
-                        <div className="flex flex-wrap gap-1">
-                          {disease.symptoms.map((symptom) => (
-                            <Badge 
-                              key={symptom} 
-                              variant="outline" 
-                              className="text-xs rounded-lg"
-                            >
-                              {symptom}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        ))}
-      </motion.div>
-
-      {filteredDiseases.length === 0 && (
+        {/* Header Section */}
         <motion.div 
-          className="text-center py-12"
+          className="text-center mb-12"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+            Guia de Doenças
+          </h1>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            Escolha uma categoria para encontrar recomendações específicas de óleos essenciais para diferentes condições de saúde.
+          </p>
+        </motion.div>
+
+        {/* Categories Grid */}
+        <motion.div 
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6 max-w-7xl mx-auto"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+        >
+          {aromaterapiaCategories.map((category, index) => (
+            <motion.div
+              key={category.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 * index }}
+              className="flex"
+            >
+              <Card className="card-organic rounded-3xl hover:shadow-medium transition-all duration-300 group cursor-pointer overflow-hidden h-full w-full flex flex-col">
+                {/* Image */}
+                <div className="relative h-36 sm:h-40 lg:h-44 overflow-hidden flex-shrink-0">
+                  <img
+                    src={category.image}
+                    alt={category.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  {/* Favorite Button */}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleFavorite(category.id);
+                    }}
+                    className="absolute top-3 right-3 bg-white/20 backdrop-blur-sm hover:bg-white/30 rounded-full"
+                  >
+                    <Heart 
+                      className={`w-4 h-4 sm:w-5 sm:h-5 ${favorites[category.id] ? 'fill-red-500 text-red-500' : 'text-white'}`} 
+                    />
+                  </Button>
+                </div>
+
+                {/* Content */}
+                <CardHeader className="pb-3 px-4 pt-4 flex-1">
+                  <h3 className="text-lg sm:text-xl font-semibold text-foreground group-hover:text-purple-600 transition-colors mb-2">
+                    {category.title}
+                  </h3>
+                  <p className="text-muted-foreground text-sm leading-relaxed">
+                    {category.description}
+                  </p>
+                </CardHeader>
+
+                {/* Action */}
+                <CardContent className="pt-0 px-4 pb-4 flex-shrink-0">
+                  <Link to={category.href} className="block">
+                    <Button 
+                      className="w-full rounded-2xl group-hover:bg-purple-600 transition-colors text-sm sm:text-base"
+                      variant="outline"
+                    >
+                      Acessar Guia
+                      <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </motion.div>
+
+        {/* Additional Info */}
+        <motion.div 
+          className="text-center mt-12"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.6 }}
         >
-          <p className="text-muted-foreground text-lg">
-            Nenhuma doença encontrada com os critérios selecionados.
+          <p className="text-muted-foreground max-w-2xl mx-auto">
+            Cada categoria contém um guia completo com busca por letras, filtros e recomendações específicas de óleos essenciais para as condições relacionadas.
           </p>
         </motion.div>
-      )}
       </div>
     </div>
   );

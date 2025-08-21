@@ -8,6 +8,10 @@ import { UserProvider } from "./contexts/UserContext";
 import Index from "./pages/Index";
 import Oleos from "./pages/Oleos";
 import Doencas from "./pages/Doencas";
+import DoencasGeral from "./pages/DoencasGeral";
+import DoencasPediatrica from "./pages/DoencasPediatrica";
+import DoencasGestacao from "./pages/DoencasGestacao";
+import DoencasMenopausa from "./pages/DoencasMenopausa";
 import Quimica from "./pages/Quimica";
 import Conteudos from "./pages/Conteudos";
 import Favoritos from "./pages/Favoritos";
@@ -37,6 +41,10 @@ const App = () => (
                   <Route path="/" element={<Index />} />
                   <Route path="/oleos" element={<Oleos />} />
                   <Route path="/doencas" element={<Doencas />} />
+                  <Route path="/doencas/geral" element={<DoencasGeral />} />
+                  <Route path="/doencas/pediatrica" element={<DoencasPediatrica />} />
+                  <Route path="/doencas/gestacao" element={<DoencasGestacao />} />
+                  <Route path="/doencas/menopausa" element={<DoencasMenopausa />} />
                   <Route path="/quimica" element={<Quimica />} />
                   <Route path="/conteudos" element={<Conteudos />} />
                   <Route path="/favoritos" element={<Favoritos />} />
