@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { Search, Filter, Heart, ChevronDown, Info } from "lucide-react";
+import { Search, Filter, Heart, ChevronDown, ChevronRight, AlertTriangle, Atom, CheckSquare, Beaker, X, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,56 +16,126 @@ const mockOils = [
     id: 1,
     name: "Lavanda Francesa",
     scientificName: "Lavandula angustifolia",
+    family: "Lamiaceae",
+    extractionMethod: "Destilação a vapor",
+    aroma: "Floral, herbáceo, doce",
+    mainCompound: "Linalol (25-38%)",
+    mainChemicalFamily: "Monoterpenóis",
+    plantPart: "Flores e folhas",
+    psychoaroma: "Calmante, relaxante, equilibrante emocional. Ajuda na ansiedade, estresse e insônia.",
+    aesthetic: "Antisséptico, cicatrizante, regenerador celular. Ideal para acne, queimaduras e envelhecimento da pele.",
+    health: "Antisséptico, analgésico, antiespasmódico. Alivia dores musculares, problemas respiratórios e digestivos.",
+    spiritual: "Purificação, proteção, paz interior. Ajuda na meditação e equilíbrio energético.",
+    environmental: "Purificante, repelente natural, harmonizador de ambientes.",
+    contraindications: "Não usar em gestantes no primeiro trimestre. Pode causar sonolência excessiva.",
+    aromaticCategory: "Floral",
+    description: "Óleo essencial versátil e seguro, conhecido por suas propriedades calmantes e cicatrizantes.",
+    image: "https://i.ibb.co/8LVrD6ZM/Lavanda-Francesa.webp",
     category: "Floral",
     chemicalGroup: "Ésteres",
     properties: ["Calmante", "Antisséptico", "Cicatrizante"],
     uses: ["Ansiedade", "Insônia", "Queimaduras"],
     isFavorite: true,
-    image: "https://i.ibb.co/8LVrD6ZM/Lavanda-Francesa.webp",
   },
   {
     id: 2,
     name: "Tea Tree (Melaleuca)",
     scientificName: "Melaleuca alternifolia",
+    family: "Myrtaceae",
+    extractionMethod: "Destilação a vapor",
+    aroma: "Medicinal, fresco, herbáceo",
+    mainCompound: "Terpinen-4-ol (30-48%)",
+    mainChemicalFamily: "Monoterpenóis",
+    plantPart: "Folhas e ramos",
+    psychoaroma: "Estimulante mental, clareza de pensamento, foco e concentração.",
+    aesthetic: "Antifúngico, antibacteriano, regulador sebáceo. Excelente para acne, caspa e infecções cutâneas.",
+    health: "Antibacteriano, antiviral, antifúngico. Fortalece o sistema imunológico.",
+    spiritual: "Proteção, purificação, limpeza energética. Remove energias negativas.",
+    environmental: "Desinfetante natural, purificador de ar, repelente de insetos.",
+    contraindications: "Não usar em gestantes. Pode causar irritação em peles sensíveis.",
+    aromaticCategory: "Medicinal",
+    description: "Óleo essencial poderoso com propriedades antimicrobianas excepcionais.",
+    image: "https://i.ibb.co/S7XSps0y/Tea-tree.webp",
     category: "Medicinal",
     chemicalGroup: "Monoterpenos",
     properties: ["Antifúngico", "Antibacteriano", "Antiviral"],
     uses: ["Acne", "Caspa", "Infecções"],
     isFavorite: false,
-    image: "https://i.ibb.co/S7XSps0y/Tea-tree.webp",
   },
   {
     id: 3,
     name: "Eucalipto Citriodora",
     scientificName: "Eucalyptus citriodora/ Corymbia citriodora",
+    family: "Myrtaceae",
+    extractionMethod: "Destilação a vapor",
+    aroma: "Cítrico, fresco, mentolado",
+    mainCompound: "Citronelal (65-85%)",
+    mainChemicalFamily: "Aldeídos",
+    plantPart: "Folhas",
+    psychoaroma: "Estimulante mental, clareza, foco e concentração. Ajuda na memória.",
+    aesthetic: "Antisséptico, adstringente, regulador sebáceo. Ideal para peles oleosas.",
+    health: "Expectorante, descongestionante, antimicrobiano. Excelente para problemas respiratórios.",
+    spiritual: "Clareza mental, proteção, limpeza energética. Remove bloqueios mentais.",
+    environmental: "Purificante, repelente natural, refrescante de ambientes.",
+    contraindications: "Não usar em gestantes. Pode irritar mucosas sensíveis.",
+    aromaticCategory: "Respiratório",
+    description: "Óleo essencial com aroma cítrico único, excelente para problemas respiratórios.",
+    image: "https://i.ibb.co/qMWzfMvN/Eucalipito-Citriodora.webp",
     category: "Respiratório",
     chemicalGroup: "Óxidos",
     properties: ["Expectorante", "Descongestionante", "Antibacteriano"],
     uses: ["Gripe", "Tosse", "Sinusite"],
     isFavorite: false,
-    image: "https://i.ibb.co/qMWzfMvN/Eucalipito-Citriodora.webp",
   },
   {
     id: 4,
     name: "Alecrim qt. Cineol",
     scientificName: "Rosmarinus officinalis | Salvia rosmarinus",
+    family: "Lamiaceae",
+    extractionMethod: "Destilação a vapor",
+    aroma: "Herbáceo, fresco, estimulante",
+    mainCompound: "1,8-Cineol (45-65%)",
+    mainChemicalFamily: "Óxidos",
+    plantPart: "Folhas e flores",
+    psychoaroma: "Estimulante mental, melhora memória, foco e concentração. Antidepressivo natural.",
+    aesthetic: "Antisséptico, adstringente, estimulante circulatório. Melhora celulite e retenção.",
+    health: "Expectorante, antimicrobiano, estimulante circulatório. Fortalece sistema imunológico.",
+    spiritual: "Proteção, clareza mental, força interior. Ajuda na tomada de decisões.",
+    environmental: "Purificante, estimulante, harmonizador de ambientes de trabalho.",
+    contraindications: "Não usar em gestantes. Pode elevar pressão arterial.",
+    aromaticCategory: "Medicinal",
+    description: "Óleo essencial estimulante com propriedades expectorantes e circulatórias.",
+    image: "https://i.ibb.co/GQQTV91n/leo-Essencial-de-Alecrim-qt-Cineol.webp",
     category: "Medicinal",
     chemicalGroup: "Óxidos",
     properties: ["Estimulante", "Antimicrobiano", "Expectorante"],
     uses: ["Fadiga", "Congestão", "Concentração"],
     isFavorite: false,
-    image: "https://i.ibb.co/GQQTV91n/leo-Essencial-de-Alecrim-qt-Cineol.webp",
   },
   {
     id: 5,
     name: "Bergamota",
     scientificName: "Citrus x bergamia | Citrus bergamia",
+    family: "Rutaceae",
+    extractionMethod: "Expressão a frio",
+    aroma: "Cítrico, fresco, floral",
+    mainCompound: "Limoneno (25-45%)",
+    mainChemicalFamily: "Monoterpenos",
+    plantPart: "Casca do fruto",
+    psychoaroma: "Antidepressivo, equilibrante emocional, alegria e otimismo. Reduz ansiedade.",
+    aesthetic: "Antisséptico, adstringente, regulador sebáceo. Ideal para peles mistas.",
+    health: "Antisséptico, digestivo, antiespasmódico. Ajuda na digestão e cólicas.",
+    spiritual: "Alegria, abundância, prosperidade. Atrai energias positivas.",
+    environmental: "Purificante, refrescante, harmonizador de ambientes sociais.",
+    contraindications: "Fotossensibilizante - não expor ao sol por 12h após uso. Não usar em gestantes.",
+    aromaticCategory: "Cítrico",
+    description: "Óleo essencial cítrico com propriedades antidepressivas e digestivas.",
+    image: "https://i.ibb.co/QvqT62Sq/Bergamota.webp",
     category: "Cítrico",
     chemicalGroup: "Monoterpenos",
     properties: ["Antidepressivo", "Antisséptico", "Digestivo"],
     uses: ["Ansiedade", "Depressão", "Digestão"],
     isFavorite: false,
-    image: "https://i.ibb.co/QvqT62Sq/Bergamota.webp",
   },
 ];
 
@@ -77,6 +147,13 @@ export default function Oleos() {
   const [selectedCategory, setSelectedCategory] = useState("Todos");
   const [selectedChemicalGroup, setSelectedChemicalGroup] = useState("Todos");
   const [oils, setOils] = useState(mockOils);
+  const [selectedOil, setSelectedOil] = useState<any>(null);
+  const [expandedSections, setExpandedSections] = useState({
+    contraindications: false,
+    chemistry: false,
+    substitutes: false,
+    combinations: false
+  });
 
   const toggleFavorite = (id: number) => {
     setOils((o) =>
@@ -84,6 +161,27 @@ export default function Oleos() {
         oil.id === id ? { ...oil, isFavorite: !oil.isFavorite } : oil
       )
     );
+  };
+
+  const openOilModal = (oil: any) => {
+    setSelectedOil(oil);
+    setExpandedSections({
+      contraindications: false,
+      chemistry: false,
+      substitutes: false,
+      combinations: false
+    });
+  };
+
+  const closeOilModal = () => {
+    setSelectedOil(null);
+  };
+
+  const toggleSection = (section: string) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section as keyof typeof prev]
+    }));
   };
 
   const filteredOils = oils.filter((oil) => {
@@ -101,17 +199,17 @@ export default function Oleos() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-purple-50">
-      {/* ===== Banner full-width ===== */}
+      {/* ===== Banner ===== */}
       <section className="relative w-full h-24 sm:h-32 lg:h-40">
         <img
           src="https://i.ibb.co/N2CVmNZL/Banco-de-Dados-leos-Essenciais-Fichas-Completas.webp"
           alt="Banner Banco de Dados - Óleos Essenciais"
-          className="absolute inset-0 w-full h-full object-cover object-[20%]"
+          className="absolute inset-0 w-full h-full object-cover object-top"
         />
       </section>
 
       <div className="container mx-auto px-4 py-8">
-        {/* ===== BLOCO INFORMACIONAL (substitui o antigo título simples) ===== */}
+        {/* ===== Bloco informacional + drops ===== */}
         <motion.div
           className="mb-8"
           initial={{ opacity: 0, y: 16 }}
@@ -122,15 +220,15 @@ export default function Oleos() {
             Banco de Dados – Óleos Essenciais (Fichas Completas)
           </h1>
 
-          {/* Caixa informativa com ícone */}
-          <div className="mt-6 rounded-2xl border border-purple-100 bg-purple-50/60 p-4 md:p-5 text-[15px] text-neutral-700">
+          {/* Caixa com texto e fundo roxo leve APENAS no parágrafo */}
+          <div className="mt-6 rounded-2xl border border-purple-100 bg-purple-100/50 p-5">
             <div className="flex gap-3">
               <div className="mt-1 shrink-0">
-                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-purple-100">
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-purple-200">
                   <Info className="h-5 w-5 text-purple-700" />
                 </span>
               </div>
-              <p className="leading-relaxed">
+              <p className="leading-relaxed text-[15px] text-neutral-700">
                 Este é o seu <strong>banco de dados de pesquisa</strong> sobre óleos essenciais, que será
                 constantemente atualizado e ajustado com as informações mais recentes. Aqui, você encontrará
                 detalhes sobre a composição química, propriedades terapêuticas, indicações de uso e muito mais,
@@ -139,19 +237,22 @@ export default function Oleos() {
             </div>
           </div>
 
-          {/* Drops/Accordions (nativos com <details>) */}
-          <div className="mt-4 space-y-3">
+          {/* Drops sem fundo + chevron próximo ao texto + tipografia do tamanho do parágrafo */}
+          <div className="mt-4 space-y-2">
             {/* Drop 1 */}
-            <details className="group rounded-xl border border-neutral-200 bg-white p-4 open:shadow-sm">
-              <summary className="flex cursor-pointer list-none items-center justify-between">
-                <span className="text-lg font-semibold text-neutral-900">
+            <details className="group px-2 py-3 rounded-lg">
+              <summary className="flex items-center gap-2 cursor-pointer list-none select-none">
+                <ChevronDown className="h-5 w-5 text-neutral-500 transition-transform group-open:rotate-180" />
+                <span className="text-[15px] font-semibold text-neutral-900">
                   E se eu encontrar alguma informação incorreta?
                 </span>
-                <ChevronDown className="h-5 w-5 text-neutral-500 transition-transform group-open:rotate-180" />
               </summary>
-              <div className="mt-3 text-neutral-700 leading-relaxed">
+              <div className="mt-3 text-[15px] text-neutral-700 leading-relaxed pl-7">
                 Se você perceber alguma informação errada ou desatualizada, é só entrar em contato comigo pelo
-                e-mail <a href="mailto:suporte@daianealaniz.com.br" className="text-purple-700 underline">suporte@daianealaniz.com.br</a>.
+                e-mail{" "}
+                <a href="mailto:suporte@daianealaniz.com.br" className="text-purple-700 underline">
+                  suporte@daianealaniz.com.br
+                </a>.
                 O banco de dados está sempre sendo atualizado, então <strong>pode acontecer de algo precisar de ajustes</strong>.
                 Assim que você me avisar, vou revisar as fontes e, se necessário, buscar novos estudos para garantir
                 que tudo esteja correto. A ideia é manter as informações sempre precisas para que o uso dos óleos
@@ -159,34 +260,37 @@ export default function Oleos() {
               </div>
             </details>
 
+            {/* Linha sutil divisória */}
+            <div className="h-px bg-neutral-200/70 mx-1" />
+
             {/* Drop 2 */}
-            <details className="group rounded-xl border border-neutral-200 bg-white p-4 open:shadow-sm">
-              <summary className="flex cursor-pointer list-none items-center justify-between">
-                <span className="text-lg font-semibold text-neutral-900">
+            <details className="group px-2 py-3 rounded-lg">
+              <summary className="flex items-center gap-2 cursor-pointer list-none select-none">
+                <ChevronDown className="h-5 w-5 text-neutral-500 transition-transform group-open:rotate-180" />
+                <span className="text-[15px] font-semibold text-neutral-900">
                   Regras de Convivência e Compartilhamento
                 </span>
-                <ChevronDown className="h-5 w-5 text-neutral-500 transition-transform group-open:rotate-180" />
               </summary>
-              <div className="mt-3 text-neutral-700 leading-relaxed">
-                <ul className="space-y-3 pl-5">
-                  <li className="list-disc">
-                    <strong>Não compartilhe seu acesso:</strong> o acesso ao banco de dados e aos conteúdos é pessoal e intransferível.
-                    Compartilhar seu login compromete a integridade do material e não é permitido.
+              <div className="mt-3 text-[15px] text-neutral-700 leading-relaxed pl-7">
+                <ul className="space-y-3 list-disc pl-5">
+                  <li>
+                    <strong>Não compartilhe seu acesso:</strong> o acesso ao banco de dados e aos conteúdos é pessoal e
+                    intransferível. Compartilhar seu login compromete a integridade do material e não é permitido.
                   </li>
-                  <li className="list-disc">
+                  <li>
                     <strong>Evite copiar o conteúdo:</strong> o conteúdo aqui é exclusivo e criado com muito cuidado.
                     Copiar ou distribuir sem permissão vai contra a nossa comunidade de apoio e aprendizado.
                   </li>
-                  <li className="list-disc">
-                    <strong>Somos uma comunidade que se ajuda:</strong> se você encontrar alguma informação errada ou desatualizada,
-                    me avise para que eu possa corrigir! Entre em contato pelo e-mail{" "}
+                  <li>
+                    <strong>Somos uma comunidade que se ajuda:</strong> se você encontrar alguma informação errada ou
+                    desatualizada, me avise para que eu possa corrigir! Entre em contato pelo e-mail{" "}
                     <a href="mailto:suporte@daianealaniz.com.br" className="text-purple-700 underline">
                       suporte@daianealaniz.com.br
                     </a>.
                   </li>
-                  <li className="list-disc">
-                    <strong>Busque os conteúdos completos nas aulas:</strong> antes de replicar qualquer informação ou ideia,
-                    certifique-se de buscar o conteúdo completo dentro das aulas e materiais disponíveis. É importante ter uma visão clara e crítica.
+                  <li>
+                    <strong>Busque os conteúdos completos nas aulas:</strong> antes de replicar qualquer informação ou
+                    ideia, certifique-se de buscar o conteúdo completo dentro das aulas e materiais disponíveis.
                   </li>
                 </ul>
               </div>
@@ -271,9 +375,9 @@ export default function Oleos() {
           </p>
         </motion.div>
 
-        {/* Oils Grid (4 por linha no lg) */}
+        {/* Grid */}
         <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.4 }}
@@ -285,7 +389,7 @@ export default function Oleos() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 * index }}
             >
-              <Card className="bg-white rounded-3xl border-2 border-purple-200 hover:shadow-lg transition-all duration-300 h-full overflow-hidden">
+              <Card className="bg-white rounded-3xl border-2 border-purple-200 hover:shadow-lg transition-all duration-300 h-full overflow-hidden cursor-pointer" onClick={() => openOilModal(oil)}>
                 {/* Image Section */}
                 <div className="relative w-full h-40">
                   <img
@@ -303,7 +407,10 @@ export default function Oleos() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => toggleFavorite(oil.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleFavorite(oil.id);
+                    }}
                     className="rounded-full p-1"
                     aria-label={oil.isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}
                   >
@@ -327,6 +434,10 @@ export default function Oleos() {
                       variant="outline"
                       size="sm"
                       className="rounded-xl border-purple-300 text-purple-700 hover:bg-purple-50"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openOilModal(oil);
+                      }}
                     >
                       Ver mais
                     </Button>
@@ -350,6 +461,214 @@ export default function Oleos() {
           </motion.div>
         )}
       </div>
+
+      {/* Oil Detail Modal */}
+      <AnimatePresence>
+        {selectedOil && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+            onClick={closeOilModal}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Modal Header */}
+              <div className="relative">
+                <img
+                  src={selectedOil.image}
+                  alt={selectedOil.name}
+                  className="w-full h-64 object-cover rounded-t-3xl"
+                />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={closeOilModal}
+                  className="absolute top-4 right-4 bg-white/90 hover:bg-white rounded-full"
+                >
+                  <X className="w-5 h-5" />
+                </Button>
+              </div>
+
+              {/* Modal Content */}
+              <div className="p-6 space-y-6">
+                {/* Title and Basic Info */}
+                <div className="text-center">
+                  <h1 className="text-3xl font-bold text-purple-800 mb-2">
+                    {selectedOil.name}
+                  </h1>
+                  <p className="text-lg text-gray-600 italic">
+                    {selectedOil.scientificName}
+                  </p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    {selectedOil.description}
+                  </p>
+                </div>
+
+                {/* Basic Information Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-3">
+                    <div>
+                      <h3 className="font-semibold text-purple-800">Família Botânica:</h3>
+                      <p className="text-gray-700">{selectedOil.family}</p>
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-purple-800">Forma de Extração:</h3>
+                      <p className="text-gray-700">{selectedOil.extractionMethod}</p>
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-purple-800">Aroma:</h3>
+                      <p className="text-gray-700">{selectedOil.aroma}</p>
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-purple-800">Parte da Planta:</h3>
+                      <p className="text-gray-700">{selectedOil.plantPart}</p>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <div>
+                      <h3 className="font-semibold text-purple-800">Composto Químico Principal:</h3>
+                      <p className="text-gray-700">{selectedOil.mainCompound}</p>
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-purple-800">Família Química:</h3>
+                      <p className="text-gray-700">{selectedOil.mainChemicalFamily}</p>
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-purple-800">Categoria Aromática:</h3>
+                      <p className="text-gray-700">{selectedOil.aromaticCategory}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Detailed Properties */}
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-xl font-semibold text-purple-800 mb-2">Psicoaroma (Emocional/Psicológica/Mental)</h3>
+                    <p className="text-gray-700 bg-purple-50 p-3 rounded-lg">{selectedOil.psychoaroma}</p>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold text-purple-800 mb-2">Estética/Pele/Cabelo/Unhas</h3>
+                    <p className="text-gray-700 bg-purple-50 p-3 rounded-lg">{selectedOil.aesthetic}</p>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold text-purple-800 mb-2">Saúde Física em Geral</h3>
+                    <p className="text-gray-700 bg-purple-50 p-3 rounded-lg">{selectedOil.health}</p>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold text-purple-800 mb-2">Espiritual/Vibracional</h3>
+                    <p className="text-gray-700 bg-purple-50 p-3 rounded-lg">{selectedOil.spiritual}</p>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold text-purple-800 mb-2">Ambiental</h3>
+                    <p className="text-gray-700 bg-purple-50 p-3 rounded-lg">{selectedOil.environmental}</p>
+                  </div>
+                </div>
+
+                {/* Expandable Sections (as per the print) */}
+                <div className="space-y-3">
+                  {/* Contraindicações */}
+                  <div className="border border-purple-200 rounded-xl overflow-hidden">
+                    <button
+                      onClick={() => toggleSection('contraindications')}
+                      className="w-full p-4 flex items-center justify-between bg-purple-50 hover:bg-purple-100 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <AlertTriangle className="w-5 h-5 text-red-500" />
+                        <span className="font-semibold text-purple-800">Contraindicações e precauções</span>
+                      </div>
+                      <ChevronRight className={`w-5 h-5 text-purple-600 transition-transform ${expandedSections.contraindications ? 'rotate-90' : ''}`} />
+                    </button>
+                    {expandedSections.contraindications && (
+                      <div className="p-4 bg-white border-t border-purple-200">
+                        <p className="text-gray-700">{selectedOil.contraindications}</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Composição Química */}
+                  <div className="border border-purple-200 rounded-xl overflow-hidden">
+                    <button
+                      onClick={() => toggleSection('chemistry')}
+                      className="w-full p-4 flex items-center justify-between bg-purple-50 hover:bg-purple-100 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Atom className="w-5 h-5 text-purple-500" />
+                        <span className="font-semibold text-purple-800">Composição química majoritária (aproximada)</span>
+                      </div>
+                      <ChevronRight className={`w-5 h-5 text-purple-600 transition-transform ${expandedSections.chemistry ? 'rotate-90' : ''}`} />
+                    </button>
+                    {expandedSections.chemistry && (
+                      <div className="p-4 bg-white border-t border-purple-200">
+                        <p className="text-gray-700">
+                          <strong>Composto principal:</strong> {selectedOil.mainCompound}<br />
+                          <strong>Família química:</strong> {selectedOil.mainChemicalFamily}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Óleos Substitutos */}
+                  <div className="border border-purple-200 rounded-xl overflow-hidden">
+                    <button
+                      onClick={() => toggleSection('substitutes')}
+                      className="w-full p-4 flex items-center justify-between bg-purple-50 hover:bg-purple-100 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <CheckSquare className="w-5 h-5 text-purple-500" />
+                        <span className="font-semibold text-purple-800">Possíveis óleos essenciais substitutos (considerando a química)</span>
+                      </div>
+                      <ChevronRight className={`w-5 h-5 text-purple-600 transition-transform ${expandedSections.substitutes ? 'rotate-90' : ''}`} />
+                    </button>
+                    {expandedSections.substitutes && (
+                      <div className="p-4 bg-white border-t border-purple-200">
+                        <p className="text-gray-700">
+                          Óleos com propriedades similares baseadas na família química {selectedOil.mainChemicalFamily}:
+                          {selectedOil.mainChemicalFamily === 'Monoterpenóis' && ' Tea Tree, Alecrim, Gerânio'}
+                          {selectedOil.mainChemicalFamily === 'Óxidos' && ' Eucalipto, Alecrim qt. Cineol, Ravensara'}
+                          {selectedOil.mainChemicalFamily === 'Monoterpenos' && ' Limão, Bergamota, Laranja'}
+                          {selectedOil.mainChemicalFamily === 'Aldeídos' && ' Capim-limão, Melissa, Citronela'}
+                          {selectedOil.mainChemicalFamily === 'Ésteres' && ' Lavanda, Bergamota, Petitgrain'}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Sugestões de Combinações */}
+                  <div className="border border-purple-200 rounded-xl overflow-hidden">
+                    <button
+                      onClick={() => toggleSection('combinations')}
+                      className="w-full p-4 flex items-center justify-between bg-purple-50 hover:bg-purple-100 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Beaker className="w-5 h-5 text-purple-500" />
+                        <span className="font-semibold text-purple-800">Sugestões de combinações</span>
+                      </div>
+                      <ChevronRight className={`w-5 h-5 text-purple-600 transition-transform ${expandedSections.combinations ? 'rotate-90' : ''}`} />
+                    </button>
+                    {expandedSections.combinations && (
+                      <div className="p-4 bg-white border-t border-purple-200">
+                        <p className="text-gray-700">
+                          <strong>Para relaxamento:</strong> {selectedOil.name} + Lavanda + Bergamota<br />
+                          <strong>Para foco:</strong> {selectedOil.name} + Alecrim + Limão<br />
+                          <strong>Para imunidade:</strong> {selectedOil.name} + Tea Tree + Eucalipto<br />
+                          <strong>Para pele:</strong> {selectedOil.name} + Gerânio + Lavanda
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -104,25 +104,12 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-purple-50">
       {/* ===== Banner full-width com imagem e caixa escura só atrás do texto ===== */}
-      <section className="relative w-full h-48 sm:h-64 lg:h-80 flex items-center">
+      <section className="relative w-full h-24 sm:h-32 lg:h-40 flex items-center">
         <img
           src="https://i.ibb.co/xtPW4mv4/fundo.webp"
           alt="Banner aromaterapia"
           className="absolute inset-0 w-full h-full object-cover object-[center_91%]"
         />
-
-        {/* caixa de texto com fundo escuro apenas na área do texto */}
-        <div className="relative container mx-auto px-4 sm:px-6">
-          <div className="inline-block rounded-xl bg-black/55 px-4 py-3 sm:px-6 sm:py-4 backdrop-blur-[1px] ring-1 ring-white/10">
-            <h1 className="text-white text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight">
-              Olá, {userName}!
-            </h1>
-            <p className="mt-2 text-white/90 text-sm sm:text-base max-w-2xl">
-              Bem-vinda(o) ao seu hub de aromaterapia. Explore o banco de dados,
-              encontre recomendações por condição e salve seus conteúdos favoritos.
-            </p>
-          </div>
-        </div>
       </section>
 
       {/* ===== Conteúdo principal ===== */}

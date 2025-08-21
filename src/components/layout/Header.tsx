@@ -12,8 +12,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useUser } from "@/contexts/UserContext";
+import logo from "@/assets/logo.svg";
 
 interface HeaderProps {
   isDark: boolean;
@@ -46,11 +46,15 @@ export function Header({ isDark, toggleTheme }: HeaderProps) {
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3">
             <motion.div 
-              className="w-10 h-10 rounded-2xl gradient-primary flex items-center justify-center glow-soft"
+              className="w-16 h-16 flex items-center justify-center"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              <span className="text-white font-bold text-lg">BD</span>
+              <img 
+                src={logo} 
+                alt="Logo Banco de Dados" 
+                className="w-full h-full object-contain"
+              />
             </motion.div>
             <span className="font-dm-sans font-semibold text-xl text-foreground">
               Banco de Dados
@@ -101,90 +105,81 @@ export function Header({ isDark, toggleTheme }: HeaderProps) {
               </Button>
             </Link>
 
-            {/* User Profile Dropdown */}
-            {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="rounded-xl">
-                    <Avatar className="w-8 h-8">
-                      <AvatarImage src={user.avatar || undefined} alt={user.name} />
-                      <AvatarFallback className="bg-primary text-primary-foreground font-medium">
-                        {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <div className="flex items-center justify-start gap-2 p-2">
-                    <Avatar className="w-10 h-10">
-                      <AvatarImage src={user.avatar || undefined} alt={user.name} />
-                      <AvatarFallback className="bg-primary text-primary-foreground font-medium">
-                        {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">{user.name}</p>
-                      <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+            {/* User Menu */}
+            <div className="flex items-center space-x-4">
+              {user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="rounded-xl">
+                      <User className="w-5 h-5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <div className="flex items-center gap-2 p-2">
+                      <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
+                        <User className="w-4 h-4 text-purple-700" />
+                      </div>
+                      <div className="flex flex-col">
+                        <p className="text-sm font-medium">{user.name}</p>
+                        <p className="text-xs text-muted-foreground">{user.email}</p>
+                      </div>
                     </div>
-                  </div>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => navigate("/profile")}>
-                    <User className="mr-2 h-4 w-4" />
-                    <span>Meu Perfil</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/favoritos")}>
-                    <Heart className="w-4 h-4 mr-2" />
-                    <span>Meus Favoritos</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => {
-                    logout();
-                    navigate("/login");
-                  }}>
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Sair</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <Link to="/login">
-                <Button variant="outline" className="rounded-xl">
-                  <User className="w-4 h-4 mr-2" />
-                  Entrar
-                </Button>
-              </Link>
-            )}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => navigate("/profile")}>
+                      <User className="w-4 h-4 mr-2" />
+                      Meu Perfil
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate("/favoritos")}>
+                      <Heart className="w-4 h-4 mr-2" />
+                      Favoritos
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={logout}>
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Sair
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Link to="/login">
+                  <Button variant="outline" className="rounded-xl">
+                    <User className="w-4 h-4 mr-2" />
+                    Entrar
+                  </Button>
+                </Link>
+              )}
 
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={toggleTheme}
-              className="rounded-xl"
-            >
-              <AnimatePresence mode="wait">
-                {isDark ? (
-                  <motion.div
-                    key="sun"
-                    initial={{ rotate: -90, opacity: 0 }}
-                    animate={{ rotate: 0, opacity: 1 }}
-                    exit={{ rotate: 90, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <Sun className="w-5 h-5" />
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="moon"
-                    initial={{ rotate: 90, opacity: 0 }}
-                    animate={{ rotate: 0, opacity: 1 }}
-                    exit={{ rotate: -90, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <Moon className="w-5 h-5" />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </Button>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={toggleTheme}
+                className="rounded-xl"
+              >
+                <AnimatePresence mode="wait">
+                  {isDark ? (
+                    <motion.div
+                      key="sun"
+                      initial={{ rotate: -90, opacity: 0 }}
+                      animate={{ rotate: 0, opacity: 1 }}
+                      exit={{ rotate: 90, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <Sun className="w-5 h-5" />
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="moon"
+                      initial={{ rotate: 90, opacity: 0 }}
+                      animate={{ rotate: 0, opacity: 1 }}
+                      exit={{ rotate: -90, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <Moon className="w-5 h-5" />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </Button>
+            </div>
           </motion.div>
 
           {/* Mobile Menu Button */}

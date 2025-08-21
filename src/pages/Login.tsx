@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,9 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Lock, Mail, Eye, EyeOff } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { useUser } from "@/contexts/UserContext";
+import logo from "@/assets/logov1.svg";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -22,7 +22,7 @@ export default function Login() {
   // Redirecionar se já estiver autenticado
   useEffect(() => {
     if (user) {
-      navigate("/profile");
+      navigate("/");
     }
   }, [user, navigate]);
 
@@ -45,7 +45,7 @@ export default function Login() {
           title: "Login realizado com sucesso!",
           description: "Bem-vindo(a) à área de membros.",
         });
-        navigate("/profile");
+        navigate("/");
       } else {
         toast({
           title: "Erro no login",
@@ -63,18 +63,18 @@ export default function Login() {
       <div className="min-h-screen bg-gradient-subtle flex items-center justify-center px-4">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Redirecionando para o perfil...</p>
+          <p className="text-muted-foreground">Redirecionando para a página principal...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center px-4">
+    <div className="min-h-screen relative flex justify-center px-4 py-10 md:py-16">
       {/* Background Image with Dark Overlay */}
       <div className="absolute inset-0 z-0">
         <img
-          src="https://i.ibb.co/xtPW4mv4/fundo.webp"
+          src="/src/assets/hero-background.jpg"
           alt="Background aromaterapia"
           className="w-full h-full object-cover"
         />
@@ -91,8 +91,12 @@ export default function Login() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <div className="w-20 h-20 rounded-3xl gradient-primary flex items-center justify-center mx-auto mb-4 glow-soft">
-            <Lock className="w-10 h-10 text-white" />
+          <div className="w-28 h-28 flex items-center justify-center mx-auto mb-4">
+            <img 
+              src={logo} 
+              alt="Logo Banco de Dados" 
+              className="h-24 w-auto md:h-28 object-contain"
+            />
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">
             Banco de Dados
@@ -170,19 +174,21 @@ export default function Login() {
 
                 {/* Forgot Password Link */}
                 <div className="text-right">
-                  <Button
-                    type="button"
-                    variant="link"
-                    className="p-0 h-auto text-primary text-sm"
-                  >
-                    Esqueceu a senha?
-                  </Button>
+                  <Link to="/forgot-password">
+                    <Button
+                      type="button"
+                      variant="link"
+                      className="p-0 h-auto text-primary text-sm"
+                    >
+                      Esqueceu a senha?
+                    </Button>
+                  </Link>
                 </div>
 
                 {/* Submit Button */}
                 <Button
                   type="submit"
-                  className="w-full rounded-2xl gradient-primary text-white font-medium py-3 hover:opacity-90 transition-opacity"
+                  className="w-full rounded-2xl bg-[#8B5CF6] hover:bg-[#7C3AED] text-white font-medium py-3 transition-colors"
                   disabled={isLoading}
                 >
                   {isLoading ? "Entrando..." : "Entrar"}
