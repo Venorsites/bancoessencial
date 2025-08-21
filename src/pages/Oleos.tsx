@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Filter, Heart, ChevronDown } from "lucide-react";
+import { Search, Filter, Heart, ChevronDown, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -111,20 +111,87 @@ export default function Oleos() {
       </section>
 
       <div className="container mx-auto px-4 py-8">
-        {/* Header Section */}
+        {/* ===== BLOCO INFORMACIONAL (substitui o antigo título simples) ===== */}
         <motion.div
-          className="text-center mb-12"
-          initial={{ opacity: 0, y: 20 }}
+          className="mb-8"
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.45 }}
         >
-          <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-            Óleos Essenciais
+          <h1 className="text-3xl md:text-4xl font-extrabold text-neutral-900 tracking-tight">
+            Banco de Dados – Óleos Essenciais (Fichas Completas)
           </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Descubra as propriedades terapêuticas e aplicações dos óleos
-            essenciais mais utilizados na aromaterapia.
-          </p>
+
+          {/* Caixa informativa com ícone */}
+          <div className="mt-6 rounded-2xl border border-purple-100 bg-purple-50/60 p-4 md:p-5 text-[15px] text-neutral-700">
+            <div className="flex gap-3">
+              <div className="mt-1 shrink-0">
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-purple-100">
+                  <Info className="h-5 w-5 text-purple-700" />
+                </span>
+              </div>
+              <p className="leading-relaxed">
+                Este é o seu <strong>banco de dados de pesquisa</strong> sobre óleos essenciais, que será
+                constantemente atualizado e ajustado com as informações mais recentes. Aqui, você encontrará
+                detalhes sobre a composição química, propriedades terapêuticas, indicações de uso e muito mais,
+                tudo cuidadosamente organizado para consultas rápidas e eficazes.
+              </p>
+            </div>
+          </div>
+
+          {/* Drops/Accordions (nativos com <details>) */}
+          <div className="mt-4 space-y-3">
+            {/* Drop 1 */}
+            <details className="group rounded-xl border border-neutral-200 bg-white p-4 open:shadow-sm">
+              <summary className="flex cursor-pointer list-none items-center justify-between">
+                <span className="text-lg font-semibold text-neutral-900">
+                  E se eu encontrar alguma informação incorreta?
+                </span>
+                <ChevronDown className="h-5 w-5 text-neutral-500 transition-transform group-open:rotate-180" />
+              </summary>
+              <div className="mt-3 text-neutral-700 leading-relaxed">
+                Se você perceber alguma informação errada ou desatualizada, é só entrar em contato comigo pelo
+                e-mail <a href="mailto:suporte@daianealaniz.com.br" className="text-purple-700 underline">suporte@daianealaniz.com.br</a>.
+                O banco de dados está sempre sendo atualizado, então <strong>pode acontecer de algo precisar de ajustes</strong>.
+                Assim que você me avisar, vou revisar as fontes e, se necessário, buscar novos estudos para garantir
+                que tudo esteja correto. A ideia é manter as informações sempre precisas para que o uso dos óleos
+                essenciais seja o mais <strong>seguro e eficaz</strong> possível!
+              </div>
+            </details>
+
+            {/* Drop 2 */}
+            <details className="group rounded-xl border border-neutral-200 bg-white p-4 open:shadow-sm">
+              <summary className="flex cursor-pointer list-none items-center justify-between">
+                <span className="text-lg font-semibold text-neutral-900">
+                  Regras de Convivência e Compartilhamento
+                </span>
+                <ChevronDown className="h-5 w-5 text-neutral-500 transition-transform group-open:rotate-180" />
+              </summary>
+              <div className="mt-3 text-neutral-700 leading-relaxed">
+                <ul className="space-y-3 pl-5">
+                  <li className="list-disc">
+                    <strong>Não compartilhe seu acesso:</strong> o acesso ao banco de dados e aos conteúdos é pessoal e intransferível.
+                    Compartilhar seu login compromete a integridade do material e não é permitido.
+                  </li>
+                  <li className="list-disc">
+                    <strong>Evite copiar o conteúdo:</strong> o conteúdo aqui é exclusivo e criado com muito cuidado.
+                    Copiar ou distribuir sem permissão vai contra a nossa comunidade de apoio e aprendizado.
+                  </li>
+                  <li className="list-disc">
+                    <strong>Somos uma comunidade que se ajuda:</strong> se você encontrar alguma informação errada ou desatualizada,
+                    me avise para que eu possa corrigir! Entre em contato pelo e-mail{" "}
+                    <a href="mailto:suporte@daianealaniz.com.br" className="text-purple-700 underline">
+                      suporte@daianealaniz.com.br
+                    </a>.
+                  </li>
+                  <li className="list-disc">
+                    <strong>Busque os conteúdos completos nas aulas:</strong> antes de replicar qualquer informação ou ideia,
+                    certifique-se de buscar o conteúdo completo dentro das aulas e materiais disponíveis. É importante ter uma visão clara e crítica.
+                  </li>
+                </ul>
+              </div>
+            </details>
+          </div>
         </motion.div>
 
         {/* Search and Filters */}

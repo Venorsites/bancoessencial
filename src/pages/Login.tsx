@@ -70,8 +70,20 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-subtle flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen relative flex items-center justify-center px-4">
+      {/* Background Image with Dark Overlay */}
+      <div className="absolute inset-0 z-0">
+        <img
+          src="https://i.ibb.co/xtPW4mv4/fundo.webp"
+          alt="Background aromaterapia"
+          className="w-full h-full object-cover"
+        />
+        {/* Dark gradient overlay for better readability */}
+        <div className="absolute inset-0 bg-gradient-to-br from-black/30 via-black/60 to-purple-900/50"></div>
+      </div>
+      
+      {/* Content */}
+      <div className="relative z-10 w-full max-w-md">
         {/* Header */}
         <motion.div 
           className="text-center mb-8"
@@ -82,10 +94,10 @@ export default function Login() {
           <div className="w-20 h-20 rounded-3xl gradient-primary flex items-center justify-center mx-auto mb-4 glow-soft">
             <Lock className="w-10 h-10 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">
+          <h1 className="text-3xl font-bold text-white mb-2">
             Banco de Dados
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-white/90">
             Faça login para acessar a plataforma
           </p>
         </motion.div>
@@ -187,9 +199,9 @@ export default function Login() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.4 }}
         >
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-white/80">
             Ainda não tem uma conta?{" "}
-            <Button variant="link" className="p-0 h-auto text-primary">
+            <Button variant="link" className="p-0 h-auto text-white hover:text-purple-200">
               Entre em contato
             </Button>
           </p>
