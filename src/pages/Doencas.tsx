@@ -10,7 +10,7 @@ const aromaterapiaCategories = [
     id: "geral",
     title: "Geral",
     description: "Guia completo de doenças e condições com recomendações de óleos essenciais para saúde geral e bem-estar.",
-    image: "https://i.ibb.co/N6Nq66d8/Guia-de-Consulta-Doen-as-Condi-es-x-leos-Essenciais-de-A-a-Z.webp",
+    image: "https://i.ibb.co/PZV5LwsL/Geral.webp",
     href: "/doencas/geral",
     isFavorite: false,
   },
@@ -18,7 +18,7 @@ const aromaterapiaCategories = [
     id: "pediatrica",
     title: "Aromaterapia Pediátrica",
     description: "Especializada em cuidados com crianças, incluindo dosagens seguras e aplicações específicas para cada idade.",
-    image: "https://i.ibb.co/8LVrD6ZM/Lavanda-Francesa.webp",
+    image: "https://i.ibb.co/dstvpWyH/Pediatra.webp",
     href: "/doencas/pediatrica",
     isFavorite: false,
   },
@@ -26,7 +26,7 @@ const aromaterapiaCategories = [
     id: "gestacao",
     title: "Aromaterapia na Gestação",
     description: "Focada na saúde da gestante e do bebê, com óleos seguros para uso durante a gravidez e pós-parto.",
-    image: "https://i.ibb.co/S7XSps0y/Tea-tree.webp",
+    image: "https://i.ibb.co/TxSnpWrJ/gesta-o.webp",
     href: "/doencas/gestacao",
     isFavorite: false,
   },
@@ -34,28 +34,20 @@ const aromaterapiaCategories = [
     id: "menopausa",
     title: "Aromaterapia na Menopausa",
     description: "Especializada em sintomas da menopausa, equilíbrio hormonal e bem-estar durante esta fase da vida.",
-    image: "https://i.ibb.co/qMWzfMvN/Eucalipito-Citriodora.webp",
+    image: "https://i.ibb.co/ynyCdJWG/menopausa.webp",
     href: "/doencas/menopausa",
     isFavorite: false,
   },
 ];
 
 export default function Doencas() {
-  const [favorites, setFavorites] = useState<Record<string, boolean>>({});
-
-  const toggleFavorite = (id: string) => {
-    setFavorites(prev => ({
-      ...prev,
-      [id]: !prev[id]
-    }));
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-purple-50">
       {/* ===== Banner ===== */}
       <section className="relative w-full h-24 sm:h-32 lg:h-40">
         <img
-          src="https://i.ibb.co/N6Nq66d8/Guia-de-Consulta-Doen-as-Condi-es-x-leos-Essenciais-de-A-a-Z.webp"
+          src="https://i.ibb.co/PZV5LwsL/Geral.webp"
           alt="Banner Guia de Doenças"
           className="absolute inset-0 w-full h-full object-cover object-top"
         />
@@ -64,15 +56,15 @@ export default function Doencas() {
       <div className="container mx-auto px-4 py-8">
         {/* Header Section */}
         <motion.div 
-          className="text-center mb-12"
+          className="text-left mb-12"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
           <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-            Guia de Doenças
+            Doenças x Óleos Essenciais de A a Z
           </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-xl text-muted-foreground max-w-2xl">
             Escolha uma categoria para encontrar recomendações específicas de óleos essenciais para diferentes condições de saúde.
           </p>
         </motion.div>
@@ -92,7 +84,8 @@ export default function Doencas() {
               transition={{ duration: 0.6, delay: 0.1 * index }}
               className="flex"
             >
-              <Card className="card-organic rounded-3xl hover:shadow-medium transition-all duration-300 group cursor-pointer overflow-hidden h-full w-full flex flex-col">
+              <Link to={category.href} className="w-full">
+                <Card className="card-organic rounded-3xl hover:shadow-medium transition-all duration-300 group cursor-pointer overflow-hidden h-full w-full flex flex-col">
                 {/* Image */}
                 <div className="relative h-36 sm:h-40 lg:h-44 overflow-hidden flex-shrink-0">
                   <img
@@ -100,20 +93,7 @@ export default function Doencas() {
                     alt={category.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
-                  {/* Favorite Button */}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleFavorite(category.id);
-                    }}
-                    className="absolute top-3 right-3 bg-white/20 backdrop-blur-sm hover:bg-white/30 rounded-full"
-                  >
-                    <Heart 
-                      className={`w-4 h-4 sm:w-5 sm:h-5 ${favorites[category.id] ? 'fill-red-500 text-red-500' : 'text-white'}`} 
-                    />
-                  </Button>
+
                 </div>
 
                 {/* Content */}
@@ -128,17 +108,16 @@ export default function Doencas() {
 
                 {/* Action */}
                 <CardContent className="pt-0 px-4 pb-4 flex-shrink-0">
-                  <Link to={category.href} className="block">
-                    <Button 
-                      className="w-full rounded-2xl group-hover:bg-purple-600 transition-colors text-sm sm:text-base"
-                      variant="outline"
-                    >
-                      Acessar Guia
-                      <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                    </Button>
-                  </Link>
+                  <Button 
+                    className="w-full rounded-2xl group-hover:bg-purple-600 group-hover:text-white transition-colors text-sm sm:text-base"
+                    variant="outline"
+                  >
+                    Acessar Guia
+                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                  </Button>
                 </CardContent>
               </Card>
+                </Link>
             </motion.div>
           ))}
         </motion.div>

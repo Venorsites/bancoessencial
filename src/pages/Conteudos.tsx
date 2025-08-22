@@ -189,7 +189,7 @@ export default function Conteudos() {
                     className="rounded-xl bg-white/90 backdrop-blur-sm hover:bg-white"
                   >
                     <Heart 
-                      className={`w-4 h-4 ${item.isFavorite ? 'fill-red-500 text-red-500' : ''}`} 
+                      className={`w-4 h-4 ${item.isFavorite ? 'fill-purple-600 text-purple-600' : 'text-purple-900'}`} 
                     />
                   </Button>
                 </div>

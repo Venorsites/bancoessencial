@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Search, Heart, ChevronRight, ArrowLeft } from "lucide-react";
+import { Search, Heart, ChevronRight, ArrowLeft, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 
 const mockPediatricDiseases = [
@@ -76,11 +76,20 @@ export default function DoencasPediatrica() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedLetter, setSelectedLetter] = useState("");
   const [diseases, setDiseases] = useState(mockPediatricDiseases);
+  const [selectedDisease, setSelectedDisease] = useState<typeof mockPediatricDiseases[0] | null>(null);
 
   const toggleFavorite = (id: number) => {
     setDiseases(diseases.map(disease => 
       disease.id === id ? { ...disease, isFavorite: !disease.isFavorite } : disease
     ));
+  };
+
+  const openDiseaseModal = (disease: typeof mockPediatricDiseases[0]) => {
+    setSelectedDisease(disease);
+  };
+
+  const closeDiseaseModal = () => {
+    setSelectedDisease(null);
   };
 
   const filteredDiseases = diseases.filter(disease => {
@@ -220,7 +229,7 @@ export default function DoencasPediatrica() {
                 {letter}
               </h2>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {letterDiseases.map((disease, index) => (
                   <motion.div
                     key={disease.id}
@@ -228,7 +237,10 @@ export default function DoencasPediatrica() {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.4, delay: 0.1 * index }}
                   >
-                    <Card className="card-organic rounded-3xl hover:shadow-medium transition-all duration-300 cursor-pointer">
+                    <Card 
+                      className="card-organic rounded-3xl hover:shadow-medium transition-all duration-300 cursor-pointer border-2 border-purple-200"
+                      onClick={() => openDiseaseModal(disease)}
+                    >
                       <CardHeader className="pb-4">
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
@@ -236,7 +248,7 @@ export default function DoencasPediatrica() {
                               <h3 className="text-lg font-semibold text-foreground">
                                 {disease.name}
                               </h3>
-                              <Badge variant="secondary" className="rounded-xl text-xs">
+                              <Badge variant="secondary" className="rounded-xl text-xs text-white">
                                 {disease.category}
                               </Badge>
                             </div>
@@ -255,7 +267,7 @@ export default function DoencasPediatrica() {
                               className="rounded-xl"
                             >
                               <Heart 
-                                className={`w-4 h-4 ${disease.isFavorite ? 'fill-red-500 text-red-500' : ''}`} 
+                                className={`w-4 h-4 ${disease.isFavorite ? 'fill-purple-600 text-purple-600' : 'text-purple-900'}`} 
                               />
                             </Button>
                             <ChevronRight className="w-4 h-4 text-muted-foreground" />
@@ -331,6 +343,102 @@ export default function DoencasPediatrica() {
             Alguns óleos podem não ser seguros para uso pediátrico.
           </p>
         </motion.div>
+
+        {/* Disease Detail Modal */}
+        <AnimatePresence>
+          {selectedDisease && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+              onClick={closeDiseaseModal}
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Modal Header */}
+                <div className="p-6 border-b border-gray-200">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <h2 className="text-2xl font-bold text-foreground">
+                          {selectedDisease.name}
+                        </h2>
+                        <Badge variant="secondary" className="rounded-xl text-xs text-white">
+                          {selectedDisease.category}
+                        </Badge>
+                      </div>
+                      <p className="text-muted-foreground">
+                        {selectedDisease.description}
+                      </p>
+                      <Badge variant="outline" className="mt-2 text-xs">
+                        {selectedDisease.ageGroup}
+                      </Badge>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={closeDiseaseModal}
+                      className="rounded-full"
+                    >
+                      <X className="w-5 h-5" />
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Modal Content */}
+                <div className="p-6 space-y-6">
+                  {/* Óleos Recomendados */}
+                  <div>
+                    <h3 className="font-semibold text-foreground mb-3 text-lg">Óleos Recomendados:</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedDisease.recommendedOils.map((oil) => (
+                        <Badge 
+                          key={oil} 
+                          variant="default" 
+                          className="text-sm rounded-lg text-white"
+                        >
+                          {oil}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Sintomas Comuns */}
+                  <div>
+                    <h3 className="font-semibold text-foreground mb-3 text-lg">Sintomas Comuns:</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedDisease.symptoms.map((symptom) => (
+                        <Badge 
+                          key={symptom} 
+                          variant="outline" 
+                          className="text-sm rounded-lg"
+                        >
+                          {symptom}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Modo de Uso */}
+                  <div>
+                    <h3 className="font-semibold text-foreground mb-3 text-lg">Modo de Uso:</h3>
+                    <p className="text-muted-foreground text-sm leading-relaxed">
+                      Consulte um profissional de saúde especializado em aromaterapia pediátrica para orientações 
+                      específicas sobre dosagem, método de aplicação e contraindicações para esta condição. 
+                      As dosagens variam conforme a idade da criança e devem ser sempre supervisionadas por um adulto.
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

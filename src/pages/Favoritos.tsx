@@ -120,7 +120,7 @@ export default function Favoritos() {
         transition={{ duration: 0.6 }}
       >
         <div className="flex items-center justify-center gap-3 mb-4">
-          <Heart className="w-8 h-8 text-red-500 fill-red-500" />
+          <Heart className="w-8 h-8 text-purple-600 fill-purple-600" />
           <h1 className="text-4xl md:text-5xl font-bold text-foreground">
             Meus Favoritos
           </h1>
