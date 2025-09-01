@@ -87,17 +87,22 @@ const Index = () => {
     {
       title: "UPD - Um papo com a Dai",
       description: "Comunidade e mentoria em grupo",
-      color: "from-purple-400 to-purple-600",
+      image: "https://daianealaniz.com.br/wp-content/webp-express/webp-images/uploads/2025/01/2.png.webp",
     },
     {
       title: "MCE - Mente Corpo e Emoções",
       description: "Programa completo de bem-estar",
-      color: "from-indigo-400 to-indigo-600",
+      image: "https://daianealaniz.com.br/wp-content/webp-express/webp-images/uploads/2025/01/1.png.webp",
     },
     {
       title: "Mentoria Individual",
       description: "Acompanhamento personalizado",
-      color: "from-violet-400 to-violet-600",
+      image: "https://daianealaniz.com.br/wp-content/webp-express/webp-images/uploads/2025/01/fafafa.png.webp",
+    },
+    {
+      title: "Daiane Link na Bio",
+      description: "Conteúdo exclusivo",
+      image: "https://daianealaniz.com.br/wp-content/webp-express/webp-images/uploads/2025/08/Daiane-Link-na-bio.png.webp",
     },
   ];
 
@@ -180,7 +185,7 @@ const Index = () => {
               </Button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
               {courses.map((course, index) => (
                 <motion.div
                   key={index}
@@ -188,21 +193,13 @@ const Index = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                 >
-                  <Card className="dashboard-card group h-28 sm:h-32">
-                    <CardContent className="p-4 sm:p-6 text-center h-full flex flex-col justify-center">
-                      <div
-                        className={`dashboard-icon bg-gradient-to-br ${course.color} mx-auto mb-2 sm:mb-3`}
-                      >
-                        <Star className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
-                      </div>
-                      <h3 className="dashboard-title mb-1 group-hover:text-purple-600 text-sm sm:text-base">
-                        {course.title}
-                      </h3>
-                      <p className="dashboard-description text-xs sm:text-sm">
-                        {course.description}
-                      </p>
-                    </CardContent>
-                  </Card>
+                  <div className="relative w-full aspect-[16/9] rounded-lg overflow-hidden flex items-center justify-center">
+                    <img
+                      src={course.image}
+                      alt={course.title}
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
                 </motion.div>
               ))}
             </div>
@@ -210,17 +207,18 @@ const Index = () => {
 
           {/* Redes sociais + Contatos lado a lado (abaixo das assinaturas) */}
           <section>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
               {/* Coluna Redes Sociais */}
               <div>
-                <div className="section-header">
+                <div className="section-header mb-6">
                   <h2 className="section-title">
                     <Users className="section-icon text-blue-500" />
                     Minhas redes sociais
                   </h2>
+                  <p className="text-slate-600 text-sm mt-2">Siga-me para dicas diárias e conteúdo exclusivo</p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
                   {socialNetworks.map((social, index) => {
                     const IconComponent = social.icon;
                     return (
@@ -228,17 +226,20 @@ const Index = () => {
                         key={index}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: index * 0.05 }}
+                        transition={{ duration: 0.5, delay: index * 0.1 }}
                       >
-                        <Card className="dashboard-card group h-28 sm:h-32">
-                          <CardContent className="p-4 sm:p-6 text-center h-full flex flex-col justify-center">
+                        <Card className="dashboard-card group h-32 sm:h-36 hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-purple-200">
+                          <CardContent className="p-5 sm:p-6 text-center h-full flex flex-col justify-center">
                             <div
-                              className={`dashboard-icon bg-gradient-to-br ${social.color} mx-auto mb-2 sm:mb-3`}
+                              className={`dashboard-icon bg-gradient-to-br ${social.color} mx-auto mb-3 sm:mb-4 p-3 rounded-full shadow-lg group-hover:scale-110 transition-transform duration-300`}
                             >
-                              <IconComponent className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+                              <IconComponent className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
                             </div>
-                            <p className="font-medium text-slate-800 group-hover:text-purple-600 transition-colors text-sm sm:text-base">
+                            <p className="font-semibold text-slate-800 group-hover:text-purple-600 transition-colors text-sm sm:text-base">
                               {social.handle}
+                            </p>
+                            <p className="text-slate-500 text-xs mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                              Clique para acessar
                             </p>
                           </CardContent>
                         </Card>
@@ -250,14 +251,15 @@ const Index = () => {
 
               {/* Coluna Contatos */}
               <div>
-                <div className="section-header">
+                <div className="section-header mb-6">
                   <h2 className="section-title">
                     <MessageCircle className="section-icon text-green-500" />
                     Meus contatos
                   </h2>
+                  <p className="text-slate-600 text-sm mt-2">Entre em contato para dúvidas e suporte</p>
                 </div>
 
-                <div className="grid grid-cols-1 gap-4 sm:gap-6">
+                <div className="grid grid-cols-1 gap-4 sm:gap-5">
                   {contacts.map((contact, index) => {
                     const IconComponent = contact.icon;
                     return (
@@ -265,18 +267,23 @@ const Index = () => {
                         key={index}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: index * 0.05 }}
+                        transition={{ duration: 0.5, delay: index * 0.1 }}
                       >
-                        <Card className="dashboard-card group h-28 sm:h-32">
-                          <CardContent className="p-4 sm:p-6 h-full flex items-center">
+                        <Card className="dashboard-card group h-32 sm:h-36 hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-purple-200">
+                          <CardContent className="p-5 sm:p-6 h-full flex items-center">
                             <div
-                              className={`dashboard-icon bg-gradient-to-br ${contact.color}`}
+                              className={`dashboard-icon bg-gradient-to-br ${contact.color} p-3 rounded-full shadow-lg group-hover:scale-110 transition-transform duration-300`}
                             >
-                              <IconComponent className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+                              <IconComponent className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
                             </div>
-                            <span className="font-medium text-slate-800 group-hover:text-purple-600 transition-colors ml-3 sm:ml-4 text-sm sm:text-lg">
-                              {contact.info}
-                            </span>
+                            <div className="ml-4 sm:ml-5 flex-1">
+                              <span className="font-semibold text-slate-800 group-hover:text-purple-600 transition-colors text-sm sm:text-base block">
+                                {contact.info}
+                              </span>
+                              <p className="text-slate-500 text-xs mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                Clique para copiar
+                              </p>
+                            </div>
                           </CardContent>
                         </Card>
                       </motion.div>

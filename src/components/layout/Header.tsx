@@ -94,14 +94,8 @@ export function Header({ isDark, toggleTheme }: HeaderProps) {
 
             {/* Action Buttons */}
             <Link to="/favoritos">
-              <Button variant="ghost" size="icon" className="rounded-xl relative">
-                <Heart className="w-5 h-5" />
-                <Badge 
-                  variant="destructive" 
-                  className="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center p-0 text-xs"
-                >
-                  3
-                </Badge>
+              <Button variant="ghost" size="icon" className="rounded-xl">
+                <Heart className="w-5 h-5 fill-purple-600 text-purple-600" />
               </Button>
             </Link>
 

@@ -1,7 +1,9 @@
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Beaker, FlaskConical, Atom } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Beaker, FlaskConical, Atom, X } from "lucide-react";
 
 const chemicalGroups = [
   {
@@ -73,6 +75,16 @@ const chemicalGroups = [
 ];
 
 export default function Quimica() {
+  const [selectedGroup, setSelectedGroup] = useState<typeof chemicalGroups[0] | null>(null);
+
+  const openGroupModal = (group: typeof chemicalGroups[0]) => {
+    setSelectedGroup(group);
+  };
+
+  const closeGroupModal = () => {
+    setSelectedGroup(null);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-purple-50">
       {/* ===== Banner ===== */}
@@ -102,7 +114,7 @@ export default function Quimica() {
 
       {/* Chemical Groups Grid */}
       <motion.div 
-        className="grid grid-cols-1 lg:grid-cols-2 gap-8"
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6, delay: 0.2 }}
@@ -117,7 +129,10 @@ export default function Quimica() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 * index }}
             >
-              <Card className="card-organic rounded-3xl hover:shadow-medium transition-all duration-300 h-full">
+              <Card 
+                className="card-organic rounded-3xl hover:shadow-medium transition-all duration-300 h-full border-2 border-purple-200 cursor-pointer"
+                onClick={() => openGroupModal(group)}
+              >
                 <CardHeader className="pb-4">
                   <div className="flex items-start gap-4">
                     <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${group.color} flex items-center justify-center glow-soft`}>
@@ -146,7 +161,7 @@ export default function Quimica() {
                         <Badge 
                           key={property} 
                           variant="secondary" 
-                          className="rounded-xl"
+                          className="rounded-xl text-white"
                         >
                           {property}
                         </Badge>
@@ -165,7 +180,7 @@ export default function Quimica() {
                         <Badge 
                           key={example} 
                           variant="outline" 
-                          className="rounded-xl text-xs"
+                          className="rounded-xl text-xs text-black"
                         >
                           {example}
                         </Badge>
@@ -184,7 +199,7 @@ export default function Quimica() {
                         <Badge 
                           key={oil} 
                           variant="default" 
-                          className="rounded-xl"
+                          className="rounded-xl text-white"
                         >
                           {oil}
                         </Badge>
@@ -224,7 +239,139 @@ export default function Quimica() {
           necessidades de bem-estar e saúde. Sempre consulte um aromaterapeuta qualificado 
           para orientações específicas.
         </p>
-      </motion.div>
+              </motion.div>
+
+        {/* Chemical Group Detail Modal */}
+        <AnimatePresence>
+          {selectedGroup && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+              onClick={closeGroupModal}
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className="bg-white rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Modal Header */}
+                <div className="p-6 border-b border-gray-200">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-4 mb-4">
+                        <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${selectedGroup.color} flex items-center justify-center glow-soft`}>
+                          <selectedGroup.icon className="w-8 h-8 text-white" />
+                        </div>
+                        <div>
+                          <h2 className="text-3xl font-bold text-foreground mb-2">
+                            {selectedGroup.name}
+                          </h2>
+                          <p className="text-muted-foreground text-lg">
+                            {selectedGroup.description}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={closeGroupModal}
+                      className="rounded-full"
+                    >
+                      <X className="w-5 h-5" />
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Modal Content */}
+                <div className="p-6 space-y-8">
+                  {/* Properties */}
+                  <div>
+                    <h3 className="font-semibold text-foreground mb-4 text-xl flex items-center">
+                      <span className="w-3 h-3 rounded-full bg-primary mr-3"></span>
+                      Propriedades Principais
+                    </h3>
+                    <div className="flex flex-wrap gap-3">
+                      {selectedGroup.properties.map((property) => (
+                        <Badge 
+                          key={property} 
+                          variant="secondary" 
+                          className="rounded-xl text-white text-sm px-4 py-2"
+                        >
+                          {property}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Chemical Examples */}
+                  <div>
+                    <h3 className="font-semibold text-foreground mb-4 text-xl flex items-center">
+                      <span className="w-3 h-3 rounded-full bg-secondary mr-3"></span>
+                      Compostos Principais
+                    </h3>
+                    <div className="flex flex-wrap gap-3">
+                      {selectedGroup.examples.map((example) => (
+                        <Badge 
+                          key={example} 
+                          variant="outline" 
+                          className="rounded-xl text-sm px-4 py-2 text-black"
+                        >
+                          {example}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Example Oils */}
+                  <div>
+                    <h3 className="font-semibold text-foreground mb-4 text-xl flex items-center">
+                      <span className="w-3 h-3 rounded-full bg-accent mr-3"></span>
+                      Óleos Exemplares
+                    </h3>
+                    <div className="flex flex-wrap gap-3">
+                      {selectedGroup.oils.map((oil) => (
+                        <Badge 
+                          key={oil} 
+                          variant="default" 
+                          className="rounded-xl text-white text-sm px-4 py-2"
+                        >
+                          {oil}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Effects */}
+                  <div className={`p-6 rounded-2xl bg-gradient-to-r ${selectedGroup.color} bg-opacity-10 border border-border/50`}>
+                    <h3 className="font-semibold text-foreground mb-3 text-xl">
+                      Efeito Característico
+                    </h3>
+                    <p className="text-muted-foreground text-lg">
+                      {selectedGroup.effects}
+                    </p>
+                  </div>
+
+                  {/* Additional Information */}
+                  <div className="bg-muted/30 p-6 rounded-2xl">
+                    <h3 className="font-semibold text-foreground mb-3 text-xl">
+                      💡 Informações Adicionais
+                    </h3>
+                    <p className="text-muted-foreground leading-relaxed">
+                      Este grupo químico é fundamental para compreender as propriedades terapêuticas dos óleos essenciais. 
+                      A composição química determina não apenas os benefícios, mas também as precauções necessárias 
+                      para uso seguro e eficaz.
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
