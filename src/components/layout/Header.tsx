@@ -56,9 +56,6 @@ export function Header({ isDark, toggleTheme }: HeaderProps) {
                 className="w-full h-full object-contain"
               />
             </motion.div>
-            <span className="font-dm-sans font-semibold text-xl text-foreground">
-              Banco de Dados
-            </span>
           </Link>
 
           {/* Desktop Navigation */}

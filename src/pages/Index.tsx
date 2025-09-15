@@ -7,9 +7,6 @@ import {
   Users,
   MessageCircle,
   Mail,
-  Instagram,
-  Youtube,
-  MessageSquare,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useMemo } from "react";
@@ -73,14 +70,41 @@ const Index = () => {
   ];
 
   const socialNetworks = [
-    { icon: Instagram, handle: "@daianealaniz", color: "from-pink-400 to-pink-600" },
-    { icon: MessageSquare, handle: "@daianealaniz", color: "from-blue-400 to-blue-600" },
-    { icon: Youtube, handle: "@daianealaniz", color: "from-red-400 to-red-600" },
+    { 
+      image: "https://i.ibb.co/9mBdRXwM/pngtree-instagram-icon-instagram-logo-png-image-3584852.png", 
+      handle: "@daianealaniz", 
+      link: "https://www.instagram.com/daianealaniz/",
+      color: "from-pink-400 to-pink-600" 
+    },
+    { 
+      image: "https://i.ibb.co/1t3MS1Vp/youtube-logo-png-46017.png", 
+      handle: "@daianealaniz", 
+      link: "https://www.youtube.com/c/DaianeAlaniz",
+      color: "from-red-400 to-red-600" 
+    },
+    { 
+      image: "https://i.ibb.co/0yVVDf6D/tiktok-icon-free-png.png", 
+      handle: "@daianealaniz", 
+      link: "https://www.tiktok.com/@daianealaniz",
+      color: "from-gray-400 to-gray-600" 
+    },
   ];
 
   const contacts = [
-    { icon: MessageCircle, info: "(18) 98179-2777", color: "from-green-400 to-green-600" },
-    { icon: Mail, info: "suporte@daianealaniz.com", color: "from-blue-400 to-blue-600" },
+    { 
+      icon: MessageCircle, 
+      info: "(18) 98179-2777", 
+      color: "from-green-400 to-green-600",
+      type: "whatsapp",
+      link: "https://wa.me/5518981792777?text=Olá, estou no Banco de Dados e gostaria de tirar uma dúvida!"
+    },
+    { 
+      icon: Mail, 
+      info: "suporte@daianealaniz.com", 
+      color: "from-blue-400 to-blue-600",
+      type: "email",
+      link: "mailto:suporte@daianealaniz.com?subject=Contato via Banco de Dados&body=Olá, estou no Banco de Dados e gostaria de tirar uma dúvida!"
+    },
   ];
 
   const courses = [
@@ -115,6 +139,11 @@ const Index = () => {
           alt="Banner aromaterapia"
           className="absolute inset-0 w-full h-full object-cover object-[center_91%]"
         />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="bg-black/40 backdrop-blur-[2px] px-4 sm:px-6 py-2 sm:py-3 rounded-lg ring-1 ring-white/20 select-none">
+            <h1 className="text-white tracking-tight text-3xl sm:text-5xl lg:text-6xl font-extrabold drop-shadow-xl">Banco de Dados</h1>
+          </div>
+        </div>
       </section>
 
       {/* ===== Conteúdo principal ===== */}
@@ -127,13 +156,6 @@ const Index = () => {
                 <CheckCircle className="section-icon text-green-500" />
                 Conteúdos
               </h2>
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-purple-200 text-purple-700 hover:bg-purple-50"
-              >
-                Conteúdo
-              </Button>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -176,13 +198,6 @@ const Index = () => {
                 <Star className="section-icon text-yellow-500" />
                 Minhas assinaturas, cursos e mentorias
               </h2>
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-purple-200 text-purple-700 hover:bg-purple-50"
-              >
-                Cursos e mentorias
-              </Button>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
@@ -210,17 +225,16 @@ const Index = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
               {/* Coluna Redes Sociais */}
               <div>
-                <div className="section-header mb-6">
+                <div className="section-header mb-2">
                   <h2 className="section-title">
                     <Users className="section-icon text-blue-500" />
                     Minhas redes sociais
                   </h2>
-                  <p className="text-slate-600 text-sm mt-2">Siga-me para dicas diárias e conteúdo exclusivo</p>
                 </div>
+                <p className="text-slate-600 text-sm mb-6">Siga-me para dicas diárias e conteúdo exclusivo</p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
                   {socialNetworks.map((social, index) => {
-                    const IconComponent = social.icon;
                     return (
                       <motion.div
                         key={index}
@@ -228,21 +242,30 @@ const Index = () => {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: index * 0.1 }}
                       >
-                        <Card className="dashboard-card group h-32 sm:h-36 hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-purple-200">
-                          <CardContent className="p-5 sm:p-6 text-center h-full flex flex-col justify-center">
-                            <div
-                              className={`dashboard-icon bg-gradient-to-br ${social.color} mx-auto mb-3 sm:mb-4 p-3 rounded-full shadow-lg group-hover:scale-110 transition-transform duration-300`}
-                            >
-                              <IconComponent className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
-                            </div>
-                            <p className="font-semibold text-slate-800 group-hover:text-purple-600 transition-colors text-sm sm:text-base">
-                              {social.handle}
-                            </p>
-                            <p className="text-slate-500 text-xs mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                              Clique para acessar
-                            </p>
-                          </CardContent>
-                        </Card>
+                        <a 
+                          href={social.link} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="block"
+                        >
+                          <Card className="dashboard-card group h-32 sm:h-36 hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-purple-200">
+                            <CardContent className="p-5 sm:p-6 text-center h-full flex flex-col justify-center">
+                              <div className="mx-auto mb-3 sm:mb-4 p-2 rounded-full shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                <img 
+                                  src={social.image} 
+                                  alt={social.handle}
+                                  className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
+                                />
+                              </div>
+                              <p className="font-semibold text-slate-800 group-hover:text-purple-600 transition-colors text-sm sm:text-base">
+                                {social.handle}
+                              </p>
+                              <p className="text-slate-500 text-xs mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                Clique para acessar
+                              </p>
+                            </CardContent>
+                          </Card>
+                        </a>
                       </motion.div>
                     );
                   })}
@@ -251,13 +274,13 @@ const Index = () => {
 
               {/* Coluna Contatos */}
               <div>
-                <div className="section-header mb-6">
+                <div className="section-header mb-2">
                   <h2 className="section-title">
                     <MessageCircle className="section-icon text-green-500" />
                     Meus contatos
                   </h2>
-                  <p className="text-slate-600 text-sm mt-2">Entre em contato para dúvidas e suporte</p>
                 </div>
+                <p className="text-slate-600 text-sm mb-6">Entre em contato para dúvidas e suporte</p>
 
                 <div className="grid grid-cols-1 gap-4 sm:gap-5">
                   {contacts.map((contact, index) => {
@@ -269,23 +292,30 @@ const Index = () => {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: index * 0.1 }}
                       >
-                        <Card className="dashboard-card group h-32 sm:h-36 hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-purple-200">
-                          <CardContent className="p-5 sm:p-6 h-full flex items-center">
-                            <div
-                              className={`dashboard-icon bg-gradient-to-br ${contact.color} p-3 rounded-full shadow-lg group-hover:scale-110 transition-transform duration-300`}
-                            >
-                              <IconComponent className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
-                            </div>
-                            <div className="ml-4 sm:ml-5 flex-1">
-                              <span className="font-semibold text-slate-800 group-hover:text-purple-600 transition-colors text-sm sm:text-base block">
-                                {contact.info}
-                              </span>
-                              <p className="text-slate-500 text-xs mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                Clique para copiar
-                              </p>
-                            </div>
-                          </CardContent>
-                        </Card>
+                        <a 
+                          href={contact.link} 
+                          target={contact.type === "email" ? "_self" : "_blank"} 
+                          rel="noopener noreferrer"
+                          className="block"
+                        >
+                          <Card className="dashboard-card group h-32 sm:h-36 hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-purple-200">
+                            <CardContent className="p-5 sm:p-6 h-full flex items-center">
+                              <div
+                                className={`dashboard-icon bg-gradient-to-br ${contact.color} p-3 rounded-full shadow-lg group-hover:scale-110 transition-transform duration-300`}
+                              >
+                                <IconComponent className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
+                              </div>
+                              <div className="ml-4 sm:ml-5 flex-1">
+                                <span className="font-semibold text-slate-800 group-hover:text-purple-600 transition-colors text-sm sm:text-base block">
+                                  {contact.info}
+                                </span>
+                                <p className="text-slate-500 text-xs mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                  {contact.type === "whatsapp" ? "Clique para abrir WhatsApp" : "Clique para enviar e-mail"}
+                                </p>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </a>
                       </motion.div>
                     );
                   })}
