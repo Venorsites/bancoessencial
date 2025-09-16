@@ -53,6 +53,9 @@ export function Header({}: HeaderProps) {
                 className="w-full h-full object-contain"
               />
             </motion.div>
+            <h1 className="text-2xl font-bold hidden sm:block" style={{ color: '#7D5FBB' }}>
+              Banco de Dados
+            </h1>
           </Link>
 
           {/* Desktop Navigation */}

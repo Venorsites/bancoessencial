@@ -132,18 +132,13 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-purple-50">
-      {/* ===== Banner full-width com imagem e caixa escura só atrás do texto ===== */}
+      {/* ===== Banner full-width com imagem ===== */}
       <section className="relative w-full h-24 sm:h-32 lg:h-40 flex items-center">
         <img
           src="https://i.ibb.co/xtPW4mv4/fundo.webp"
           alt="Banner aromaterapia"
           className="absolute inset-0 w-full h-full object-cover object-[center_91%]"
         />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="bg-black/40 backdrop-blur-[2px] px-4 sm:px-6 py-2 sm:py-3 rounded-lg ring-1 ring-white/20 select-none">
-            <h1 className="text-white tracking-tight text-3xl sm:text-5xl lg:text-6xl font-extrabold drop-shadow-xl">Banco de Dados</h1>
-          </div>
-        </div>
       </section>
 
       {/* ===== Conteúdo principal ===== */}
