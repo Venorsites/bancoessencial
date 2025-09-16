@@ -133,11 +133,11 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-purple-50">
       {/* ===== Banner full-width com imagem ===== */}
-      <section className="relative w-full h-24 sm:h-32 lg:h-40 flex items-center">
+      <section className="relative w-full h-32 sm:h-32 lg:h-40 flex items-center">
         <img
           src="https://i.ibb.co/xtPW4mv4/fundo.webp"
           alt="Banner aromaterapia"
-          className="absolute inset-0 w-full h-full object-cover object-[center_91%]"
+          className="absolute inset-0 w-full h-full object-cover object-center sm:object-[center_91%]"
         />
       </section>
 

@@ -107,11 +107,11 @@ export default function DoencasGeral() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-purple-50">
       {/* ===== Banner ===== */}
-      <section className="relative w-full h-24 sm:h-32 lg:h-40">
+      <section className="relative w-full h-32 sm:h-32 lg:h-40">
         <img
           src="https://i.ibb.co/N6Nq66d8/Guia-de-Consulta-Doen-as-Condi-es-x-leos-Essenciais-de-A-a-Z.webp"
           alt="Banner Guia de Doenças Gerais"
-          className="absolute inset-0 w-full h-full object-cover object-top"
+          className="absolute inset-0 w-full h-full object-cover object-center sm:object-top"
         />
       </section>
 

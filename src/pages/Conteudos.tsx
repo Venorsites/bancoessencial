@@ -82,11 +82,11 @@ export default function Conteudos() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-purple-50">
       {/* ===== Banner ===== */}
-      <section className="relative w-full h-24 sm:h-32 lg:h-40">
+      <section className="relative w-full h-32 sm:h-32 lg:h-40">
         <img
           src="https://i.ibb.co/whpd6f5J/Banco-de-Conte-dos-Insta-da-Dai.webp"
           alt="Banner Conteúdos da Dai"
-          className="absolute inset-0 w-full h-full object-cover object-top"
+          className="absolute inset-0 w-full h-full object-cover object-center sm:object-top"
         />
       </section>
 

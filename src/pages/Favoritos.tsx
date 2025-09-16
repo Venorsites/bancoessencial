@@ -103,11 +103,11 @@ export default function Favoritos() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-purple-50">
       {/* ===== Banner ===== */}
-      <section className="relative w-full h-24 sm:h-32 lg:h-40">
+      <section className="relative w-full h-32 sm:h-32 lg:h-40">
         <img
           src="https://i.ibb.co/b5SmSFzS/Chat-GPT-Image-9-de-abr-de-2025-17-30-51.webp"
           alt="Banner Meus Favoritos"
-          className="absolute inset-0 w-full h-full object-cover object-top"
+          className="absolute inset-0 w-full h-full object-cover object-center sm:object-top"
         />
       </section>
 
