@@ -9,6 +9,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { useUser } from "@/contexts/UserContext";
 import logo from "@/assets/logov1.svg";
+import heroBackground from "@/assets/hero-background.jpg";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -74,7 +75,7 @@ export default function Login() {
       {/* Background Image with Dark Overlay */}
       <div className="absolute inset-0 z-0">
         <img
-          src="/src/assets/hero-background.jpg"
+          src={heroBackground}
           alt="Background aromaterapia"
           className="w-full h-full object-cover"
         />
