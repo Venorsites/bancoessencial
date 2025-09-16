@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Moon, Sun, Heart, Menu, X, User, Settings, LogOut } from "lucide-react";
+import { Search, Heart, Menu, X, User, Settings, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -15,12 +15,9 @@ import {
 import { useUser } from "@/contexts/UserContext";
 import logo from "@/assets/logo.svg";
 
-interface HeaderProps {
-  isDark: boolean;
-  toggleTheme: () => void;
-}
+interface HeaderProps {}
 
-export function Header({ isDark, toggleTheme }: HeaderProps) {
+export function Header({}: HeaderProps) {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
@@ -140,36 +137,6 @@ export function Header({ isDark, toggleTheme }: HeaderProps) {
                 </Link>
               )}
 
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={toggleTheme}
-                className="rounded-xl"
-              >
-                <AnimatePresence mode="wait">
-                  {isDark ? (
-                    <motion.div
-                      key="sun"
-                      initial={{ rotate: -90, opacity: 0 }}
-                      animate={{ rotate: 0, opacity: 1 }}
-                      exit={{ rotate: 90, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <Sun className="w-5 h-5" />
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="moon"
-                      initial={{ rotate: 90, opacity: 0 }}
-                      animate={{ rotate: 0, opacity: 1 }}
-                      exit={{ rotate: -90, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <Moon className="w-5 h-5" />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </Button>
             </div>
           </motion.div>
 
@@ -236,28 +203,17 @@ export function Header({ isDark, toggleTheme }: HeaderProps) {
                       </Button>
                     </Link>
 
-                    <div className="flex items-center justify-between">
-                      <Button 
-                        variant="ghost" 
-                        onClick={toggleTheme}
-                        className="rounded-xl"
-                      >
-                        {isDark ? <Sun className="w-4 h-4 mr-2" /> : <Moon className="w-4 h-4 mr-2" />}
-                        {isDark ? "Modo Claro" : "Modo Escuro"}
-                      </Button>
-
-                      <Button 
-                        variant="ghost" 
-                        onClick={() => {
-                          logout();
-                          navigate("/login");
-                        }}
-                        className="rounded-xl text-destructive"
-                      >
-                        <LogOut className="w-4 h-4 mr-2" />
-                        Sair
-                      </Button>
-                    </div>
+                    <Button 
+                      variant="ghost" 
+                      onClick={() => {
+                        logout();
+                        navigate("/login");
+                      }}
+                      className="rounded-xl text-destructive"
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Sair
+                    </Button>
                   </>
                 ) : (
                   <>
@@ -268,16 +224,6 @@ export function Header({ isDark, toggleTheme }: HeaderProps) {
                       </Button>
                     </Link>
 
-                    <div className="flex justify-center">
-                      <Button 
-                        variant="ghost" 
-                        onClick={toggleTheme}
-                        className="rounded-xl"
-                      >
-                        {isDark ? <Sun className="w-4 h-4 mr-2" /> : <Moon className="w-4 h-4 mr-2" />}
-                        {isDark ? "Modo Claro" : "Modo Escuro"}
-                      </Button>
-                    </div>
                   </>
                 )}
               </div>
