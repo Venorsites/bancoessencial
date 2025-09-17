@@ -9,7 +9,6 @@ import { useNavigate, Link } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { useUser } from "@/contexts/UserContext";
 import logo from "@/assets/logov1.svg";
-import heroBackground from "@/assets/hero-background.jpg";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -75,7 +74,7 @@ export default function Login() {
       {/* Background Image with Dark Overlay */}
       <div className="absolute inset-0 z-0">
         <img
-          src={heroBackground}
+          src="/src/assets/hero-background.jpg"
           alt="Background aromaterapia"
           className="w-full h-full object-cover"
         />
@@ -95,12 +94,12 @@ export default function Login() {
           <div className="w-28 h-28 flex items-center justify-center mx-auto mb-4">
             <img 
               src={logo} 
-              alt="Logo Banco de Dados" 
+              alt="Logo Banco de Dados Essencial" 
               className="h-24 w-auto md:h-28 object-contain"
             />
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">
-            Banco de Dados
+            Banco de Dados Essencial
           </h1>
           <p className="text-white/90">
             Faça login para acessar a plataforma

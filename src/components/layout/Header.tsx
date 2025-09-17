@@ -49,12 +49,12 @@ export function Header({}: HeaderProps) {
             >
               <img 
                 src={logo} 
-                alt="Logo Banco de Dados" 
+                alt="Logo Banco de Dados Essencial" 
                 className="w-full h-full object-contain"
               />
             </motion.div>
             <h1 className="text-2xl font-bold hidden sm:block" style={{ color: '#7D5FBB' }}>
-              Banco de Dados
+              Banco de Dados Essencial
             </h1>
           </Link>
 
@@ -144,21 +144,14 @@ export function Header({}: HeaderProps) {
           </motion.div>
 
           {/* Mobile Menu Button */}
-          <div className="md:hidden flex items-center justify-between w-full">
-            <div className="flex-1 flex justify-center">
-              <h1 className="text-lg font-bold" style={{ color: '#7D5FBB' }}>
-                Banco de Dados
-              </h1>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="rounded-xl bg-primary/10 hover:bg-primary/20 border-2 border-primary/20"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              {isMobileMenuOpen ? <X className="w-6 h-6 text-primary" /> : <Menu className="w-6 h-6 text-primary" />}
-            </Button>
-          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden rounded-xl"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </Button>
         </div>
 
         {/* Mobile Menu */}

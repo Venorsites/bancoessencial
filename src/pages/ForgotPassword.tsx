@@ -68,7 +68,7 @@ export default function ForgotPassword() {
           <div className="w-28 h-28 flex items-center justify-center mx-auto mb-4">
             <img 
               src={logo} 
-              alt="Logo Banco de Dados" 
+              alt="Logo Banco de Dados Essencial" 
               className="h-24 w-auto md:h-28 object-contain"
             />
           </div>

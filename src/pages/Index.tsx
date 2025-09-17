@@ -26,7 +26,7 @@ const Index = () => {
     {
       image:
         "https://i.ibb.co/N2CVmNZL/Banco-de-Dados-leos-Essenciais-Fichas-Completas.webp",
-      title: "Banco de Dados - Óleos Essenciais (Fichas Completas)",
+      title: "Banco de Dados Essencial - Óleos Essenciais (Fichas Completas)",
       description:
         "Base completa com propriedades e aplicações de centenas de óleos essenciais",
       href: "/oleos",
@@ -96,14 +96,14 @@ const Index = () => {
       info: "(18) 98179-2777", 
       color: "from-green-400 to-green-600",
       type: "whatsapp",
-      link: "https://wa.me/5518981792777?text=Olá, estou no Banco de Dados e gostaria de tirar uma dúvida!"
+      link: "https://wa.me/5518981792777?text=Olá, estou no Banco de Dados Essencial e gostaria de tirar uma dúvida!"
     },
     { 
       icon: Mail, 
       info: "suporte@daianealaniz.com", 
       color: "from-blue-400 to-blue-600",
       type: "email",
-      link: "mailto:suporte@daianealaniz.com?subject=Contato via Banco de Dados&body=Olá, estou no Banco de Dados e gostaria de tirar uma dúvida!"
+      link: "mailto:suporte@daianealaniz.com?subject=Contato via Banco de Dados Essencial&body=Olá, estou no Banco de Dados Essencial e gostaria de tirar uma dúvida!"
     },
   ];
 

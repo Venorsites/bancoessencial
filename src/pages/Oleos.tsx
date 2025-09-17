@@ -203,7 +203,7 @@ export default function Oleos() {
       <section className="relative w-full h-32 sm:h-32 lg:h-40">
         <img
           src="https://i.ibb.co/N2CVmNZL/Banco-de-Dados-leos-Essenciais-Fichas-Completas.webp"
-          alt="Banner Banco de Dados - Óleos Essenciais"
+          alt="Banner Banco de Dados Essencial - Óleos Essenciais"
           className="absolute inset-0 w-full h-full object-cover object-center sm:object-top"
         />
       </section>
@@ -217,7 +217,7 @@ export default function Oleos() {
           transition={{ duration: 0.45 }}
         >
           <h1 className="text-3xl md:text-4xl font-extrabold text-neutral-900 tracking-tight">
-            Banco de Dados – Óleos Essenciais (Fichas Completas)
+            Banco de Dados Essencial – Óleos Essenciais (Fichas Completas)
           </h1>
 
           {/* Caixa com texto e fundo roxo leve APENAS no parágrafo */}
