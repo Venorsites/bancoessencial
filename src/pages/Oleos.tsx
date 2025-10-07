@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, Filter, Heart, ChevronDown, ChevronRight, AlertTriangle, Atom, CheckSquare, Beaker, X, Info } from "lucide-react";
+import { oilsApi, Oil } from "@/services/oilsApi";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -146,14 +147,34 @@ export default function Oleos() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Todos");
   const [selectedChemicalGroup, setSelectedChemicalGroup] = useState("Todos");
-  const [oils, setOils] = useState(mockOils);
-  const [selectedOil, setSelectedOil] = useState<any>(null);
+  const [oils, setOils] = useState<Oil[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedOil, setSelectedOil] = useState<Oil | null>(null);
   const [expandedSections, setExpandedSections] = useState({
     contraindications: false,
     chemistry: false,
     substitutes: false,
     combinations: false
   });
+
+  useEffect(() => {
+    loadOils();
+  }, []);
+
+  const loadOils = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await oilsApi.getAll();
+      setOils(data);
+    } catch (err) {
+      setError("Erro ao carregar óleos essenciais. Tente novamente mais tarde.");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const toggleFavorite = (id: number) => {
     setOils((o) =>
@@ -186,13 +207,13 @@ export default function Oleos() {
 
   const filteredOils = oils.filter((oil) => {
     const matchesSearch =
-      oil.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      oil.scientificName.toLowerCase().includes(searchTerm.toLowerCase());
+      oil.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      oil.nome_cientifico.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory =
-      selectedCategory === "Todos" || oil.category === selectedCategory;
+      selectedCategory === "Todos" || oil.categoria_aromatica === selectedCategory;
     const matchesChemicalGroup =
       selectedChemicalGroup === "Todos" ||
-      oil.chemicalGroup === selectedChemicalGroup;
+      oil.familia_quimica === selectedChemicalGroup;
 
     return matchesSearch && matchesCategory && matchesChemicalGroup;
   });
@@ -361,19 +382,37 @@ export default function Oleos() {
           </DropdownMenu>
         </motion.div>
 
+        {/* Loading and Error States */}
+        {loading && (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground text-lg">Carregando óleos essenciais...</p>
+          </div>
+        )}
+
+        {error && (
+          <div className="text-center py-12">
+            <p className="text-red-500 text-lg">{error}</p>
+            <Button onClick={loadOils} className="mt-4">
+              Tentar Novamente
+            </Button>
+          </div>
+        )}
+
         {/* Results Count */}
-        <motion.div
-          className="mb-6"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-        >
-          <p className="text-muted-foreground">
-            {filteredOils.length} óleo
-            {filteredOils.length !== 1 ? "s" : ""} encontrado
-            {filteredOils.length !== 1 ? "s" : ""}
-          </p>
-        </motion.div>
+        {!loading && !error && (
+          <motion.div
+            className="mb-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+          >
+            <p className="text-muted-foreground">
+              {filteredOils.length} óleo
+              {filteredOils.length !== 1 ? "s" : ""} encontrado
+              {filteredOils.length !== 1 ? "s" : ""}
+            </p>
+          </motion.div>
+        )}
 
         {/* Grid */}
         <motion.div

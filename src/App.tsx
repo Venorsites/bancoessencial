@@ -21,6 +21,8 @@ import Profile from "./pages/Profile";
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
 import NotFound from "./pages/NotFound";
+import Admin from "./pages/Admin";
+import AdminOilForm from "./pages/AdminOilForm";
 
 const queryClient = new QueryClient();
 
@@ -53,6 +55,9 @@ const App = () => (
                       <Route path="/conteudos" element={<Conteudos />} />
                       <Route path="/favoritos" element={<Favoritos />} />
                       <Route path="/profile" element={<Profile />} />
+                      <Route path="/admin" element={<Admin />} />
+                      <Route path="/admin/oils/new" element={<AdminOilForm />} />
+                      <Route path="/admin/oils/edit/:id" element={<AdminOilForm />} />
                       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                       <Route path="*" element={<NotFound />} />
                     </Routes>
