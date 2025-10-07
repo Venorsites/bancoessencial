@@ -8,7 +8,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { TagInput } from "@/components/ui/tag-input";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
-import { PhotoGalleryInput } from "@/components/ui/photo-gallery-input";
 import { oilsApi, CreateOilData } from "@/services/oilsApi";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
@@ -53,7 +52,6 @@ export default function AdminOilForm() {
   const [espiritualTags, setEspiritualTags] = useState<string[]>([]);
   const [ambientalTags, setAmbientalTags] = useState<string[]>([]);
   const [contraindicacaoTags, setContraindicacaoTags] = useState<string[]>([]);
-  const [galleryPhotos, setGalleryPhotos] = useState<string[]>([]);
 
   useEffect(() => {
     if (!user || user.role?.toUpperCase() !== 'ADMIN') {
@@ -81,7 +79,6 @@ export default function AdminOilForm() {
       setEspiritualTags(oil.espirituais ? oil.espirituais.split(',').map(tag => tag.trim()).filter(Boolean) : []);
       setAmbientalTags(oil.ambientais ? oil.ambientais.split(',').map(tag => tag.trim()).filter(Boolean) : []);
       setContraindicacaoTags(oil.contraindicacao ? oil.contraindicacao.split(',').map(tag => tag.trim()).filter(Boolean) : []);
-      setGalleryPhotos(oil.galeria_fotos ? oil.galeria_fotos.split(',').map(url => url.trim()).filter(Boolean) : []);
     } catch (err) {
       alert("Erro ao carregar óleo");
       navigate('/admin');
@@ -112,7 +109,6 @@ export default function AdminOilForm() {
         espirituais: espiritualTags.join(', '),
         ambientais: ambientalTags.join(', '),
         contraindicacao: contraindicacaoTags.join(', '),
-        galeria_fotos: galleryPhotos.join(', '),
       };
 
       if (id) {
@@ -456,11 +452,14 @@ export default function AdminOilForm() {
             </CardHeader>
             <CardContent>
               <div>
-                <Label>Adicionar Fotos</Label>
-                <PhotoGalleryInput
-                  value={galleryPhotos}
-                  onChange={setGalleryPhotos}
-                  placeholder="Digite a URL da foto e pressione Enter"
+                <Label htmlFor="galeria_fotos">URLs das Fotos (separadas por vírgula)</Label>
+                <Textarea
+                  id="galeria_fotos"
+                  name="galeria_fotos"
+                  value={formData.galeria_fotos}
+                  onChange={handleChange}
+                  rows={3}
+                  placeholder="https://exemplo.com/foto1.jpg, https://exemplo.com/foto2.jpg"
                   className="mt-1"
                 />
               </div>

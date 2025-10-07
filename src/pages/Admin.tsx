@@ -1,12 +1,16 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
 import { AdminOils } from "@/components/admin/AdminOils";
+import { AdminUsers } from "@/components/admin/AdminUsers";
+import AdminOilForm from "./AdminOilForm";
+import { Routes, Route } from "react-router-dom";
 
 export default function Admin() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("dashboard");
 
@@ -17,6 +21,22 @@ export default function Admin() {
       return;
     }
   }, [user, navigate]);
+
+  // Sincronizar activeTab com a URL atual
+  useEffect(() => {
+    const path = location.pathname;
+    if (path.includes('/oils/new') || path.includes('/oils/edit/')) {
+      setActiveTab('oils');
+    } else if (path.includes('/users')) {
+      setActiveTab('users');
+    } else if (path.includes('/analytics')) {
+      setActiveTab('analytics');
+    } else if (path.includes('/settings')) {
+      setActiveTab('settings');
+    } else {
+      setActiveTab('dashboard');
+    }
+  }, [location.pathname]);
 
   if (!user || user.role?.toUpperCase() !== 'ADMIN') {
     return null;
@@ -29,12 +49,7 @@ export default function Admin() {
       case "oils":
         return <AdminOils />;
       case "users":
-        return (
-          <div className="text-center py-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Gerenciamento de Usuários</h2>
-            <p className="text-gray-600">Em desenvolvimento...</p>
-          </div>
-        );
+        return <AdminUsers />;
       case "analytics":
         return (
           <div className="text-center py-12">
@@ -62,7 +77,12 @@ export default function Admin() {
       {/* Main Content */}
       <div className="ml-64 p-8">
         <div className="max-w-7xl mx-auto">
-          {renderContent()}
+          <Routes>
+            <Route path="/" element={renderContent()} />
+            <Route path="/oils/new" element={<AdminOilForm />} />
+            <Route path="/oils/edit/:id" element={<AdminOilForm />} />
+            <Route path="/users" element={<AdminUsers />} />
+          </Routes>
         </div>
       </div>
     </div>

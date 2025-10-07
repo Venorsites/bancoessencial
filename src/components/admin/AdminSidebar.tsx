@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { 
   LayoutDashboard, 
@@ -8,7 +9,8 @@ import {
   BarChart3,
   Menu,
   X,
-  ChevronRight
+  ChevronRight,
+  Home
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -53,6 +55,32 @@ const menuItems = [
 
 export function AdminSidebar({ activeTab, onTabChange }: AdminSidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const navigate = useNavigate();
+
+  const handleTabChange = (tabId: string) => {
+    onTabChange(tabId);
+    
+    // Navegar para a rota correspondente
+    switch (tabId) {
+      case 'dashboard':
+        navigate('/admin');
+        break;
+      case 'oils':
+        navigate('/admin');
+        break;
+      case 'users':
+        navigate('/admin/users');
+        break;
+      case 'analytics':
+        navigate('/admin');
+        break;
+      case 'settings':
+        navigate('/admin');
+        break;
+      default:
+        navigate('/admin');
+    }
+  };
 
   return (
     <motion.div
@@ -100,7 +128,7 @@ export function AdminSidebar({ activeTab, onTabChange }: AdminSidebarProps) {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.1 }}
-              onClick={() => onTabChange(item.id)}
+              onClick={() => handleTabChange(item.id)}
               className={cn(
                 "w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-200 group",
                 isActive 
@@ -128,23 +156,52 @@ export function AdminSidebar({ activeTab, onTabChange }: AdminSidebarProps) {
       </nav>
 
       {/* Footer */}
-      {!isCollapsed && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="absolute bottom-4 left-4 right-4"
+      <div className="absolute bottom-4 left-4 right-4 space-y-2">
+        {/* Botão Home */}
+        <motion.button
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          onClick={() => navigate('/')}
+          className={cn(
+            "w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-200 group bg-white/10 hover:bg-white/20 text-purple-200 hover:text-white",
+            isCollapsed && "justify-center"
+          )}
         >
-          <div className="bg-purple-700/30 rounded-xl p-3 border border-purple-600/30">
-            <div className="text-xs text-purple-200">
-              Sistema de Administração
+          <Home className="w-5 h-5" />
+          {!isCollapsed && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.1 }}
+              className="flex-1 text-left"
+            >
+              <div className="font-medium">Voltar ao Site</div>
+              <div className="text-xs text-purple-300 opacity-0 group-hover:opacity-100 transition-opacity">
+                Retornar à página inicial
+              </div>
+            </motion.div>
+          )}
+        </motion.button>
+
+        {/* Info do Sistema */}
+        {!isCollapsed && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+          >
+            <div className="bg-purple-700/30 rounded-xl p-3 border border-purple-600/30">
+              <div className="text-xs text-purple-200">
+                Sistema de Administração
+              </div>
+              <div className="text-xs text-purple-300">
+                v1.0.0
+              </div>
             </div>
-            <div className="text-xs text-purple-300">
-              v1.0.0
-            </div>
-          </div>
-        </motion.div>
-      )}
+          </motion.div>
+        )}
+      </div>
     </motion.div>
   );
 }

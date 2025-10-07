@@ -42,11 +42,7 @@ const App = () => (
               {/* Rotas administrativas (sem menu) */}
               <Route path="/admin/*" element={
                 <ProtectedRoute>
-                  <Routes>
-                    <Route path="/" element={<Admin />} />
-                    <Route path="/oils/new" element={<AdminOilForm />} />
-                    <Route path="/oils/edit/:id" element={<AdminOilForm />} />
-                  </Routes>
+                  <Admin />
                 </ProtectedRoute>
               } />
               

@@ -8,7 +8,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { TagInput } from "@/components/ui/tag-input";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
-import { PhotoGalleryInput } from "@/components/ui/photo-gallery-input";
 import { oilsApi, CreateOilData } from "@/services/oilsApi";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
@@ -53,7 +52,6 @@ export default function AdminOilForm() {
   const [espiritualTags, setEspiritualTags] = useState<string[]>([]);
   const [ambientalTags, setAmbientalTags] = useState<string[]>([]);
   const [contraindicacaoTags, setContraindicacaoTags] = useState<string[]>([]);
-  const [galleryPhotos, setGalleryPhotos] = useState<string[]>([]);
 
   useEffect(() => {
     if (!user || user.role?.toUpperCase() !== 'ADMIN') {
@@ -81,7 +79,6 @@ export default function AdminOilForm() {
       setEspiritualTags(oil.espirituais ? oil.espirituais.split(',').map(tag => tag.trim()).filter(Boolean) : []);
       setAmbientalTags(oil.ambientais ? oil.ambientais.split(',').map(tag => tag.trim()).filter(Boolean) : []);
       setContraindicacaoTags(oil.contraindicacao ? oil.contraindicacao.split(',').map(tag => tag.trim()).filter(Boolean) : []);
-      setGalleryPhotos(oil.galeria_fotos ? oil.galeria_fotos.split(',').map(url => url.trim()).filter(Boolean) : []);
     } catch (err) {
       alert("Erro ao carregar óleo");
       navigate('/admin');
@@ -112,7 +109,6 @@ export default function AdminOilForm() {
         espirituais: espiritualTags.join(', '),
         ambientais: ambientalTags.join(', '),
         contraindicacao: contraindicacaoTags.join(', '),
-        galeria_fotos: galleryPhotos.join(', '),
       };
 
       if (id) {
@@ -173,7 +169,8 @@ export default function AdminOilForm() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="nome">Nome *</Label>
                   <Input
@@ -183,7 +180,6 @@ export default function AdminOilForm() {
                     onChange={handleChange}
                     required
                     placeholder="Ex: Lavanda Francesa"
-                    className="mt-1"
                   />
                 </div>
 
@@ -196,43 +192,54 @@ export default function AdminOilForm() {
                     onChange={handleChange}
                     required
                     placeholder="Ex: Lavandula angustifolia"
-                    className="mt-1"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="familia_botanica">Família Botânica</Label>
+                  <Label htmlFor="familia_botanica">Família Botânica *</Label>
                   <Input
                     id="familia_botanica"
                     name="familia_botanica"
                     value={formData.familia_botanica}
                     onChange={handleChange}
+                    required
                     placeholder="Ex: Lamiaceae"
-                    className="mt-1"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="forma_extracao">Forma de Extração</Label>
+                  <Label htmlFor="forma_extracao">Forma de Extração *</Label>
                   <Input
                     id="forma_extracao"
                     name="forma_extracao"
                     value={formData.forma_extracao}
                     onChange={handleChange}
+                    required
                     placeholder="Ex: Destilação a vapor"
-                    className="mt-1"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="parte_planta">Parte da Planta</Label>
+                  <Label htmlFor="parte_planta">Parte da Planta *</Label>
                   <Input
                     id="parte_planta"
                     name="parte_planta"
                     value={formData.parte_planta}
                     onChange={handleChange}
-                    placeholder="Ex: Flores"
-                    className="mt-1"
+                    required
+                    placeholder="Ex: Flores e folhas"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="aroma">Aroma *</Label>
+                  <Input
+                    id="aroma"
+                    name="aroma"
+                    value={formData.aroma}
+                    onChange={handleChange}
+                    required
+                    placeholder="Ex: Floral, herbáceo, doce"
                   />
                 </div>
 
@@ -241,44 +248,55 @@ export default function AdminOilForm() {
                   <Input
                     id="avatar"
                     name="avatar"
+                    type="url"
                     value={formData.avatar}
                     onChange={handleChange}
                     placeholder="https://exemplo.com/imagem.jpg"
-                    className="mt-1"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="categoria_aromatica">Categoria Aromática</Label>
+                  <Input
+                    id="categoria_aromatica"
+                    name="categoria_aromatica"
+                    value={formData.categoria_aromatica}
+                    onChange={handleChange}
+                    placeholder="Ex: Floral"
                   />
                 </div>
               </div>
 
               <div>
-                <Label htmlFor="descricao">Descrição</Label>
-                <RichTextEditor
+                <Label htmlFor="descricao">Descrição *</Label>
+                <Textarea
+                  id="descricao"
+                  name="descricao"
                   value={formData.descricao}
-                  onChange={(value) => setFormData(prev => ({ ...prev, descricao: value }))}
-                  placeholder="Descrição detalhada do óleo essencial..."
-                  className="mt-1"
+                  onChange={handleChange}
+                  required
+                  rows={3}
+                  placeholder="Descrição geral do óleo essencial"
                 />
               </div>
-            </CardContent>
-          </Card>
+            </div>
 
-          {/* Propriedades Químicas */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-purple-800">
-                Propriedades Químicas
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Química */}
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold text-purple-800">
+                Composição Química
+              </h2>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="familia_quimica">Família Química</Label>
+                  <Label htmlFor="familia_quimica">Família Química *</Label>
                   <Input
                     id="familia_quimica"
                     name="familia_quimica"
                     value={formData.familia_quimica}
                     onChange={handleChange}
-                    placeholder="Ex: Monoterpenos"
-                    className="mt-1"
+                    required
+                    placeholder="Ex: Monoterpenóis"
                   />
                 </div>
 
@@ -289,197 +307,194 @@ export default function AdminOilForm() {
                     name="composto_quimico"
                     value={formData.composto_quimico}
                     onChange={handleChange}
-                    placeholder="Ex: Linalol"
-                    className="mt-1"
+                    placeholder="Ex: Linalol (25-38%)"
                   />
                 </div>
               </div>
 
               <div>
-                <Label>Composição Química Majoritária</Label>
-                <TagInput
-                  value={composicaoTags}
-                  onChange={setComposicaoTags}
-                  placeholder="Digite os compostos químicos principais..."
-                  className="mt-1"
+                <Label htmlFor="composicao_quimica_majoritaria">
+                  Composição Química Majoritária
+                </Label>
+                <Textarea
+                  id="composicao_quimica_majoritaria"
+                  name="composicao_quimica_majoritaria"
+                  value={formData.composicao_quimica_majoritaria}
+                  onChange={handleChange}
+                  rows={3}
+                  placeholder="Composição química detalhada"
                 />
               </div>
-            </CardContent>
-          </Card>
+            </div>
 
-          {/* Propriedades Aromáticas */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-purple-800">
-                Propriedades Aromáticas
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label>Aroma</Label>
-                <TagInput
-                  value={aromaTags}
-                  onChange={setAromaTags}
-                  placeholder="Digite as características do aroma..."
-                  className="mt-1"
-                />
-              </div>
+            {/* Propriedades */}
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold text-purple-800">
+                Propriedades e Usos
+              </h2>
 
               <div>
-                <Label>Categoria Aromática</Label>
-                <TagInput
-                  value={categoriaTags}
-                  onChange={setCategoriaTags}
-                  placeholder="Digite as categorias aromáticas..."
-                  className="mt-1"
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Aplicações */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-purple-800">
-                Aplicações
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label>Psicoaroma (Emocional/Psicológica)</Label>
-                <TagInput
-                  value={psicoaromaTags}
-                  onChange={setPsicoaromaTags}
-                  placeholder="Digite os efeitos emocionais e psicológicos..."
-                  className="mt-1"
+                <Label htmlFor="psicoaromas">Psicoaroma (Emocional/Psicológica)</Label>
+                <Textarea
+                  id="psicoaromas"
+                  name="psicoaromas"
+                  value={formData.psicoaromas}
+                  onChange={handleChange}
+                  rows={3}
+                  placeholder="Efeitos emocionais e psicológicos"
                 />
               </div>
 
               <div>
-                <Label>Estética (Pele/Cabelo/Unhas)</Label>
-                <TagInput
-                  value={esteticaTags}
-                  onChange={setEsteticaTags}
-                  placeholder="Digite os benefícios estéticos..."
-                  className="mt-1"
+                <Label htmlFor="estetica">Estética (Pele/Cabelo/Unhas)</Label>
+                <Textarea
+                  id="estetica"
+                  name="estetica"
+                  value={formData.estetica}
+                  onChange={handleChange}
+                  rows={3}
+                  placeholder="Aplicações estéticas"
                 />
               </div>
 
               <div>
-                <Label>Saúde Física</Label>
-                <TagInput
-                  value={saudeTags}
-                  onChange={setSaudeTags}
-                  placeholder="Digite os benefícios para a saúde física..."
-                  className="mt-1"
+                <Label htmlFor="saude_fisica">Saúde Física</Label>
+                <Textarea
+                  id="saude_fisica"
+                  name="saude_fisica"
+                  value={formData.saude_fisica}
+                  onChange={handleChange}
+                  rows={3}
+                  placeholder="Benefícios para saúde física"
                 />
               </div>
 
               <div>
-                <Label>Espiritual/Vibracional</Label>
-                <TagInput
-                  value={espiritualTags}
-                  onChange={setEspiritualTags}
-                  placeholder="Digite as propriedades espirituais e vibracionais..."
-                  className="mt-1"
+                <Label htmlFor="espirituais">Espiritual/Vibracional</Label>
+                <Textarea
+                  id="espirituais"
+                  name="espirituais"
+                  value={formData.espirituais}
+                  onChange={handleChange}
+                  rows={3}
+                  placeholder="Aspectos espirituais e vibracionais"
                 />
               </div>
 
               <div>
-                <Label>Ambiental</Label>
-                <TagInput
-                  value={ambientalTags}
-                  onChange={setAmbientalTags}
-                  placeholder="Digite os usos ambientais..."
-                  className="mt-1"
+                <Label htmlFor="ambientais">Ambiental</Label>
+                <Textarea
+                  id="ambientais"
+                  name="ambientais"
+                  value={formData.ambientais}
+                  onChange={handleChange}
+                  rows={3}
+                  placeholder="Usos ambientais"
                 />
               </div>
-            </CardContent>
-          </Card>
+            </div>
 
-          {/* Contraindicações e Informações Adicionais */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-purple-800">
-                Contraindicações e Informações Adicionais
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+            {/* Contraindicações */}
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold text-purple-800">
+                Contraindicações
+              </h2>
+
               <div>
-                <Label>Contraindicações</Label>
-                <TagInput
-                  value={contraindicacaoTags}
-                  onChange={setContraindicacaoTags}
-                  placeholder="Digite as contraindicações..."
-                  className="mt-1"
+                <Label htmlFor="contraindicacao">Contraindicações</Label>
+                <Textarea
+                  id="contraindicacao"
+                  name="contraindicacao"
+                  value={formData.contraindicacao}
+                  onChange={handleChange}
+                  rows={3}
+                  placeholder="Contraindicações principais"
                 />
               </div>
 
               <div>
-                <Label>Contraindicações e Preocupações Adicionais</Label>
-                <RichTextEditor
+                <Label htmlFor="contraindicacoes_preocupacoes">
+                  Contraindicações e Preocupações Adicionais
+                </Label>
+                <Textarea
+                  id="contraindicacoes_preocupacoes"
+                  name="contraindicacoes_preocupacoes"
                   value={formData.contraindicacoes_preocupacoes}
-                  onChange={(value) => setFormData(prev => ({ ...prev, contraindicacoes_preocupacoes: value }))}
-                  placeholder="Informações adicionais sobre contraindicações..."
-                  className="mt-1"
+                  onChange={handleChange}
+                  rows={3}
+                  placeholder="Preocupações adicionais"
                 />
               </div>
+            </div>
+
+            {/* Outros */}
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold text-purple-800">
+                Outras Informações
+              </h2>
 
               <div>
-                <Label>Óleos Substitutos</Label>
-                <RichTextEditor
+                <Label htmlFor="substitutos">Óleos Substitutos</Label>
+                <Textarea
+                  id="substitutos"
+                  name="substitutos"
                   value={formData.substitutos}
-                  onChange={(value) => setFormData(prev => ({ ...prev, substitutos: value }))}
-                  placeholder="Liste óleos que podem substituir este..."
-                  className="mt-1"
+                  onChange={handleChange}
+                  rows={2}
+                  placeholder="Óleos que podem ser usados como substitutos"
                 />
               </div>
 
               <div>
-                <Label>Sugestões de Combinações</Label>
-                <RichTextEditor
+                <Label htmlFor="combinacoes">Sugestões de Combinações</Label>
+                <Textarea
+                  id="combinacoes"
+                  name="combinacoes"
                   value={formData.combinacoes}
-                  onChange={(value) => setFormData(prev => ({ ...prev, combinacoes: value }))}
-                  placeholder="Sugestões de combinações com outros óleos..."
-                  className="mt-1"
+                  onChange={handleChange}
+                  rows={2}
+                  placeholder="Combinações sugeridas com outros óleos"
                 />
               </div>
-            </CardContent>
-          </Card>
 
-          {/* Galeria de Fotos */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-purple-800">
-                Galeria de Fotos
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
               <div>
-                <Label>Adicionar Fotos</Label>
-                <PhotoGalleryInput
-                  value={galleryPhotos}
-                  onChange={setGalleryPhotos}
-                  placeholder="Digite a URL da foto e pressione Enter"
-                  className="mt-1"
+                <Label htmlFor="galeria_fotos">
+                  Galeria de Fotos (URLs separadas por vírgula)
+                </Label>
+                <Textarea
+                  id="galeria_fotos"
+                  name="galeria_fotos"
+                  value={formData.galeria_fotos}
+                  onChange={handleChange}
+                  rows={2}
+                  placeholder="https://exemplo1.com/foto1.jpg, https://exemplo2.com/foto2.jpg"
                 />
               </div>
-            </CardContent>
-          </Card>
+            </div>
 
-          {/* Submit Button */}
-          <div className="flex justify-end pt-4">
-            <Button 
-              type="submit" 
-              disabled={loading} 
-              className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-2"
-            >
-              <Save className="w-4 h-4 mr-2" />
-              {loading ? "Salvando..." : id ? "Atualizar" : "Criar"} Óleo
-            </Button>
-          </div>
-        </form>
-      </motion.div>
+            {/* Actions */}
+            <div className="flex gap-4 justify-end pt-6 border-t">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => navigate('/admin')}
+                disabled={loading}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                disabled={loading}
+                className="bg-purple-600 hover:bg-purple-700"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                {loading ? "Salvando..." : "Salvar"}
+              </Button>
+            </div>
+          </form>
+        </Card>
+      </div>
     </div>
   );
 }
+
