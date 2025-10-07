@@ -39,6 +39,17 @@ const App = () => (
               <Route path="/login" element={<Login />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               
+              {/* Rotas administrativas (sem menu) */}
+              <Route path="/admin/*" element={
+                <ProtectedRoute>
+                  <Routes>
+                    <Route path="/" element={<Admin />} />
+                    <Route path="/oils/new" element={<AdminOilForm />} />
+                    <Route path="/oils/edit/:id" element={<AdminOilForm />} />
+                  </Routes>
+                </ProtectedRoute>
+              } />
+              
               {/* Rotas autenticadas (com menu) */}
               <Route path="/*" element={
                 <ProtectedRoute>
@@ -55,9 +66,6 @@ const App = () => (
                       <Route path="/conteudos" element={<Conteudos />} />
                       <Route path="/favoritos" element={<Favoritos />} />
                       <Route path="/profile" element={<Profile />} />
-                      <Route path="/admin" element={<Admin />} />
-                      <Route path="/admin/oils/new" element={<AdminOilForm />} />
-                      <Route path="/admin/oils/edit/:id" element={<AdminOilForm />} />
                       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                       <Route path="*" element={<NotFound />} />
                     </Routes>

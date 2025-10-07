@@ -85,3 +85,33 @@ export const authApi = {
     }
   },
 };
+
+export const adminApi = {
+  async getUsersStats(token: string) {
+    const response = await fetch(`${API_URL}/users/stats`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Erro ao buscar estatísticas de usuários');
+    }
+
+    return response.json();
+  },
+
+  async getAllUsers(token: string) {
+    const response = await fetch(`${API_URL}/users`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Erro ao buscar usuários');
+    }
+
+    return response.json();
+  },
+};
