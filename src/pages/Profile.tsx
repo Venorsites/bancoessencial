@@ -18,11 +18,12 @@ import {
   LogOut,
   Shield,
   Calendar,
-  Heart
+  Heart,
+  Settings
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
-import { useUser } from "@/contexts/UserContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface UserProfile {
   id: string;
@@ -31,12 +32,13 @@ interface UserProfile {
   joinDate: string;
   totalFavorites: number;
   lastLogin: string;
+  role?: string;
 }
 
 export default function Profile() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user, updateProfile, logout: logoutUser } = useUser();
+  const { user, logout } = useAuth();
   
   console.log('Profile component - user:', user);
   console.log('Profile component - isAuthenticated:', user ? 'true' : 'false');
@@ -64,10 +66,12 @@ export default function Profile() {
       console.log('User found, updating profile');
       setProfile(prev => ({
         ...prev,
-        name: user.name,
+        id: user.id,
+        name: `${user.nome} ${user.sobrenome}`,
         email: user.email,
-        joinDate: user.joinDate,
-        lastLogin: user.lastLogin
+        joinDate: "2024-01-01", // Data padrão
+        lastLogin: new Date().toISOString(),
+        role: user.role
       }));
     }
 
@@ -163,8 +167,8 @@ export default function Profile() {
       
       setProfile(updatedProfile);
       
-      // Atualizar contexto do usuário
-      updateProfile({ name: editForm.name });
+      // Atualizar perfil local
+      // TODO: Implementar atualização via API quando disponível
 
       toast({
         title: "Perfil atualizado!",
@@ -178,7 +182,7 @@ export default function Profile() {
 
   const handleLogout = () => {
     // Usar o contexto para fazer logout
-    logoutUser();
+    logout();
     
     toast({
       title: "Logout realizado",
@@ -507,6 +511,26 @@ export default function Profile() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
+                {/* Botão de Administração - apenas para admins */}
+                {user && user.role?.toUpperCase() === 'ADMIN' && (
+                  <div className="flex items-center justify-between p-4 rounded-2xl bg-purple-50 border border-purple-200">
+                    <div>
+                      <h4 className="font-medium text-foreground">Painel Administrativo</h4>
+                      <p className="text-sm text-muted-foreground">
+                        Acessar área de administração do sistema
+                      </p>
+                    </div>
+                    <Button 
+                      onClick={() => navigate('/admin')}
+                      className="rounded-xl bg-purple-600 hover:bg-purple-700"
+                      size="sm"
+                    >
+                      <Settings className="w-4 h-4 mr-2" />
+                      Administrar
+                    </Button>
+                  </div>
+                )}
+                
                 <div className="flex items-center justify-between p-4 rounded-2xl bg-destructive/5 border border-destructive/20">
                   <div>
                     <h4 className="font-medium text-foreground">Sair da Conta</h4>

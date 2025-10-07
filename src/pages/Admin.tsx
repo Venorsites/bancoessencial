@@ -18,7 +18,7 @@ export default function Admin() {
 
   useEffect(() => {
     // Verificar se é admin
-    if (!user || user.role !== 'ADMIN') {
+    if (!user || user.role?.toUpperCase() !== 'ADMIN') {
       navigate('/');
       return;
     }
@@ -59,7 +59,7 @@ export default function Admin() {
     oil.nome_cientifico.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (!user || user.role !== 'ADMIN') {
+  if (!user || user.role?.toUpperCase() !== 'ADMIN') {
     return null;
   }
 

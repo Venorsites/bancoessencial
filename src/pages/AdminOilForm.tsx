@@ -40,7 +40,7 @@ export default function AdminOilForm() {
   });
 
   useEffect(() => {
-    if (!user || user.role !== 'ADMIN') {
+    if (!user || user.role?.toUpperCase() !== 'ADMIN') {
       navigate('/');
       return;
     }
@@ -87,7 +87,7 @@ export default function AdminOilForm() {
     }
   };
 
-  if (!user || user.role !== 'ADMIN') {
+  if (!user || user.role?.toUpperCase() !== 'ADMIN') {
     return null;
   }
 
