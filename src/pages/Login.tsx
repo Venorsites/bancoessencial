@@ -6,8 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Lock, Mail, Eye, EyeOff } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
-import { useToast } from "@/components/ui/use-toast";
-import { useUser } from "@/contexts/UserContext";
+import { useAuth } from "@/contexts/AuthContext";
 import logo from "@/assets/logov1.svg";
 
 export default function Login() {
@@ -16,49 +15,32 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const { login, user } = useUser();
+  const { login, isAuthenticated } = useAuth();
 
   // Redirecionar se já estiver autenticado
   useEffect(() => {
-    if (user) {
+    if (isAuthenticated) {
       navigate("/");
     }
-  }, [user, navigate]);
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulação de login (remover quando conectar com backend real)
-    setTimeout(() => {
-      if (email && password) {
-        // Usar o contexto do usuário para fazer login
-        login({
-          name: "João Silva",
-          email: email,
-          joinDate: new Date().toISOString(),
-          lastLogin: new Date().toISOString()
-        });
-        
-        toast({
-          title: "Login realizado com sucesso!",
-          description: "Bem-vindo(a) à área de membros.",
-        });
-        navigate("/");
-      } else {
-        toast({
-          title: "Erro no login",
-          description: "Por favor, preencha todos os campos.",
-          variant: "destructive",
-        });
-      }
+    try {
+      await login(email, password);
+      navigate("/");
+    } catch (error) {
+      // O toast de erro já é exibido no AuthContext
+      console.error('Erro no login:', error);
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   // Mostrar loading se já estiver autenticado
-  if (user) {
+  if (isAuthenticated) {
     return (
       <div className="min-h-screen bg-gradient-subtle flex items-center justify-center px-4">
         <div className="text-center">

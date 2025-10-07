@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { UserProvider } from "./contexts/UserContext";
+import { AuthProvider } from "./contexts/AuthContext";
+import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import Index from "./pages/Index";
 import Oleos from "./pages/Oleos";
 import Doencas from "./pages/Doencas";
@@ -28,34 +30,38 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <UserProvider>
-          <Routes>
-            {/* Rotas públicas (sem menu) */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            
-            {/* Rotas autenticadas (com menu) */}
-            <Route path="/*" element={
-              <Layout>
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/oleos" element={<Oleos />} />
-                  <Route path="/doencas" element={<Doencas />} />
-                  <Route path="/doencas/geral" element={<DoencasGeral />} />
-                  <Route path="/doencas/pediatrica" element={<DoencasPediatrica />} />
-                  <Route path="/doencas/gestacao" element={<DoencasGestacao />} />
-                  <Route path="/doencas/menopausa" element={<DoencasMenopausa />} />
-                  <Route path="/quimica" element={<Quimica />} />
-                  <Route path="/conteudos" element={<Conteudos />} />
-                  <Route path="/favoritos" element={<Favoritos />} />
-                  <Route path="/profile" element={<Profile />} />
-                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Layout>
-            } />
-          </Routes>
-        </UserProvider>
+        <AuthProvider>
+          <UserProvider>
+            <Routes>
+              {/* Rotas públicas (sem menu) */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              
+              {/* Rotas autenticadas (com menu) */}
+              <Route path="/*" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Routes>
+                      <Route path="/" element={<Index />} />
+                      <Route path="/oleos" element={<Oleos />} />
+                      <Route path="/doencas" element={<Doencas />} />
+                      <Route path="/doencas/geral" element={<DoencasGeral />} />
+                      <Route path="/doencas/pediatrica" element={<DoencasPediatrica />} />
+                      <Route path="/doencas/gestacao" element={<DoencasGestacao />} />
+                      <Route path="/doencas/menopausa" element={<DoencasMenopausa />} />
+                      <Route path="/quimica" element={<Quimica />} />
+                      <Route path="/conteudos" element={<Conteudos />} />
+                      <Route path="/favoritos" element={<Favoritos />} />
+                      <Route path="/profile" element={<Profile />} />
+                      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </Layout>
+                </ProtectedRoute>
+              } />
+            </Routes>
+          </UserProvider>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

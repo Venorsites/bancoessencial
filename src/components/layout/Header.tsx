@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useUser } from "@/contexts/UserContext";
+import { useAuth } from "@/contexts/AuthContext";
 import logo from "@/assets/logo.svg";
 
 interface HeaderProps {}
@@ -22,7 +22,7 @@ export function Header({}: HeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout } = useUser();
+  const { user, logout } = useAuth();
 
   const navItems = [
     { href: "/oleos", label: "Óleos Essenciais", active: location.pathname === "/oleos" },
@@ -111,7 +111,7 @@ export function Header({}: HeaderProps) {
                         <User className="w-4 h-4 text-purple-700" />
                       </div>
                       <div className="flex flex-col">
-                        <p className="text-sm font-medium">{user.name}</p>
+                        <p className="text-sm font-medium">{user.nome} {user.sobrenome}</p>
                         <p className="text-xs text-muted-foreground">{user.email}</p>
                       </div>
                     </div>
@@ -210,9 +210,10 @@ export function Header({}: HeaderProps) {
                       variant="ghost" 
                       onClick={() => {
                         logout();
+                        setIsMobileMenuOpen(false);
                         navigate("/login");
                       }}
-                      className="rounded-xl text-destructive"
+                      className="w-full justify-start rounded-xl text-destructive"
                     >
                       <LogOut className="w-4 h-4 mr-2" />
                       Sair

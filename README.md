@@ -1,4 +1,18 @@
-# Welcome to your Lovable project
+# Banco Essencial - Frontend
+
+## Prerequisites
+
+Please make sure you have [Node.js](https://nodejs.org/) (version 20.11.0 or higher) and [npm](https://www.npmjs.com/) (version 10.0.0 or higher) installed on your machine.
+
+### Node Version Manager (NVM)
+
+If you're using NVM, you can use the provided `.nvmrc` file:
+
+```bash
+nvm use
+```
+
+This will automatically switch to Node.js version 20.11.0.
 
 ## Project info
 
