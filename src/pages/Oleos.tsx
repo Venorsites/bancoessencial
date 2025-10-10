@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Search, Filter, Heart, ChevronDown, ChevronRight, AlertTriangle, Atom, CheckSquare, Beaker, X, Info } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Search, Filter, Heart, ChevronDown, ChevronRight, AlertTriangle, Atom, CheckSquare, Beaker, X, Info, ExternalLink } from "lucide-react";
 import { oilsApi, Oil } from "@/services/oilsApi";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -144,6 +145,7 @@ const categories = ["Todos", "Floral", "Medicinal", "Respiratório", "Cítrico"]
 const chemicalGroups = ["Todos", "Ésteres", "Monoterpenos", "Óxidos", "Aldeídos"];
 
 export default function Oleos() {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Todos");
   const [selectedChemicalGroup, setSelectedChemicalGroup] = useState("Todos");
@@ -208,12 +210,14 @@ export default function Oleos() {
   const filteredOils = oils.filter((oil) => {
     const matchesSearch =
       oil.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      oil.nome_cientifico.toLowerCase().includes(searchTerm.toLowerCase());
+      oil.nome_cientifico.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (oil.familia_botanica && oil.familia_botanica.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (oil.aroma && oil.aroma.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesCategory =
-      selectedCategory === "Todos" || oil.categoria_aromatica === selectedCategory;
+      selectedCategory === "Todos" || (oil.categoria_aromatica && oil.categoria_aromatica === selectedCategory);
     const matchesChemicalGroup =
       selectedChemicalGroup === "Todos" ||
-      oil.familia_quimica === selectedChemicalGroup;
+      (oil.familia_quimica && oil.familia_quimica === selectedChemicalGroup);
 
     return matchesSearch && matchesCategory && matchesChemicalGroup;
   });
@@ -432,8 +436,8 @@ export default function Oleos() {
                 {/* Image Section */}
                 <div className="relative w-full h-40">
                   <img
-                    src={oil.image}
-                    alt={oil.name}
+                    src={oil.avatar || "https://via.placeholder.com/400x200/8B5CF6/FFFFFF?text=Óleo+Essencial"}
+                    alt={oil.nome}
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -441,7 +445,7 @@ export default function Oleos() {
                 {/* TÍTULO + FAVORITO lado a lado */}
                 <div className="px-6 pt-4 pb-2 flex items-center justify-between">
                   <h3 className="text-xl font-bold text-purple-800 leading-tight">
-                    {oil.name}
+                    {oil.nome}
                   </h3>
                   <Button
                     variant="ghost"
@@ -467,7 +471,7 @@ export default function Oleos() {
                 <div className="px-6 pb-6">
                   <div className="flex items-center justify-between">
                     <p className="text-sm text-gray-500 italic text-left">
-                      {oil.scientificName}
+                      {oil.nome_cientifico}
                     </p>
                     <Button
                       variant="outline"
@@ -521,18 +525,29 @@ export default function Oleos() {
               {/* Modal Header */}
               <div className="relative">
                 <img
-                  src={selectedOil.image}
-                  alt={selectedOil.name}
+                  src={selectedOil.avatar || "https://via.placeholder.com/800x300/8B5CF6/FFFFFF?text=Óleo+Essencial"}
+                  alt={selectedOil.nome}
                   className="w-full h-64 object-cover rounded-t-3xl"
                 />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={closeOilModal}
-                  className="absolute top-4 right-4 bg-white/90 hover:bg-white rounded-full"
-                >
-                  <X className="w-5 h-5" />
-                </Button>
+                <div className="absolute top-4 right-4 flex gap-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => navigate(`/oleos/${selectedOil.id}`)}
+                    className="bg-white/90 hover:bg-white rounded-full"
+                    title="Abrir em página dedicada"
+                  >
+                    <ExternalLink className="w-5 h-5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={closeOilModal}
+                    className="bg-white/90 hover:bg-white rounded-full"
+                  >
+                    <X className="w-5 h-5" />
+                  </Button>
+                </div>
               </div>
 
               {/* Modal Content */}
@@ -540,13 +555,13 @@ export default function Oleos() {
                 {/* Title and Basic Info */}
                 <div className="text-center">
                   <h1 className="text-3xl font-bold text-purple-800 mb-2">
-                    {selectedOil.name}
+                    {selectedOil.nome}
                   </h1>
                   <p className="text-lg text-gray-600 italic">
-                    {selectedOil.scientificName}
+                    {selectedOil.nome_cientifico}
                   </p>
                   <p className="text-sm text-gray-500 mt-1">
-                    {selectedOil.description}
+                    {selectedOil.descricao}
                   </p>
                 </div>
 
@@ -555,33 +570,33 @@ export default function Oleos() {
                   <div className="space-y-3">
                     <div>
                       <h3 className="font-semibold text-purple-800">Família Botânica:</h3>
-                      <p className="text-gray-700">{selectedOil.family}</p>
+                      <p className="text-gray-700">{selectedOil.familia_botanica || "Não informado"}</p>
                     </div>
                     <div>
                       <h3 className="font-semibold text-purple-800">Forma de Extração:</h3>
-                      <p className="text-gray-700">{selectedOil.extractionMethod}</p>
+                      <p className="text-gray-700">{selectedOil.forma_extracao || "Não informado"}</p>
                     </div>
                     <div>
                       <h3 className="font-semibold text-purple-800">Aroma:</h3>
-                      <p className="text-gray-700">{selectedOil.aroma}</p>
+                      <p className="text-gray-700">{selectedOil.aroma || "Não informado"}</p>
                     </div>
                     <div>
                       <h3 className="font-semibold text-purple-800">Parte da Planta:</h3>
-                      <p className="text-gray-700">{selectedOil.plantPart}</p>
+                      <p className="text-gray-700">{selectedOil.parte_planta || "Não informado"}</p>
                     </div>
                   </div>
                   <div className="space-y-3">
                     <div>
                       <h3 className="font-semibold text-purple-800">Composto Químico Principal:</h3>
-                      <p className="text-gray-700">{selectedOil.mainCompound}</p>
+                      <p className="text-gray-700">{selectedOil.composto_quimico || "Não informado"}</p>
                     </div>
                     <div>
                       <h3 className="font-semibold text-purple-800">Família Química:</h3>
-                      <p className="text-gray-700">{selectedOil.mainChemicalFamily}</p>
+                      <p className="text-gray-700">{selectedOil.familia_quimica || "Não informado"}</p>
                     </div>
                     <div>
                       <h3 className="font-semibold text-purple-800">Categoria Aromática:</h3>
-                      <p className="text-gray-700">{selectedOil.aromaticCategory}</p>
+                      <p className="text-gray-700">{selectedOil.categoria_aromatica || "Não informado"}</p>
                     </div>
                   </div>
                 </div>
@@ -590,23 +605,53 @@ export default function Oleos() {
                 <div className="space-y-4">
                   <div>
                     <h3 className="text-xl font-semibold text-purple-800 mb-2">Psicoaroma (Emocional/Psicológica/Mental)</h3>
-                    <p className="text-gray-700 bg-purple-50 p-3 rounded-lg">{selectedOil.psychoaroma}</p>
+                    <div className="text-gray-700 bg-purple-50 p-3 rounded-lg">
+                      {selectedOil.psicoaromas ? (
+                        <div dangerouslySetInnerHTML={{ __html: selectedOil.psicoaromas }} />
+                      ) : (
+                        <p>Não informado</p>
+                      )}
+                    </div>
                   </div>
                   <div>
                     <h3 className="text-xl font-semibold text-purple-800 mb-2">Estética/Pele/Cabelo/Unhas</h3>
-                    <p className="text-gray-700 bg-purple-50 p-3 rounded-lg">{selectedOil.aesthetic}</p>
+                    <div className="text-gray-700 bg-purple-50 p-3 rounded-lg">
+                      {selectedOil.estetica ? (
+                        <div dangerouslySetInnerHTML={{ __html: selectedOil.estetica }} />
+                      ) : (
+                        <p>Não informado</p>
+                      )}
+                    </div>
                   </div>
                   <div>
                     <h3 className="text-xl font-semibold text-purple-800 mb-2">Saúde Física em Geral</h3>
-                    <p className="text-gray-700 bg-purple-50 p-3 rounded-lg">{selectedOil.health}</p>
+                    <div className="text-gray-700 bg-purple-50 p-3 rounded-lg">
+                      {selectedOil.saude_fisica ? (
+                        <div dangerouslySetInnerHTML={{ __html: selectedOil.saude_fisica }} />
+                      ) : (
+                        <p>Não informado</p>
+                      )}
+                    </div>
                   </div>
                   <div>
                     <h3 className="text-xl font-semibold text-purple-800 mb-2">Espiritual/Vibracional</h3>
-                    <p className="text-gray-700 bg-purple-50 p-3 rounded-lg">{selectedOil.spiritual}</p>
+                    <div className="text-gray-700 bg-purple-50 p-3 rounded-lg">
+                      {selectedOil.espirituais ? (
+                        <div dangerouslySetInnerHTML={{ __html: selectedOil.espirituais }} />
+                      ) : (
+                        <p>Não informado</p>
+                      )}
+                    </div>
                   </div>
                   <div>
                     <h3 className="text-xl font-semibold text-purple-800 mb-2">Ambiental</h3>
-                    <p className="text-gray-700 bg-purple-50 p-3 rounded-lg">{selectedOil.environmental}</p>
+                    <div className="text-gray-700 bg-purple-50 p-3 rounded-lg">
+                      {selectedOil.ambientais ? (
+                        <div dangerouslySetInnerHTML={{ __html: selectedOil.ambientais }} />
+                      ) : (
+                        <p>Não informado</p>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -626,7 +671,19 @@ export default function Oleos() {
                     </button>
                     {expandedSections.contraindications && (
                       <div className="p-4 bg-white border-t border-purple-200">
-                        <p className="text-gray-700">{selectedOil.contraindications}</p>
+                        <div className="text-gray-700">
+                          {selectedOil.contraindicacao ? (
+                            <div dangerouslySetInnerHTML={{ __html: selectedOil.contraindicacao }} />
+                          ) : (
+                            <p>Não informado</p>
+                          )}
+                        </div>
+                        {selectedOil.contraindicacoes_preocupacoes && (
+                          <div className="mt-3 pt-3 border-t border-gray-200">
+                            <h4 className="font-semibold text-purple-800 mb-2">Preocupações Adicionais:</h4>
+                            <div dangerouslySetInnerHTML={{ __html: selectedOil.contraindicacoes_preocupacoes }} />
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -645,10 +702,13 @@ export default function Oleos() {
                     </button>
                     {expandedSections.chemistry && (
                       <div className="p-4 bg-white border-t border-purple-200">
-                        <p className="text-gray-700">
-                          <strong>Composto principal:</strong> {selectedOil.mainCompound}<br />
-                          <strong>Família química:</strong> {selectedOil.mainChemicalFamily}
-                        </p>
+                        <div className="text-gray-700">
+                          {selectedOil.composicao_quimica_majoritaria ? (
+                            <div dangerouslySetInnerHTML={{ __html: selectedOil.composicao_quimica_majoritaria }} />
+                          ) : (
+                            <p>Não informado</p>
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -667,14 +727,13 @@ export default function Oleos() {
                     </button>
                     {expandedSections.substitutes && (
                       <div className="p-4 bg-white border-t border-purple-200">
-                        <p className="text-gray-700">
-                          Óleos com propriedades similares baseadas na família química {selectedOil.mainChemicalFamily}:
-                          {selectedOil.mainChemicalFamily === 'Monoterpenóis' && ' Tea Tree, Alecrim, Gerânio'}
-                          {selectedOil.mainChemicalFamily === 'Óxidos' && ' Eucalipto, Alecrim qt. Cineol, Ravensara'}
-                          {selectedOil.mainChemicalFamily === 'Monoterpenos' && ' Limão, Bergamota, Laranja'}
-                          {selectedOil.mainChemicalFamily === 'Aldeídos' && ' Capim-limão, Melissa, Citronela'}
-                          {selectedOil.mainChemicalFamily === 'Ésteres' && ' Lavanda, Bergamota, Petitgrain'}
-                        </p>
+                        <div className="text-gray-700">
+                          {selectedOil.substitutos ? (
+                            <div dangerouslySetInnerHTML={{ __html: selectedOil.substitutos }} />
+                          ) : (
+                            <p>Não informado</p>
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -693,12 +752,13 @@ export default function Oleos() {
                     </button>
                     {expandedSections.combinations && (
                       <div className="p-4 bg-white border-t border-purple-200">
-                        <p className="text-gray-700">
-                          <strong>Para relaxamento:</strong> {selectedOil.name} + Lavanda + Bergamota<br />
-                          <strong>Para foco:</strong> {selectedOil.name} + Alecrim + Limão<br />
-                          <strong>Para imunidade:</strong> {selectedOil.name} + Tea Tree + Eucalipto<br />
-                          <strong>Para pele:</strong> {selectedOil.name} + Gerânio + Lavanda
-                        </p>
+                        <div className="text-gray-700">
+                          {selectedOil.combinacoes ? (
+                            <div dangerouslySetInnerHTML={{ __html: selectedOil.combinacoes }} />
+                          ) : (
+                            <p>Não informado</p>
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>
