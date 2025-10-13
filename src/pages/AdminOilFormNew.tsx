@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { TagInput } from "@/components/ui/tag-input";
+import { ChemicalCompositionTable, ChemicalComponent } from "@/components/ui/chemical-composition-table";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { oilsApi, CreateOilData } from "@/services/oilsApi";
 import { useAuth } from "@/contexts/AuthContext";
@@ -45,7 +46,7 @@ export default function AdminOilForm() {
   // Estados para tags (arrays)
   const [aromaTags, setAromaTags] = useState<string[]>([]);
   const [categoriaTags, setCategoriaTags] = useState<string[]>([]);
-  const [composicaoTags, setComposicaoTags] = useState<string[]>([]);
+  const [chemicalComponents, setChemicalComponents] = useState<ChemicalComponent[]>([]);
   const [psicoaromaTags, setPsicoaromaTags] = useState<string[]>([]);
   const [esteticaTags, setEsteticaTags] = useState<string[]>([]);
   const [saudeTags, setSaudeTags] = useState<string[]>([]);
@@ -72,7 +73,18 @@ export default function AdminOilForm() {
       // Converter strings em arrays para as tags
       setAromaTags(oil.aroma ? oil.aroma.split(',').map(tag => tag.trim()).filter(Boolean) : []);
       setCategoriaTags(oil.categoria_aromatica ? oil.categoria_aromatica.split(',').map(tag => tag.trim()).filter(Boolean) : []);
-      setComposicaoTags(oil.composicao_quimica_majoritaria ? oil.composicao_quimica_majoritaria.split(',').map(tag => tag.trim()).filter(Boolean) : []);
+      // Carregar componentes químicos da composição
+      if (oil.composicao_quimica_majoritaria) {
+        try {
+          const components = JSON.parse(oil.composicao_quimica_majoritaria);
+          setChemicalComponents(Array.isArray(components) ? components : []);
+        } catch {
+          // Se não for JSON válido, tratar como string vazia
+          setChemicalComponents([]);
+        }
+      } else {
+        setChemicalComponents([]);
+      }
       setPsicoaromaTags(oil.psicoaromas ? oil.psicoaromas.split(',').map(tag => tag.trim()).filter(Boolean) : []);
       setEsteticaTags(oil.estetica ? oil.estetica.split(',').map(tag => tag.trim()).filter(Boolean) : []);
       setSaudeTags(oil.saude_fisica ? oil.saude_fisica.split(',').map(tag => tag.trim()).filter(Boolean) : []);
@@ -102,7 +114,7 @@ export default function AdminOilForm() {
         ...formData,
         aroma: aromaTags.join(', '),
         categoria_aromatica: categoriaTags.join(', '),
-        composicao_quimica_majoritaria: composicaoTags.join(', '),
+        composicao_quimica_majoritaria: JSON.stringify(chemicalComponents),
         psicoaromas: psicoaromaTags.join(', '),
         estetica: esteticaTags.join(', '),
         saude_fisica: saudeTags.join(', '),
@@ -267,7 +279,7 @@ export default function AdminOilForm() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="familia_quimica">Família Química</Label>
+                  <Label htmlFor="familia_quimica">Família Química em Maior Proporção</Label>
                   <Input
                     id="familia_quimica"
                     name="familia_quimica"
@@ -291,15 +303,11 @@ export default function AdminOilForm() {
                 </div>
               </div>
 
-              <div>
-                <Label>Composição Química Majoritária</Label>
-                <TagInput
-                  value={composicaoTags}
-                  onChange={setComposicaoTags}
-                  placeholder="Digite os compostos químicos principais..."
-                  className="mt-1"
-                />
-              </div>
+              <ChemicalCompositionTable
+                value={chemicalComponents}
+                onChange={setChemicalComponents}
+                className="mt-4"
+              />
             </CardContent>
           </Card>
 

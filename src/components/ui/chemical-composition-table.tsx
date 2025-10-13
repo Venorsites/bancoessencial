@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,6 +24,11 @@ export function ChemicalCompositionTable({
   className 
 }: ChemicalCompositionTableProps) {
   const [components, setComponents] = useState<ChemicalComponent[]>(value);
+
+  // Sincronizar estado interno com valor externo
+  useEffect(() => {
+    setComponents(value);
+  }, [value]);
 
   const addComponent = () => {
     const newComponent: ChemicalComponent = {
@@ -80,7 +85,7 @@ export function ChemicalCompositionTable({
             {/* Header da tabela */}
             <div className="grid grid-cols-12 gap-4 font-semibold text-sm text-gray-700 border-b pb-2">
               <div className="col-span-4">Componente Químico</div>
-              <div className="col-span-4">Família Química</div>
+              <div className="col-span-4">Família Química em Maior Proporção</div>
               <div className="col-span-3">Concentração</div>
               <div className="col-span-1">Ações</div>
             </div>

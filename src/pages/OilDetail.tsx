@@ -63,6 +63,27 @@ export default function OilDetail() {
     }));
   };
 
+  // Função para destacar links no HTML
+  const highlightLinks = (html: string) => {
+    if (!html) return html;
+    
+    // Primeiro, limpar atributos de estilo inline desnecessários
+    let cleanHtml = html
+      .replace(/style="[^"]*"/gi, '') // Remove atributos style
+      .replace(/class="[^"]*"/gi, '') // Remove atributos class
+      .replace(/data-[^=]*="[^"]*"/gi, '') // Remove atributos data-*
+      .replace(/<!--[\s\S]*?-->/g, '') // Remove comentários HTML
+      .replace(/\s+/g, ' ') // Normaliza espaços em branco
+      .trim();
+    
+    // Regex para detectar URLs
+    const urlRegex = /(https?:\/\/[^\s<>"{}|\\^`[\]]+)/gi;
+    
+    return cleanHtml.replace(urlRegex, (url) => {
+      return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 underline font-medium transition-colors duration-200">${url}</a>`;
+    });
+  };
+
   const openImageModal = (imageUrl: string) => {
     setSelectedImage(imageUrl);
   };
@@ -196,9 +217,13 @@ export default function OilDetail() {
               <p className="text-lg text-gray-600 italic">
                 {oil.nome_cientifico}
               </p>
-              <p className="text-sm text-gray-500 mt-1">
-                {oil.descricao}
-              </p>
+              <div className="text-sm text-gray-500 mt-1">
+                {oil.descricao ? (
+                  <div dangerouslySetInnerHTML={{ __html: highlightLinks(oil.descricao) }} />
+                ) : (
+                  <p>Não informado</p>
+                )}
+              </div>
               </div>
 
             {/* Informações Básicas */}
@@ -251,7 +276,7 @@ export default function OilDetail() {
                             oil.composto_quimico.split(',').map((tag, index) => (
                               <span
                                 key={index}
-                                className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800"
+                                className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800"
                               >
                                 {tag.trim()}
                               </span>
@@ -262,7 +287,7 @@ export default function OilDetail() {
                         </div>
                       </div>
                    <div>
-                     <h3 className="font-semibold text-purple-800">Família Química:</h3>
+                     <h3 className="font-semibold text-purple-800">Família Química em Maior Proporção:</h3>
                      <div className="mt-1">
                        {oil.familia_quimica ? (
                          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">
@@ -501,7 +526,7 @@ export default function OilDetail() {
                   <div className="p-4 bg-white border-t border-purple-200">
                       {oil.contraindicacoes_preocupacoes && (
                       <div className="text-gray-700">
-                        <div dangerouslySetInnerHTML={{ __html: oil.contraindicacoes_preocupacoes }} />
+                        <div dangerouslySetInnerHTML={{ __html: highlightLinks(oil.contraindicacoes_preocupacoes) }} />
                         </div>
                       )}
                   </div>
@@ -581,7 +606,7 @@ export default function OilDetail() {
                   <div className="p-4 bg-white border-t border-purple-200">
                     <div className="text-gray-700">
                       {oil.substitutos ? (
-                        <div dangerouslySetInnerHTML={{ __html: oil.substitutos }} />
+                        <div dangerouslySetInnerHTML={{ __html: highlightLinks(oil.substitutos) }} />
                       ) : (
                         <p>Não informado</p>
                       )}
@@ -606,7 +631,7 @@ export default function OilDetail() {
                   <div className="p-4 bg-white border-t border-purple-200">
                     <div className="text-gray-700">
                       {oil.combinacoes ? (
-                        <div dangerouslySetInnerHTML={{ __html: oil.combinacoes }} />
+                        <div dangerouslySetInnerHTML={{ __html: highlightLinks(oil.combinacoes) }} />
                       ) : (
                         <p>Não informado</p>
                       )}
@@ -629,18 +654,18 @@ export default function OilDetail() {
             className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
             onClick={closeImageModal}
           >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="relative max-w-4xl max-h-[90vh] w-full"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <img
-                src={selectedImage}
-                alt="Imagem ampliada"
-                className="w-full h-full object-contain rounded-lg"
-              />
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className="relative max-w-4xl max-h-[90vh] w-full flex items-center justify-center"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <img
+                  src={selectedImage}
+                  alt="Imagem ampliada"
+                  className="max-w-full max-h-[85vh] object-contain rounded-lg"
+                />
               <Button
                 variant="ghost"
                 size="icon"

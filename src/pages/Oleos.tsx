@@ -216,6 +216,27 @@ export default function Oleos() {
     }));
   };
 
+  // Função para destacar links no HTML
+  const highlightLinks = (html: string) => {
+    if (!html) return html;
+    
+    // Primeiro, limpar atributos de estilo inline desnecessários
+    let cleanHtml = html
+      .replace(/style="[^"]*"/gi, '') // Remove atributos style
+      .replace(/class="[^"]*"/gi, '') // Remove atributos class
+      .replace(/data-[^=]*="[^"]*"/gi, '') // Remove atributos data-*
+      .replace(/<!--[\s\S]*?-->/g, '') // Remove comentários HTML
+      .replace(/\s+/g, ' ') // Normaliza espaços em branco
+      .trim();
+    
+    // Regex para detectar URLs
+    const urlRegex = /(https?:\/\/[^\s<>"{}|\\^`[\]]+)/gi;
+    
+    return cleanHtml.replace(urlRegex, (url) => {
+      return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 underline font-medium transition-colors duration-200">${url}</a>`;
+    });
+  };
+
   const filteredOils = oils.filter((oil) => {
     const matchesSearch =
       oil.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -578,9 +599,13 @@ export default function Oleos() {
                   <p className="text-lg text-gray-600 italic">
                     {selectedOil.nome_cientifico}
                   </p>
-                  <p className="text-sm text-gray-500 mt-1">
-                    {selectedOil.descricao}
-                  </p>
+                  <div className="text-sm text-gray-500 mt-1">
+                    {selectedOil.descricao ? (
+                      <div dangerouslySetInnerHTML={{ __html: highlightLinks(selectedOil.descricao) }} />
+                    ) : (
+                      <p>Não informado</p>
+                    )}
+                  </div>
                 </div>
 
                 {/* Informações Básicas */}
@@ -633,7 +658,7 @@ export default function Oleos() {
                             selectedOil.composto_quimico.split(',').map((tag, index) => (
                               <span
                                 key={index}
-                                className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800"
+                                className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800"
                               >
                                 {tag.trim()}
                               </span>
@@ -644,7 +669,7 @@ export default function Oleos() {
                         </div>
                       </div>
                        <div>
-                         <h3 className="font-semibold text-purple-800">Família Química:</h3>
+                         <h3 className="font-semibold text-purple-800">Família Química em Maior Proporção:</h3>
                          <div className="mt-1">
                            {selectedOil.familia_quimica ? (
                              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">
@@ -883,7 +908,7 @@ export default function Oleos() {
                       <div className="p-4 bg-white border-t border-purple-200">
                         {selectedOil.contraindicacoes_preocupacoes && (
                           <div className="text-gray-700">
-                            <div dangerouslySetInnerHTML={{ __html: selectedOil.contraindicacoes_preocupacoes }} />
+                            <div dangerouslySetInnerHTML={{ __html: highlightLinks(selectedOil.contraindicacoes_preocupacoes) }} />
                           </div>
                         )}
                       </div>
@@ -963,7 +988,7 @@ export default function Oleos() {
                       <div className="p-4 bg-white border-t border-purple-200">
                         <div className="text-gray-700">
                           {selectedOil.substitutos ? (
-                            <div dangerouslySetInnerHTML={{ __html: selectedOil.substitutos }} />
+                            <div dangerouslySetInnerHTML={{ __html: highlightLinks(selectedOil.substitutos) }} />
                           ) : (
                             <p>Não informado</p>
                           )}
@@ -988,7 +1013,7 @@ export default function Oleos() {
                       <div className="p-4 bg-white border-t border-purple-200">
                         <div className="text-gray-700">
                           {selectedOil.combinacoes ? (
-                            <div dangerouslySetInnerHTML={{ __html: selectedOil.combinacoes }} />
+                            <div dangerouslySetInnerHTML={{ __html: highlightLinks(selectedOil.combinacoes) }} />
                           ) : (
                             <p>Não informado</p>
                           )}
@@ -1016,13 +1041,13 @@ export default function Oleos() {
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
-                className="relative max-w-4xl max-h-[90vh] w-full"
+                className="relative max-w-4xl max-h-[90vh] w-full flex items-center justify-center"
                 onClick={(e) => e.stopPropagation()}
               >
                 <img
                   src={selectedImage}
                   alt="Imagem ampliada"
-                  className="w-full h-full object-contain rounded-lg"
+                  className="max-w-full max-h-[85vh] object-contain rounded-lg"
                 />
                 <Button
                   variant="ghost"

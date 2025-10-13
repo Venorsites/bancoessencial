@@ -287,7 +287,7 @@ export default function AdminOilForm() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="familia_quimica">Família Química</Label>
+                  <Label htmlFor="familia_quimica">Família Química em Maior Proporção</Label>
                   <Input
                     id="familia_quimica"
                     name="familia_quimica"
