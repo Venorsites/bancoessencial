@@ -164,6 +164,15 @@ export function AdminOils() {
                     <Button
                       variant="outline"
                       size="sm"
+                      onClick={() => navigate(`/oleos/${oil.id}`)}
+                      className="flex-1 text-blue-600 border-blue-200 hover:bg-blue-50"
+                    >
+                      <Eye className="w-4 h-4 mr-1" />
+                      Visualizar
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
                       onClick={() => navigate(`/admin/oils/edit/${oil.id}`)}
                       className="flex-1 text-purple-600 border-purple-200 hover:bg-purple-50"
                     >

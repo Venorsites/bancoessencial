@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   ArrowLeft, 
   Heart, 
@@ -10,7 +10,8 @@ import {
   CheckSquare, 
   Beaker,
   ChevronRight,
-  ChevronDown
+  ChevronDown,
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -23,6 +24,7 @@ export default function OilDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [expandedSections, setExpandedSections] = useState({
     contraindications: false,
     chemistry: false,
@@ -59,6 +61,14 @@ export default function OilDetail() {
       ...prev,
       [section]: !prev[section as keyof typeof prev]
     }));
+  };
+
+  const openImageModal = (imageUrl: string) => {
+    setSelectedImage(imageUrl);
+  };
+
+  const closeImageModal = () => {
+    setSelectedImage(null);
   };
 
   const shareOil = async () => {
@@ -177,252 +187,472 @@ export default function OilDetail() {
           </div>
 
           {/* Content */}
-          <div className="p-6 sm:p-8 space-y-8">
-            {/* Description */}
-            {oil.descricao && (
-              <div>
-                <h2 className="text-2xl font-bold text-purple-800 mb-4">Descrição</h2>
-                <div 
-                  className="text-gray-700 leading-relaxed"
-                  dangerouslySetInnerHTML={{ __html: oil.descricao }}
-                />
+          <div className="p-6 space-y-6">
+            {/* Title and Basic Info */}
+            <div className="text-left">
+              <h1 className="text-3xl font-bold text-purple-800 mb-2">
+                {oil.nome}
+              </h1>
+              <p className="text-lg text-gray-600 italic">
+                {oil.nome_cientifico}
+              </p>
+              <p className="text-sm text-gray-500 mt-1">
+                {oil.descricao}
+              </p>
+              </div>
+
+            {/* Informações Básicas */}
+                <div className="space-y-4">
+              <h2 className="text-xl font-bold text-purple-800 border-b-2 border-purple-200 pb-2">Informações Básicas</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 <div className="space-y-3">
+                   <div>
+                     <h3 className="font-semibold text-purple-800">Família Botânica:</h3>
+                     <div className="mt-1">
+                       {oil.familia_botanica ? (
+                         <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                           {oil.familia_botanica}
+                         </span>
+                       ) : (
+                         <span className="text-gray-500 text-sm">Não informado</span>
+                       )}
+                     </div>
+                   </div>
+                   <div>
+                     <h3 className="font-semibold text-purple-800">Forma de Extração:</h3>
+                     <div className="mt-1">
+                       {oil.forma_extracao ? (
+                         <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                           {oil.forma_extracao}
+                         </span>
+                       ) : (
+                         <span className="text-gray-500 text-sm">Não informado</span>
+                       )}
+                     </div>
+                   </div>
+                   <div>
+                     <h3 className="font-semibold text-purple-800">Parte da Planta:</h3>
+                     <div className="mt-1">
+                       {oil.parte_planta ? (
+                         <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-800">
+                           {oil.parte_planta}
+                         </span>
+                       ) : (
+                         <span className="text-gray-500 text-sm">Não informado</span>
+                       )}
+                     </div>
+                   </div>
+                 </div>
+                <div className="space-y-3">
+                      <div>
+                        <h3 className="font-semibold text-purple-800">Composto Químico Principal:</h3>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {oil.composto_quimico ? (
+                            oil.composto_quimico.split(',').map((tag, index) => (
+                              <span
+                                key={index}
+                                className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800"
+                              >
+                                {tag.trim()}
+                              </span>
+                            ))
+                          ) : (
+                            <span className="text-gray-500">Não informado</span>
+                          )}
+                        </div>
+                      </div>
+                   <div>
+                     <h3 className="font-semibold text-purple-800">Família Química:</h3>
+                     <div className="mt-1">
+                       {oil.familia_quimica ? (
+                         <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">
+                           {oil.familia_quimica}
+                         </span>
+                       ) : (
+                         <span className="text-gray-500 text-sm">Não informado</span>
+                       )}
+                     </div>
+                   </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Características */}
+            <div className="space-y-4">
+              <h2 className="text-xl font-bold text-purple-800 border-b-2 border-purple-200 pb-2">Características</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 <div className="space-y-3">
+                   <div>
+                     <h3 className="font-semibold text-purple-800">Aroma:</h3>
+                     <div className="flex flex-wrap gap-1 mt-1">
+                       {oil.aroma ? (
+                         oil.aroma.split(',').map((tag, index) => (
+                           <span
+                             key={index}
+                             className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-pink-100 text-pink-800"
+                           >
+                             {tag.trim()}
+                           </span>
+                         ))
+                       ) : (
+                         <span className="text-gray-500 text-sm">Não informado</span>
+                       )}
+                     </div>
+                   </div>
+                 </div>
+                 <div className="space-y-3">
+                   <div>
+                     <h3 className="font-semibold text-purple-800">Categoria Aromática:</h3>
+                     <div className="flex flex-wrap gap-1 mt-1">
+                       {oil.categoria_aromatica ? (
+                         oil.categoria_aromatica.split(',').map((tag, index) => (
+                           <span
+                             key={index}
+                             className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-cyan-100 text-cyan-800"
+                           >
+                             {tag.trim()}
+                           </span>
+                         ))
+                       ) : (
+                         <span className="text-gray-500 text-sm">Não informado</span>
+                       )}
+                     </div>
+                   </div>
+                 </div>
+              </div>
+            </div>
+
+            {/* Benefícios e Propriedades */}
+            <div className="space-y-4">
+              <h2 className="text-xl font-bold text-purple-800 border-b-2 border-purple-200 pb-2">Benefícios e Propriedades</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 <div className="space-y-3">
+                   <div>
+                     <h3 className="font-semibold text-purple-800">Psicoaromas (Emocional/Psicológica/Mental):</h3>
+                     <div className="flex flex-wrap gap-1 mt-1">
+                       {oil.psicoaromas ? (
+                         oil.psicoaromas.split(',').map((tag, index) => (
+                           <span
+                             key={index}
+                             className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800"
+                           >
+                             {tag.trim()}
+                           </span>
+                         ))
+                       ) : (
+                         <span className="text-gray-500 text-sm">Não informado</span>
+                       )}
+                     </div>
+                   </div>
+                   <div>
+                     <h3 className="font-semibold text-purple-800">Estéticas (Pele/Cabelo/Unhas):</h3>
+                     <div className="flex flex-wrap gap-1 mt-1">
+                       {oil.estetica ? (
+                         oil.estetica.split(',').map((tag, index) => (
+                           <span
+                             key={index}
+                             className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-rose-100 text-rose-800"
+                           >
+                             {tag.trim()}
+                           </span>
+                         ))
+                       ) : (
+                         <span className="text-gray-500 text-sm">Não informado</span>
+                       )}
+                     </div>
+                   </div>
+                   <div>
+                     <h3 className="font-semibold text-purple-800">Saúde Física:</h3>
+                     <div className="flex flex-wrap gap-1 mt-1">
+                       {oil.saude_fisica ? (
+                         oil.saude_fisica.split(',').map((tag, index) => (
+                           <span
+                             key={index}
+                             className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-emerald-100 text-emerald-800"
+                           >
+                             {tag.trim()}
+                           </span>
+                         ))
+                       ) : (
+                         <span className="text-gray-500 text-sm">Não informado</span>
+                       )}
+                     </div>
+                   </div>
+                 </div>
+                 <div className="space-y-3">
+                   <div>
+                     <h3 className="font-semibold text-purple-800">Espirituais/Vibracionais:</h3>
+                     <div className="flex flex-wrap gap-1 mt-1">
+                       {oil.espirituais ? (
+                         oil.espirituais.split(',').map((tag, index) => (
+                           <span
+                             key={index}
+                             className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-violet-100 text-violet-800"
+                           >
+                             {tag.trim()}
+                           </span>
+                         ))
+                       ) : (
+                         <span className="text-gray-500 text-sm">Não informado</span>
+                       )}
+                     </div>
+                   </div>
+                   <div>
+                     <h3 className="font-semibold text-purple-800">Ambientais:</h3>
+                     <div className="flex flex-wrap gap-1 mt-1">
+                       {oil.ambientais ? (
+                         oil.ambientais.split(',').map((tag, index) => (
+                           <span
+                             key={index}
+                             className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-teal-100 text-teal-800"
+                           >
+                             {tag.trim()}
+                           </span>
+                         ))
+                       ) : (
+                         <span className="text-gray-500 text-sm">Não informado</span>
+                       )}
+                     </div>
+                   </div>
+                 </div>
+              </div>
+            </div>
+
+            {/* Propriedades Adicionais */}
+            <div className="space-y-4">
+              <h2 className="text-xl font-bold text-purple-800 border-b-2 border-purple-200 pb-2">Propriedades Adicionais</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 <div className="space-y-3">
+                   <div>
+                     <h3 className="font-semibold text-purple-800">Contraindicações:</h3>
+                     <div className="flex flex-wrap gap-1 mt-1">
+                       {oil.contraindicacao ? (
+                         oil.contraindicacao.split(',').map((tag, index) => (
+                           <span
+                             key={index}
+                             className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800"
+                           >
+                             {tag.trim()}
+                           </span>
+                         ))
+                       ) : (
+                         <span className="text-gray-500 text-sm">Não informado</span>
+                       )}
+                     </div>
+                   </div>
+                 </div>
+              </div>
+            </div>
+
+            {/* Galeria de Fotos */}
+            {oil.galeria_fotos && (
+              <div className="space-y-4">
+                <h2 className="text-xl font-bold text-purple-800 border-b-2 border-purple-200 pb-2">Galeria de Fotos</h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {oil.galeria_fotos.split(',').map((photoUrl, index) => {
+                    const trimmedUrl = photoUrl.trim();
+                    if (!trimmedUrl) return null;
+                    
+                    return (
+                      <div key={index} className="relative group">
+                        <img
+                          src={trimmedUrl}
+                          alt={`Foto ${index + 1} do ${oil.nome}`}
+                          className="w-full h-32 object-cover rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                          }}
+                        />
+                        <div 
+                          className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 rounded-lg transition-all duration-300 flex items-center justify-center cursor-pointer"
+                          onClick={() => openImageModal(trimmedUrl)}
+                        >
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <div className="bg-white rounded-full p-2 shadow-lg">
+                              <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                              </svg>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )}
 
-            {/* Basic Information Grid */}
-            <div>
-              <h2 className="text-2xl font-bold text-purple-800 mb-6">Informações Básicas</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="font-semibold text-purple-800 mb-2">Família Botânica:</h3>
-                    <p className="text-gray-700">{oil.familia_botanica || "Não informado"}</p>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-purple-800 mb-2">Forma de Extração:</h3>
-                    <p className="text-gray-700">{oil.forma_extracao || "Não informado"}</p>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-purple-800 mb-2">Aroma:</h3>
-                    <p className="text-gray-700">{oil.aroma || "Não informado"}</p>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-purple-800 mb-2">Parte da Planta:</h3>
-                    <p className="text-gray-700">{oil.parte_planta || "Não informado"}</p>
-                  </div>
-                </div>
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="font-semibold text-purple-800 mb-2">Composto Químico Principal:</h3>
-                    <p className="text-gray-700">{oil.composto_quimico || "Não informado"}</p>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-purple-800 mb-2">Família Química:</h3>
-                    <p className="text-gray-700">{oil.familia_quimica || "Não informado"}</p>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-purple-800 mb-2">Categoria Aromática:</h3>
-                    <p className="text-gray-700">{oil.categoria_aromatica || "Não informado"}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Detailed Properties */}
-            <div className="space-y-6">
-              <h2 className="text-2xl font-bold text-purple-800">Propriedades Detalhadas</h2>
-              
-              {oil.psicoaromas && (
-                <Card>
-                  <CardContent className="p-6">
-                    <h3 className="text-xl font-semibold text-purple-800 mb-3">Psicoaroma (Emocional/Psicológica/Mental)</h3>
-                    <div 
-                      className="text-gray-700 leading-relaxed"
-                      dangerouslySetInnerHTML={{ __html: oil.psicoaromas }}
-                    />
-                  </CardContent>
-                </Card>
-              )}
-
-              {oil.estetica && (
-                <Card>
-                  <CardContent className="p-6">
-                    <h3 className="text-xl font-semibold text-purple-800 mb-3">Estética/Pele/Cabelo/Unhas</h3>
-                    <div 
-                      className="text-gray-700 leading-relaxed"
-                      dangerouslySetInnerHTML={{ __html: oil.estetica }}
-                    />
-                  </CardContent>
-                </Card>
-              )}
-
-              {oil.saude_fisica && (
-                <Card>
-                  <CardContent className="p-6">
-                    <h3 className="text-xl font-semibold text-purple-800 mb-3">Saúde Física em Geral</h3>
-                    <div 
-                      className="text-gray-700 leading-relaxed"
-                      dangerouslySetInnerHTML={{ __html: oil.saude_fisica }}
-                    />
-                  </CardContent>
-                </Card>
-              )}
-
-              {oil.espirituais && (
-                <Card>
-                  <CardContent className="p-6">
-                    <h3 className="text-xl font-semibold text-purple-800 mb-3">Espiritual/Vibracional</h3>
-                    <div 
-                      className="text-gray-700 leading-relaxed"
-                      dangerouslySetInnerHTML={{ __html: oil.espirituais }}
-                    />
-                  </CardContent>
-                </Card>
-              )}
-
-              {oil.ambientais && (
-                <Card>
-                  <CardContent className="p-6">
-                    <h3 className="text-xl font-semibold text-purple-800 mb-3">Ambiental</h3>
-                    <div 
-                      className="text-gray-700 leading-relaxed"
-                      dangerouslySetInnerHTML={{ __html: oil.ambientais }}
-                    />
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-
             {/* Expandable Sections */}
-            <div className="space-y-4">
-              <h2 className="text-2xl font-bold text-purple-800">Informações Adicionais</h2>
-              
+            <div className="space-y-3">
               {/* Contraindicações */}
-              {(oil.contraindicacao || oil.contraindicacoes_preocupacoes) && (
-                <Card className="border border-red-200">
+              <div className="border border-purple-200 rounded-xl overflow-hidden">
                   <button
                     onClick={() => toggleSection('contraindications')}
-                    className="w-full p-6 flex items-center justify-between hover:bg-red-50 transition-colors"
+                  className="w-full p-4 flex items-center justify-between bg-purple-50 hover:bg-purple-100 transition-colors"
                   >
                     <div className="flex items-center gap-3">
                       <AlertTriangle className="w-5 h-5 text-red-500" />
                       <span className="font-semibold text-purple-800">Contraindicações e precauções</span>
                     </div>
-                    {expandedSections.contraindications ? (
-                      <ChevronDown className="w-5 h-5 text-purple-600" />
-                    ) : (
-                      <ChevronRight className="w-5 h-5 text-purple-600" />
-                    )}
+                  <ChevronRight className={`w-5 h-5 text-purple-600 transition-transform ${expandedSections.contraindications ? 'rotate-90' : ''}`} />
                   </button>
                   {expandedSections.contraindications && (
-                    <CardContent className="p-6 pt-0">
-                      {oil.contraindicacao && (
-                        <div 
-                          className="text-gray-700 mb-4"
-                          dangerouslySetInnerHTML={{ __html: oil.contraindicacao }}
-                        />
-                      )}
+                  <div className="p-4 bg-white border-t border-purple-200">
                       {oil.contraindicacoes_preocupacoes && (
-                        <div>
-                          <h4 className="font-semibold text-purple-800 mb-2">Preocupações Adicionais:</h4>
-                          <div 
-                            className="text-gray-700"
-                            dangerouslySetInnerHTML={{ __html: oil.contraindicacoes_preocupacoes }}
-                          />
+                      <div className="text-gray-700">
+                        <div dangerouslySetInnerHTML={{ __html: oil.contraindicacoes_preocupacoes }} />
                         </div>
                       )}
-                    </CardContent>
+                  </div>
                   )}
-                </Card>
-              )}
+              </div>
 
               {/* Composição Química */}
-              {oil.composicao_quimica_majoritaria && (
-                <Card>
+              <div className="border border-purple-200 rounded-xl overflow-hidden">
                   <button
                     onClick={() => toggleSection('chemistry')}
-                    className="w-full p-6 flex items-center justify-between hover:bg-purple-50 transition-colors"
+                  className="w-full p-4 flex items-center justify-between bg-purple-50 hover:bg-purple-100 transition-colors"
                   >
                     <div className="flex items-center gap-3">
                       <Atom className="w-5 h-5 text-purple-500" />
-                      <span className="font-semibold text-purple-800">Composição química majoritária</span>
+                    <span className="font-semibold text-purple-800">Composição química majoritária (aproximada)</span>
                     </div>
-                    {expandedSections.chemistry ? (
-                      <ChevronDown className="w-5 h-5 text-purple-600" />
-                    ) : (
-                      <ChevronRight className="w-5 h-5 text-purple-600" />
-                    )}
+                  <ChevronRight className={`w-5 h-5 text-purple-600 transition-transform ${expandedSections.chemistry ? 'rotate-90' : ''}`} />
                   </button>
                   {expandedSections.chemistry && (
-                    <CardContent className="p-6 pt-0">
-                      <div 
-                        className="text-gray-700"
-                        dangerouslySetInnerHTML={{ __html: oil.composicao_quimica_majoritaria }}
-                      />
-                    </CardContent>
-                  )}
-                </Card>
-              )}
+                  <div className="p-4 bg-white border-t border-purple-200">
+                    <div className="text-gray-700">
+                      {oil.composicao_quimica_majoritaria ? (
+                        (() => {
+                          try {
+                            const components = JSON.parse(oil.composicao_quimica_majoritaria);
+                            if (Array.isArray(components) && components.length > 0) {
+                              return (
+                                <div className="overflow-x-auto">
+                                  <table className="w-full border-collapse border border-purple-200">
+                                    <thead>
+                                      <tr className="bg-purple-50">
+                                        <th className="border border-purple-200 px-3 py-2 text-left font-semibold text-purple-800">Componente Químico</th>
+                                        <th className="border border-purple-200 px-3 py-2 text-left font-semibold text-purple-800">Família Química</th>
+                                        <th className="border border-purple-200 px-3 py-2 text-left font-semibold text-purple-800">Concentração</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {components.map((component: any, index: number) => (
+                                        <tr key={index} className="hover:bg-purple-25">
+                                          <td className="border border-purple-200 px-3 py-2">{component.componente || '-'}</td>
+                                          <td className="border border-purple-200 px-3 py-2">{component.familia || '-'}</td>
+                                          <td className="border border-purple-200 px-3 py-2">{component.concentracao || '-'}</td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              );
+                            } else {
+                              return <p>Não informado</p>;
+                            }
+                          } catch {
+                            return <p>Não informado</p>;
+                          }
+                        })()
+                      ) : (
+                        <p>Não informado</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
 
               {/* Óleos Substitutos */}
-              {oil.substitutos && (
-                <Card>
+              <div className="border border-purple-200 rounded-xl overflow-hidden">
                   <button
                     onClick={() => toggleSection('substitutes')}
-                    className="w-full p-6 flex items-center justify-between hover:bg-purple-50 transition-colors"
+                  className="w-full p-4 flex items-center justify-between bg-purple-50 hover:bg-purple-100 transition-colors"
                   >
                     <div className="flex items-center gap-3">
                       <CheckSquare className="w-5 h-5 text-purple-500" />
-                      <span className="font-semibold text-purple-800">Óleos essenciais substitutos</span>
+                    <span className="font-semibold text-purple-800">Possíveis óleos essenciais substitutos (considerando a química)</span>
                     </div>
-                    {expandedSections.substitutes ? (
-                      <ChevronDown className="w-5 h-5 text-purple-600" />
-                    ) : (
-                      <ChevronRight className="w-5 h-5 text-purple-600" />
-                    )}
+                  <ChevronRight className={`w-5 h-5 text-purple-600 transition-transform ${expandedSections.substitutes ? 'rotate-90' : ''}`} />
                   </button>
                   {expandedSections.substitutes && (
-                    <CardContent className="p-6 pt-0">
-                      <div 
-                        className="text-gray-700"
-                        dangerouslySetInnerHTML={{ __html: oil.substitutos }}
-                      />
-                    </CardContent>
-                  )}
-                </Card>
-              )}
+                  <div className="p-4 bg-white border-t border-purple-200">
+                    <div className="text-gray-700">
+                      {oil.substitutos ? (
+                        <div dangerouslySetInnerHTML={{ __html: oil.substitutos }} />
+                      ) : (
+                        <p>Não informado</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
 
               {/* Sugestões de Combinações */}
-              {oil.combinacoes && (
-                <Card>
+              <div className="border border-purple-200 rounded-xl overflow-hidden">
                   <button
                     onClick={() => toggleSection('combinations')}
-                    className="w-full p-6 flex items-center justify-between hover:bg-purple-50 transition-colors"
+                  className="w-full p-4 flex items-center justify-between bg-purple-50 hover:bg-purple-100 transition-colors"
                   >
                     <div className="flex items-center gap-3">
                       <Beaker className="w-5 h-5 text-purple-500" />
                       <span className="font-semibold text-purple-800">Sugestões de combinações</span>
                     </div>
-                    {expandedSections.combinations ? (
-                      <ChevronDown className="w-5 h-5 text-purple-600" />
-                    ) : (
-                      <ChevronRight className="w-5 h-5 text-purple-600" />
-                    )}
+                  <ChevronRight className={`w-5 h-5 text-purple-600 transition-transform ${expandedSections.combinations ? 'rotate-90' : ''}`} />
                   </button>
                   {expandedSections.combinations && (
-                    <CardContent className="p-6 pt-0">
-                      <div 
-                        className="text-gray-700"
-                        dangerouslySetInnerHTML={{ __html: oil.combinacoes }}
-                      />
-                    </CardContent>
-                  )}
-                </Card>
-              )}
+                  <div className="p-4 bg-white border-t border-purple-200">
+                    <div className="text-gray-700">
+                      {oil.combinacoes ? (
+                        <div dangerouslySetInnerHTML={{ __html: oil.combinacoes }} />
+                      ) : (
+                        <p>Não informado</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </motion.div>
       </div>
+
+      {/* Image Modal */}
+      <AnimatePresence>
+        {selectedImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+            onClick={closeImageModal}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative max-w-4xl max-h-[90vh] w-full"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img
+                src={selectedImage}
+                alt="Imagem ampliada"
+                className="w-full h-full object-contain rounded-lg"
+              />
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={closeImageModal}
+                className="absolute top-4 right-4 bg-white/90 hover:bg-white rounded-full"
+              >
+                <X className="w-5 h-5" />
+              </Button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

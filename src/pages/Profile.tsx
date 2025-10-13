@@ -8,13 +8,10 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { 
   User, 
-  Lock, 
+  Lock,
   Mail, 
   Eye, 
   EyeOff, 
-  Edit3, 
-  Save, 
-  X, 
   LogOut,
   Shield,
   Calendar,
@@ -24,6 +21,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { authApi } from "@/services/authApi";
 
 interface UserProfile {
   id: string;
@@ -38,7 +36,7 @@ interface UserProfile {
 export default function Profile() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user, logout } = useAuth();
+  const { user, logout, token } = useAuth();
   
   console.log('Profile component - user:', user);
   console.log('Profile component - isAuthenticated:', user ? 'true' : 'false');
@@ -90,9 +88,9 @@ export default function Profile() {
     }
   }, [user]);
 
-  const [isEditing, setIsEditing] = useState(false);
-  const [editForm, setEditForm] = useState({
-    name: profile.name,
+  // Estados para troca de senha
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({
     currentPassword: "",
     newPassword: "",
     confirmPassword: ""
@@ -104,51 +102,50 @@ export default function Profile() {
   });
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleEdit = () => {
-    setEditForm({
-      name: profile.name,
+  // Funções para troca de senha
+  const handleChangePassword = () => {
+    setPasswordForm({
       currentPassword: "",
       newPassword: "",
       confirmPassword: ""
     });
-    setIsEditing(true);
+    setIsChangingPassword(true);
   };
 
-  const handleCancel = () => {
-    setIsEditing(false);
-    setEditForm({
-      name: profile.name,
+  const handleCancelPasswordChange = () => {
+    setIsChangingPassword(false);
+    setPasswordForm({
       currentPassword: "",
       newPassword: "",
       confirmPassword: ""
     });
   };
 
-  const handleSave = async () => {
+  const handleSavePassword = async () => {
     setIsLoading(true);
 
     // Validações
-    if (!editForm.name.trim()) {
+    if (!passwordForm.currentPassword.trim()) {
       toast({
         title: "Erro",
-        description: "O nome não pode estar vazio.",
+        description: "A senha atual é obrigatória.",
         variant: "destructive",
       });
       setIsLoading(false);
       return;
     }
 
-    if (editForm.newPassword && editForm.newPassword !== editForm.confirmPassword) {
+    if (!passwordForm.newPassword.trim()) {
       toast({
         title: "Erro",
-        description: "As senhas não coincidem.",
+        description: "A nova senha é obrigatória.",
         variant: "destructive",
       });
       setIsLoading(false);
       return;
     }
 
-    if (editForm.newPassword && editForm.newPassword.length < 6) {
+    if (passwordForm.newPassword.length < 6) {
       toast({
         title: "Erro",
         description: "A nova senha deve ter pelo menos 6 caracteres.",
@@ -158,26 +155,57 @@ export default function Profile() {
       return;
     }
 
-    // Simulação de atualização (remover quando conectar com backend)
-    setTimeout(() => {
-      const updatedProfile = {
-        ...profile,
-        name: editForm.name
-      };
-      
-      setProfile(updatedProfile);
-      
-      // Atualizar perfil local
-      // TODO: Implementar atualização via API quando disponível
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      toast({
+        title: "Erro",
+        description: "As senhas não coincidem.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    if (passwordForm.currentPassword === passwordForm.newPassword) {
+      toast({
+        title: "Erro",
+        description: "A nova senha deve ser diferente da senha atual.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      // Chamada real para a API
+      await authApi.changePassword(
+        user!.id,
+        {
+          currentPassword: passwordForm.currentPassword,
+          newPassword: passwordForm.newPassword,
+        },
+        token || ''
+      );
 
       toast({
-        title: "Perfil atualizado!",
-        description: "Suas informações foram salvas com sucesso.",
+        title: "Senha alterada!",
+        description: "Sua senha foi alterada com sucesso.",
       });
 
-      setIsEditing(false);
+      setIsChangingPassword(false);
+      setPasswordForm({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: ""
+      });
+    } catch (error) {
+      toast({
+        title: "Erro ao alterar senha",
+        description: error instanceof Error ? error.message : "Ocorreu um erro ao alterar sua senha. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   const handleLogout = () => {
@@ -235,15 +263,6 @@ export default function Profile() {
       </section>
 
       <div className="container mx-auto px-4 py-8">
-      {/* Debug Info */}
-      <div className="mb-4 p-4 bg-yellow-100 border border-yellow-300 rounded-lg">
-        <p className="text-sm text-yellow-800">
-          <strong>Debug:</strong> User está autenticado: {user ? 'Sim' : 'Não'}
-        </p>
-        <p className="text-sm text-yellow-800">
-          <strong>User data:</strong> {JSON.stringify(user)}
-        </p>
-      </div>
 
       {/* Header Section */}
       <motion.div 
@@ -312,62 +331,20 @@ export default function Profile() {
           className="mb-8"
         >
           <Card className="card-organic rounded-3xl">
-            <CardHeader className="flex flex-row items-center justify-between">
+            <CardHeader>
               <CardTitle className="text-xl font-semibold text-foreground">
                 Dados Pessoais
               </CardTitle>
-              {!isEditing ? (
-                <Button 
-                  onClick={handleEdit}
-                  variant="outline" 
-                  size="sm"
-                  className="rounded-xl"
-                >
-                  <Edit3 className="w-4 h-4 mr-2" />
-                  Editar
-                </Button>
-              ) : (
-                <div className="flex gap-2">
-                  <Button 
-                    onClick={handleCancel}
-                    variant="outline" 
-                    size="sm"
-                    className="rounded-xl"
-                  >
-                    <X className="w-4 h-4 mr-2" />
-                    Cancelar
-                  </Button>
-                  <Button 
-                    onClick={handleSave}
-                    size="sm"
-                    className="rounded-xl"
-                    disabled={isLoading}
-                  >
-                    <Save className="w-4 h-4 mr-2" />
-                    {isLoading ? "Salvando..." : "Salvar"}
-                  </Button>
-                </div>
-              )}
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Name Field */}
               <div className="space-y-2">
-                <Label htmlFor="name" className="text-foreground font-medium">
+                <Label className="text-foreground font-medium">
                   Nome Completo
                 </Label>
-                {isEditing ? (
-                  <Input
-                    id="name"
-                    value={editForm.name}
-                    onChange={(e) => setEditForm(prev => ({ ...prev, name: e.target.value }))}
-                    className="rounded-2xl"
-                    placeholder="Seu nome completo"
-                  />
-                ) : (
-                  <div className="p-3 rounded-2xl bg-muted/50 text-foreground">
-                    {profile.name}
-                  </div>
-                )}
+                <div className="p-3 rounded-2xl bg-muted/50 text-foreground">
+                  {profile.name}
+                </div>
               </div>
 
               {/* Email Field (Read-only) */}
@@ -388,79 +365,119 @@ export default function Profile() {
               <Separator />
 
               {/* Password Change Section */}
-              {isEditing && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="space-y-4"
-                >
-                  <h4 className="font-medium text-foreground">Alterar Senha</h4>
-                  
-                  {/* Current Password */}
-                  <div className="space-y-2">
-                    <Label htmlFor="currentPassword" className="text-foreground font-medium">
-                      Senha Atual
-                    </Label>
-                    <div className="relative">
-                      <Input
-                        id="currentPassword"
-                        type={showPasswords.current ? "text" : "password"}
-                        value={editForm.currentPassword}
-                        onChange={(e) => setEditForm(prev => ({ ...prev, currentPassword: e.target.value }))}
-                        className="pl-10 pr-10 rounded-2xl"
-                        placeholder="Digite sua senha atual"
-                      />
-                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Button
-                        type="button"
-                        variant="ghost"
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-medium text-foreground flex items-center gap-2">
+                      <Lock className="w-4 h-4" />
+                      Senha
+                    </h4>
+                    <p className="text-sm text-muted-foreground">
+                      Altere sua senha para manter sua conta segura
+                    </p>
+                  </div>
+                  {!isChangingPassword ? (
+                    <Button 
+                      onClick={handleChangePassword}
+                      variant="outline" 
+                      size="sm"
+                      className="rounded-xl"
+                    >
+                      <Lock className="w-4 h-4 mr-2" />
+                      Alterar Senha
+                    </Button>
+                  ) : (
+                    <div className="flex gap-2">
+                      <Button 
+                        onClick={handleCancelPasswordChange}
+                        variant="outline" 
                         size="sm"
-                        className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 hover:bg-transparent"
-                        onClick={() => setShowPasswords(prev => ({ ...prev, current: !prev.current }))}
+                        className="rounded-xl"
                       >
-                        {showPasswords.current ? (
-                          <EyeOff className="w-4 h-4 text-muted-foreground" />
-                        ) : (
-                          <Eye className="w-4 h-4 text-muted-foreground" />
-                        )}
+                        Cancelar
+                      </Button>
+                      <Button 
+                        onClick={handleSavePassword}
+                        size="sm"
+                        className="rounded-xl"
+                        disabled={isLoading}
+                      >
+                        {isLoading ? "Salvando..." : "Salvar"}
                       </Button>
                     </div>
-                  </div>
+                  )}
+                </div>
 
-                  {/* New Password */}
-                  <div className="space-y-2">
-                    <Label htmlFor="newPassword" className="text-foreground font-medium">
-                      Nova Senha
-                    </Label>
-                    <div className="relative">
-                      <Input
-                        id="newPassword"
-                        type={showPasswords.new ? "text" : "password"}
-                        value={editForm.newPassword}
-                        onChange={(e) => setEditForm(prev => ({ ...prev, newPassword: e.target.value }))}
-                        className="pl-10 pr-10 rounded-2xl"
-                        placeholder="Digite a nova senha (opcional)"
-                      />
-                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 hover:bg-transparent"
-                        onClick={() => setShowPasswords(prev => ({ ...prev, new: !prev.new }))}
-                      >
-                        {showPasswords.new ? (
-                          <EyeOff className="w-4 h-4 text-muted-foreground" />
-                        ) : (
-                          <Eye className="w-4 h-4 text-muted-foreground" />
-                        )}
-                      </Button>
+                {isChangingPassword && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="space-y-4"
+                  >
+                    {/* Current Password */}
+                    <div className="space-y-2">
+                      <Label htmlFor="currentPassword" className="text-foreground font-medium">
+                        Senha Atual
+                      </Label>
+                      <div className="relative">
+                        <Input
+                          id="currentPassword"
+                          type={showPasswords.current ? "text" : "password"}
+                          value={passwordForm.currentPassword}
+                          onChange={(e) => setPasswordForm(prev => ({ ...prev, currentPassword: e.target.value }))}
+                          className="pl-10 pr-10 rounded-2xl"
+                          placeholder="Digite sua senha atual"
+                        />
+                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 hover:bg-transparent"
+                          onClick={() => setShowPasswords(prev => ({ ...prev, current: !prev.current }))}
+                        >
+                          {showPasswords.current ? (
+                            <EyeOff className="w-4 h-4 text-muted-foreground" />
+                          ) : (
+                            <Eye className="w-4 h-4 text-muted-foreground" />
+                          )}
+                        </Button>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Confirm New Password */}
-                  {editForm.newPassword && (
+                    {/* New Password */}
+                    <div className="space-y-2">
+                      <Label htmlFor="newPassword" className="text-foreground font-medium">
+                        Nova Senha
+                      </Label>
+                      <div className="relative">
+                        <Input
+                          id="newPassword"
+                          type={showPasswords.new ? "text" : "password"}
+                          value={passwordForm.newPassword}
+                          onChange={(e) => setPasswordForm(prev => ({ ...prev, newPassword: e.target.value }))}
+                          className="pl-10 pr-10 rounded-2xl"
+                          placeholder="Digite a nova senha"
+                        />
+                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 hover:bg-transparent"
+                          onClick={() => setShowPasswords(prev => ({ ...prev, new: !prev.new }))}
+                        >
+                          {showPasswords.new ? (
+                            <EyeOff className="w-4 h-4 text-muted-foreground" />
+                          ) : (
+                            <Eye className="w-4 h-4 text-muted-foreground" />
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Confirm New Password */}
                     <div className="space-y-2">
                       <Label htmlFor="confirmPassword" className="text-foreground font-medium">
                         Confirmar Nova Senha
@@ -469,8 +486,8 @@ export default function Profile() {
                         <Input
                           id="confirmPassword"
                           type={showPasswords.confirm ? "text" : "password"}
-                          value={editForm.confirmPassword}
-                          onChange={(e) => setEditForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                          value={passwordForm.confirmPassword}
+                          onChange={(e) => setPasswordForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
                           className="pl-10 pr-10 rounded-2xl"
                           placeholder="Confirme a nova senha"
                         />
@@ -490,9 +507,10 @@ export default function Profile() {
                         </Button>
                       </div>
                     </div>
-                  )}
-                </motion.div>
-              )}
+                  </motion.div>
+                )}
+              </div>
+
             </CardContent>
           </Card>
         </motion.div>

@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { TagInput } from "@/components/ui/tag-input";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { PhotoGalleryInput } from "@/components/ui/photo-gallery-input";
+import { ChemicalCompositionTable, ChemicalComponent } from "@/components/ui/chemical-composition-table";
 import { oilsApi, CreateOilData } from "@/services/oilsApi";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
@@ -46,7 +47,7 @@ export default function AdminOilForm() {
   // Estados para tags (arrays)
   const [aromaTags, setAromaTags] = useState<string[]>([]);
   const [categoriaTags, setCategoriaTags] = useState<string[]>([]);
-  const [composicaoTags, setComposicaoTags] = useState<string[]>([]);
+  const [compostoQuimicoTags, setCompostoQuimicoTags] = useState<string[]>([]);
   const [psicoaromaTags, setPsicoaromaTags] = useState<string[]>([]);
   const [esteticaTags, setEsteticaTags] = useState<string[]>([]);
   const [saudeTags, setSaudeTags] = useState<string[]>([]);
@@ -54,6 +55,7 @@ export default function AdminOilForm() {
   const [ambientalTags, setAmbientalTags] = useState<string[]>([]);
   const [contraindicacaoTags, setContraindicacaoTags] = useState<string[]>([]);
   const [galleryPhotos, setGalleryPhotos] = useState<string[]>([]);
+  const [chemicalComponents, setChemicalComponents] = useState<ChemicalComponent[]>([]);
 
   useEffect(() => {
     if (!user || user.role?.toUpperCase() !== 'ADMIN') {
@@ -74,7 +76,7 @@ export default function AdminOilForm() {
       // Converter strings em arrays para as tags
       setAromaTags(oil.aroma ? oil.aroma.split(',').map(tag => tag.trim()).filter(Boolean) : []);
       setCategoriaTags(oil.categoria_aromatica ? oil.categoria_aromatica.split(',').map(tag => tag.trim()).filter(Boolean) : []);
-      setComposicaoTags(oil.composicao_quimica_majoritaria ? oil.composicao_quimica_majoritaria.split(',').map(tag => tag.trim()).filter(Boolean) : []);
+      setCompostoQuimicoTags(oil.composto_quimico ? oil.composto_quimico.split(',').map(tag => tag.trim()).filter(Boolean) : []);
       setPsicoaromaTags(oil.psicoaromas ? oil.psicoaromas.split(',').map(tag => tag.trim()).filter(Boolean) : []);
       setEsteticaTags(oil.estetica ? oil.estetica.split(',').map(tag => tag.trim()).filter(Boolean) : []);
       setSaudeTags(oil.saude_fisica ? oil.saude_fisica.split(',').map(tag => tag.trim()).filter(Boolean) : []);
@@ -82,6 +84,19 @@ export default function AdminOilForm() {
       setAmbientalTags(oil.ambientais ? oil.ambientais.split(',').map(tag => tag.trim()).filter(Boolean) : []);
       setContraindicacaoTags(oil.contraindicacao ? oil.contraindicacao.split(',').map(tag => tag.trim()).filter(Boolean) : []);
       setGalleryPhotos(oil.galeria_fotos ? oil.galeria_fotos.split(',').map(url => url.trim()).filter(Boolean) : []);
+      
+      // Carregar componentes químicos da composição
+      if (oil.composicao_quimica_majoritaria) {
+        try {
+          const components = JSON.parse(oil.composicao_quimica_majoritaria);
+          setChemicalComponents(Array.isArray(components) ? components : []);
+        } catch {
+          // Se não for JSON válido, tratar como string vazia
+          setChemicalComponents([]);
+        }
+      } else {
+        setChemicalComponents([]);
+      }
     } catch (err) {
       alert("Erro ao carregar óleo");
       navigate('/admin');
@@ -105,7 +120,8 @@ export default function AdminOilForm() {
         ...formData,
         aroma: aromaTags.join(', '),
         categoria_aromatica: categoriaTags.join(', '),
-        composicao_quimica_majoritaria: composicaoTags.join(', '),
+        composto_quimico: compostoQuimicoTags.join(', '),
+        composicao_quimica_majoritaria: JSON.stringify(chemicalComponents),
         psicoaromas: psicoaromaTags.join(', '),
         estetica: esteticaTags.join(', '),
         saude_fisica: saudeTags.join(', '),
@@ -283,27 +299,21 @@ export default function AdminOilForm() {
                 </div>
 
                 <div>
-                  <Label htmlFor="composto_quimico">Composto Químico Principal</Label>
-                  <Input
-                    id="composto_quimico"
-                    name="composto_quimico"
-                    value={formData.composto_quimico}
-                    onChange={handleChange}
-                    placeholder="Ex: Linalol"
+                  <Label>Composto Químico Principal</Label>
+                  <TagInput
+                    value={compostoQuimicoTags}
+                    onChange={setCompostoQuimicoTags}
+                    placeholder="Digite os compostos químicos principais..."
                     className="mt-1"
                   />
                 </div>
               </div>
 
-              <div>
-                <Label>Composição Química Majoritária</Label>
-                <TagInput
-                  value={composicaoTags}
-                  onChange={setComposicaoTags}
-                  placeholder="Digite os compostos químicos principais..."
-                  className="mt-1"
-                />
-              </div>
+              <ChemicalCompositionTable
+                value={chemicalComponents}
+                onChange={setChemicalComponents}
+                className="mt-4"
+              />
             </CardContent>
           </Card>
 

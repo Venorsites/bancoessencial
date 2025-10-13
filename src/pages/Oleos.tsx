@@ -153,6 +153,7 @@ export default function Oleos() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedOil, setSelectedOil] = useState<Oil | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [expandedSections, setExpandedSections] = useState({
     contraindications: false,
     chemistry: false,
@@ -198,6 +199,14 @@ export default function Oleos() {
 
   const closeOilModal = () => {
     setSelectedOil(null);
+  };
+
+  const openImageModal = (imageUrl: string) => {
+    setSelectedImage(imageUrl);
+  };
+
+  const closeImageModal = () => {
+    setSelectedImage(null);
   };
 
   const toggleSection = (section: string) => {
@@ -533,6 +542,15 @@ export default function Oleos() {
                   <Button
                     variant="ghost"
                     size="icon"
+                    onClick={() => toggleFavorite(selectedOil.id)}
+                    className="bg-white/90 hover:bg-white rounded-full"
+                    title={selectedOil.isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+                  >
+                    <Heart className={`w-5 h-5 ${selectedOil.isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     onClick={() => navigate(`/oleos/${selectedOil.id}`)}
                     className="bg-white/90 hover:bg-white rounded-full"
                     title="Abrir em página dedicada"
@@ -553,7 +571,7 @@ export default function Oleos() {
               {/* Modal Content */}
               <div className="p-6 space-y-6">
                 {/* Title and Basic Info */}
-                <div className="text-center">
+                <div className="text-left">
                   <h1 className="text-3xl font-bold text-purple-800 mb-2">
                     {selectedOil.nome}
                   </h1>
@@ -565,95 +583,287 @@ export default function Oleos() {
                   </p>
                 </div>
 
-                {/* Basic Information Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-3">
-                    <div>
-                      <h3 className="font-semibold text-purple-800">Família Botânica:</h3>
-                      <p className="text-gray-700">{selectedOil.familia_botanica || "Não informado"}</p>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-purple-800">Forma de Extração:</h3>
-                      <p className="text-gray-700">{selectedOil.forma_extracao || "Não informado"}</p>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-purple-800">Aroma:</h3>
-                      <p className="text-gray-700">{selectedOil.aroma || "Não informado"}</p>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-purple-800">Parte da Planta:</h3>
-                      <p className="text-gray-700">{selectedOil.parte_planta || "Não informado"}</p>
-                    </div>
-                  </div>
-                  <div className="space-y-3">
-                    <div>
-                      <h3 className="font-semibold text-purple-800">Composto Químico Principal:</h3>
-                      <p className="text-gray-700">{selectedOil.composto_quimico || "Não informado"}</p>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-purple-800">Família Química:</h3>
-                      <p className="text-gray-700">{selectedOil.familia_quimica || "Não informado"}</p>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-purple-800">Categoria Aromática:</h3>
-                      <p className="text-gray-700">{selectedOil.categoria_aromatica || "Não informado"}</p>
+                {/* Informações Básicas */}
+                <div className="space-y-4">
+                  <h2 className="text-xl font-bold text-purple-800 border-b-2 border-purple-200 pb-2">Informações Básicas</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     <div className="space-y-3">
+                       <div>
+                         <h3 className="font-semibold text-purple-800">Família Botânica:</h3>
+                         <div className="mt-1">
+                           {selectedOil.familia_botanica ? (
+                             <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                               {selectedOil.familia_botanica}
+                             </span>
+                           ) : (
+                             <span className="text-gray-500 text-sm">Não informado</span>
+                           )}
+                         </div>
+                       </div>
+                       <div>
+                         <h3 className="font-semibold text-purple-800">Forma de Extração:</h3>
+                         <div className="mt-1">
+                           {selectedOil.forma_extracao ? (
+                             <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                               {selectedOil.forma_extracao}
+                             </span>
+                           ) : (
+                             <span className="text-gray-500 text-sm">Não informado</span>
+                           )}
+                         </div>
+                       </div>
+                       <div>
+                         <h3 className="font-semibold text-purple-800">Parte da Planta:</h3>
+                         <div className="mt-1">
+                           {selectedOil.parte_planta ? (
+                             <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-800">
+                               {selectedOil.parte_planta}
+                             </span>
+                           ) : (
+                             <span className="text-gray-500 text-sm">Não informado</span>
+                           )}
+                         </div>
+                       </div>
+                     </div>
+                    <div className="space-y-3">
+                      <div>
+                        <h3 className="font-semibold text-purple-800">Composto Químico Principal:</h3>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {selectedOil.composto_quimico ? (
+                            selectedOil.composto_quimico.split(',').map((tag, index) => (
+                              <span
+                                key={index}
+                                className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800"
+                              >
+                                {tag.trim()}
+                              </span>
+                            ))
+                          ) : (
+                            <span className="text-gray-500">Não informado</span>
+                          )}
+                        </div>
+                      </div>
+                       <div>
+                         <h3 className="font-semibold text-purple-800">Família Química:</h3>
+                         <div className="mt-1">
+                           {selectedOil.familia_quimica ? (
+                             <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">
+                               {selectedOil.familia_quimica}
+                             </span>
+                           ) : (
+                             <span className="text-gray-500 text-sm">Não informado</span>
+                           )}
+                         </div>
+                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Detailed Properties */}
+                {/* Características */}
                 <div className="space-y-4">
-                  <div>
-                    <h3 className="text-xl font-semibold text-purple-800 mb-2">Psicoaroma (Emocional/Psicológica/Mental)</h3>
-                    <div className="text-gray-700 bg-purple-50 p-3 rounded-lg">
-                      {selectedOil.psicoaromas ? (
-                        <div dangerouslySetInnerHTML={{ __html: selectedOil.psicoaromas }} />
-                      ) : (
-                        <p>Não informado</p>
-                      )}
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-semibold text-purple-800 mb-2">Estética/Pele/Cabelo/Unhas</h3>
-                    <div className="text-gray-700 bg-purple-50 p-3 rounded-lg">
-                      {selectedOil.estetica ? (
-                        <div dangerouslySetInnerHTML={{ __html: selectedOil.estetica }} />
-                      ) : (
-                        <p>Não informado</p>
-                      )}
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-semibold text-purple-800 mb-2">Saúde Física em Geral</h3>
-                    <div className="text-gray-700 bg-purple-50 p-3 rounded-lg">
-                      {selectedOil.saude_fisica ? (
-                        <div dangerouslySetInnerHTML={{ __html: selectedOil.saude_fisica }} />
-                      ) : (
-                        <p>Não informado</p>
-                      )}
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-semibold text-purple-800 mb-2">Espiritual/Vibracional</h3>
-                    <div className="text-gray-700 bg-purple-50 p-3 rounded-lg">
-                      {selectedOil.espirituais ? (
-                        <div dangerouslySetInnerHTML={{ __html: selectedOil.espirituais }} />
-                      ) : (
-                        <p>Não informado</p>
-                      )}
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-semibold text-purple-800 mb-2">Ambiental</h3>
-                    <div className="text-gray-700 bg-purple-50 p-3 rounded-lg">
-                      {selectedOil.ambientais ? (
-                        <div dangerouslySetInnerHTML={{ __html: selectedOil.ambientais }} />
-                      ) : (
-                        <p>Não informado</p>
-                      )}
-                    </div>
+                  <h2 className="text-xl font-bold text-purple-800 border-b-2 border-purple-200 pb-2">Características</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     <div className="space-y-3">
+                       <div>
+                         <h3 className="font-semibold text-purple-800">Aroma:</h3>
+                         <div className="flex flex-wrap gap-1 mt-1">
+                           {selectedOil.aroma ? (
+                             selectedOil.aroma.split(',').map((tag, index) => (
+                               <span
+                                 key={index}
+                                 className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-pink-100 text-pink-800"
+                               >
+                                 {tag.trim()}
+                               </span>
+                             ))
+                           ) : (
+                             <span className="text-gray-500 text-sm">Não informado</span>
+                           )}
+                         </div>
+                       </div>
+                     </div>
+                     <div className="space-y-3">
+                       <div>
+                         <h3 className="font-semibold text-purple-800">Categoria Aromática:</h3>
+                         <div className="flex flex-wrap gap-1 mt-1">
+                           {selectedOil.categoria_aromatica ? (
+                             selectedOil.categoria_aromatica.split(',').map((tag, index) => (
+                               <span
+                                 key={index}
+                                 className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-cyan-100 text-cyan-800"
+                               >
+                                 {tag.trim()}
+                               </span>
+                             ))
+                           ) : (
+                             <span className="text-gray-500 text-sm">Não informado</span>
+                           )}
+                         </div>
+                       </div>
+                     </div>
                   </div>
                 </div>
+
+                {/* Benefícios e Propriedades */}
+                <div className="space-y-4">
+                  <h2 className="text-xl font-bold text-purple-800 border-b-2 border-purple-200 pb-2">Benefícios e Propriedades</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     <div className="space-y-3">
+                       <div>
+                         <h3 className="font-semibold text-purple-800">Psicoaromas (Emocional/Psicológica/Mental):</h3>
+                         <div className="flex flex-wrap gap-1 mt-1">
+                           {selectedOil.psicoaromas ? (
+                             selectedOil.psicoaromas.split(',').map((tag, index) => (
+                               <span
+                                 key={index}
+                                 className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800"
+                               >
+                                 {tag.trim()}
+                               </span>
+                             ))
+                           ) : (
+                             <span className="text-gray-500 text-sm">Não informado</span>
+                           )}
+                         </div>
+                       </div>
+                       <div>
+                         <h3 className="font-semibold text-purple-800">Estéticas (Pele/Cabelo/Unhas):</h3>
+                         <div className="flex flex-wrap gap-1 mt-1">
+                           {selectedOil.estetica ? (
+                             selectedOil.estetica.split(',').map((tag, index) => (
+                               <span
+                                 key={index}
+                                 className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-rose-100 text-rose-800"
+                               >
+                                 {tag.trim()}
+                               </span>
+                             ))
+                           ) : (
+                             <span className="text-gray-500 text-sm">Não informado</span>
+                           )}
+                         </div>
+                       </div>
+                       <div>
+                         <h3 className="font-semibold text-purple-800">Saúde Física:</h3>
+                         <div className="flex flex-wrap gap-1 mt-1">
+                           {selectedOil.saude_fisica ? (
+                             selectedOil.saude_fisica.split(',').map((tag, index) => (
+                               <span
+                                 key={index}
+                                 className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-emerald-100 text-emerald-800"
+                               >
+                                 {tag.trim()}
+                               </span>
+                             ))
+                           ) : (
+                             <span className="text-gray-500 text-sm">Não informado</span>
+                           )}
+                         </div>
+                       </div>
+                     </div>
+                     <div className="space-y-3">
+                       <div>
+                         <h3 className="font-semibold text-purple-800">Espirituais/Vibracionais:</h3>
+                         <div className="flex flex-wrap gap-1 mt-1">
+                           {selectedOil.espirituais ? (
+                             selectedOil.espirituais.split(',').map((tag, index) => (
+                               <span
+                                 key={index}
+                                 className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-violet-100 text-violet-800"
+                               >
+                                 {tag.trim()}
+                               </span>
+                             ))
+                           ) : (
+                             <span className="text-gray-500 text-sm">Não informado</span>
+                           )}
+                         </div>
+                       </div>
+                       <div>
+                         <h3 className="font-semibold text-purple-800">Ambientais:</h3>
+                         <div className="flex flex-wrap gap-1 mt-1">
+                           {selectedOil.ambientais ? (
+                             selectedOil.ambientais.split(',').map((tag, index) => (
+                               <span
+                                 key={index}
+                                 className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-teal-100 text-teal-800"
+                               >
+                                 {tag.trim()}
+                               </span>
+                             ))
+                           ) : (
+                             <span className="text-gray-500 text-sm">Não informado</span>
+                           )}
+                         </div>
+                       </div>
+                     </div>
+                  </div>
+                </div>
+
+                {/* Propriedades Adicionais */}
+                <div className="space-y-4">
+                  <h2 className="text-xl font-bold text-purple-800 border-b-2 border-purple-200 pb-2">Propriedades Adicionais</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     <div className="space-y-3">
+                       <div>
+                         <h3 className="font-semibold text-purple-800">Contraindicações:</h3>
+                         <div className="flex flex-wrap gap-1 mt-1">
+                           {selectedOil.contraindicacao ? (
+                             selectedOil.contraindicacao.split(',').map((tag, index) => (
+                               <span
+                                 key={index}
+                                 className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800"
+                               >
+                                 {tag.trim()}
+                               </span>
+                             ))
+                           ) : (
+                             <span className="text-gray-500 text-sm">Não informado</span>
+                           )}
+                         </div>
+                       </div>
+                     </div>
+                  </div>
+                </div>
+
+                {/* Galeria de Fotos */}
+                {selectedOil.galeria_fotos && (
+                  <div className="space-y-4">
+                    <h2 className="text-xl font-bold text-purple-800 border-b-2 border-purple-200 pb-2">Galeria de Fotos</h2>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                      {selectedOil.galeria_fotos.split(',').map((photoUrl, index) => {
+                        const trimmedUrl = photoUrl.trim();
+                        if (!trimmedUrl) return null;
+                        
+                        return (
+                          <div key={index} className="relative group">
+                        <img
+                          src={trimmedUrl}
+                          alt={`Foto ${index + 1} do ${selectedOil.nome}`}
+                          className="w-full h-32 object-cover rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                          }}
+                        />
+                        <div 
+                          className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 rounded-lg transition-all duration-300 flex items-center justify-center cursor-pointer"
+                          onClick={() => openImageModal(trimmedUrl)}
+                        >
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <div className="bg-white rounded-full p-2 shadow-lg">
+                              <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                              </svg>
+                            </div>
+                          </div>
+                        </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
 
                 {/* Expandable Sections (as per the print) */}
                 <div className="space-y-3">
@@ -671,16 +881,8 @@ export default function Oleos() {
                     </button>
                     {expandedSections.contraindications && (
                       <div className="p-4 bg-white border-t border-purple-200">
-                        <div className="text-gray-700">
-                          {selectedOil.contraindicacao ? (
-                            <div dangerouslySetInnerHTML={{ __html: selectedOil.contraindicacao }} />
-                          ) : (
-                            <p>Não informado</p>
-                          )}
-                        </div>
                         {selectedOil.contraindicacoes_preocupacoes && (
-                          <div className="mt-3 pt-3 border-t border-gray-200">
-                            <h4 className="font-semibold text-purple-800 mb-2">Preocupações Adicionais:</h4>
+                          <div className="text-gray-700">
                             <div dangerouslySetInnerHTML={{ __html: selectedOil.contraindicacoes_preocupacoes }} />
                           </div>
                         )}
@@ -704,7 +906,39 @@ export default function Oleos() {
                       <div className="p-4 bg-white border-t border-purple-200">
                         <div className="text-gray-700">
                           {selectedOil.composicao_quimica_majoritaria ? (
-                            <div dangerouslySetInnerHTML={{ __html: selectedOil.composicao_quimica_majoritaria }} />
+                            (() => {
+                              try {
+                                const components = JSON.parse(selectedOil.composicao_quimica_majoritaria);
+                                if (Array.isArray(components) && components.length > 0) {
+                                  return (
+                                    <div className="overflow-x-auto">
+                                      <table className="w-full border-collapse border border-purple-200">
+                                        <thead>
+                                          <tr className="bg-purple-50">
+                                            <th className="border border-purple-200 px-3 py-2 text-left font-semibold text-purple-800">Componente Químico</th>
+                                            <th className="border border-purple-200 px-3 py-2 text-left font-semibold text-purple-800">Família Química</th>
+                                            <th className="border border-purple-200 px-3 py-2 text-left font-semibold text-purple-800">Concentração</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          {components.map((component: any, index: number) => (
+                                            <tr key={index} className="hover:bg-purple-25">
+                                              <td className="border border-purple-200 px-3 py-2">{component.componente || '-'}</td>
+                                              <td className="border border-purple-200 px-3 py-2">{component.familia || '-'}</td>
+                                              <td className="border border-purple-200 px-3 py-2">{component.concentracao || '-'}</td>
+                                            </tr>
+                                          ))}
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  );
+                                } else {
+                                  return <p>Não informado</p>;
+                                }
+                              } catch {
+                                return <p>Não informado</p>;
+                              }
+                            })()
                           ) : (
                             <p>Não informado</p>
                           )}
@@ -767,6 +1001,41 @@ export default function Oleos() {
             </motion.div>
           </motion.div>
         )}
+
+        {/* Image Modal */}
+        <AnimatePresence>
+          {selectedImage && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+              onClick={closeImageModal}
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className="relative max-w-4xl max-h-[90vh] w-full"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <img
+                  src={selectedImage}
+                  alt="Imagem ampliada"
+                  className="w-full h-full object-contain rounded-lg"
+                />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={closeImageModal}
+                  className="absolute top-4 right-4 bg-white/90 hover:bg-white rounded-full"
+                >
+                  <X className="w-5 h-5" />
+                </Button>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </AnimatePresence>
     </div>
   );
