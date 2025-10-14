@@ -47,6 +47,7 @@ export default function AdminOilForm() {
   // Estados para tags (arrays)
   const [aromaTags, setAromaTags] = useState<string[]>([]);
   const [categoriaTags, setCategoriaTags] = useState<string[]>([]);
+  const [familiaQuimicaTags, setFamiliaQuimicaTags] = useState<string[]>([]);
   const [compostoQuimicoTags, setCompostoQuimicoTags] = useState<string[]>([]);
   const [psicoaromaTags, setPsicoaromaTags] = useState<string[]>([]);
   const [esteticaTags, setEsteticaTags] = useState<string[]>([]);
@@ -76,6 +77,7 @@ export default function AdminOilForm() {
       // Converter strings em arrays para as tags
       setAromaTags(oil.aroma ? oil.aroma.split(',').map(tag => tag.trim()).filter(Boolean) : []);
       setCategoriaTags(oil.categoria_aromatica ? oil.categoria_aromatica.split(',').map(tag => tag.trim()).filter(Boolean) : []);
+      setFamiliaQuimicaTags(oil.familia_quimica ? oil.familia_quimica.split(',').map(tag => tag.trim()).filter(Boolean) : []);
       setCompostoQuimicoTags(oil.composto_quimico ? oil.composto_quimico.split(',').map(tag => tag.trim()).filter(Boolean) : []);
       setPsicoaromaTags(oil.psicoaromas ? oil.psicoaromas.split(',').map(tag => tag.trim()).filter(Boolean) : []);
       setEsteticaTags(oil.estetica ? oil.estetica.split(',').map(tag => tag.trim()).filter(Boolean) : []);
@@ -120,6 +122,7 @@ export default function AdminOilForm() {
         ...formData,
         aroma: aromaTags.join(', '),
         categoria_aromatica: categoriaTags.join(', '),
+        familia_quimica: familiaQuimicaTags.join(', '),
         composto_quimico: compostoQuimicoTags.join(', '),
         composicao_quimica_majoritaria: JSON.stringify(chemicalComponents),
         psicoaromas: psicoaromaTags.join(', '),
@@ -287,13 +290,11 @@ export default function AdminOilForm() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="familia_quimica">Família Química em Maior Proporção</Label>
-                  <Input
-                    id="familia_quimica"
-                    name="familia_quimica"
-                    value={formData.familia_quimica}
-                    onChange={handleChange}
-                    placeholder="Ex: Monoterpenos"
+                  <Label>Família Química em Maior Proporção</Label>
+                  <TagInput
+                    value={familiaQuimicaTags}
+                    onChange={setFamiliaQuimicaTags}
+                    placeholder="Digite as famílias químicas..."
                     className="mt-1"
                   />
                 </div>

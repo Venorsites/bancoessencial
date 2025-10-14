@@ -67,17 +67,26 @@ export default function OilDetail() {
   const highlightLinks = (html: string) => {
     if (!html) return html;
     
-    // Primeiro, limpar atributos de estilo inline desnecessários
+    // Primeiro, limpar atributos de estilo inline desnecessários, mas preservar links existentes
     let cleanHtml = html
       .replace(/style="[^"]*"/gi, '') // Remove atributos style
-      .replace(/class="[^"]*"/gi, '') // Remove atributos class
       .replace(/data-[^=]*="[^"]*"/gi, '') // Remove atributos data-*
       .replace(/<!--[\s\S]*?-->/g, '') // Remove comentários HTML
       .replace(/\s+/g, ' ') // Normaliza espaços em branco
       .trim();
     
-    // Regex para detectar URLs
-    const urlRegex = /(https?:\/\/[^\s<>"{}|\\^`[\]]+)/gi;
+    // Adicionar classes CSS e atributos aos links existentes para estilização
+    cleanHtml = cleanHtml.replace(/<a\s+([^>]*?)href="([^"]*?)"([^>]*?)>/gi, (match, before, url, after) => {
+      // Limpar atributos existentes que vamos substituir
+      const beforeClean = before.replace(/class="[^"]*"/gi, '').replace(/target="[^"]*"/gi, '').replace(/rel="[^"]*"/gi, '');
+      const afterClean = after.replace(/class="[^"]*"/gi, '').replace(/target="[^"]*"/gi, '').replace(/rel="[^"]*"/gi, '');
+      
+      // Adicionar todos os atributos necessários
+      return `<a ${beforeClean}href="${url}"${afterClean} target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 underline font-medium transition-colors duration-200">`;
+    });
+    
+    // Regex para detectar URLs que não estão dentro de tags <a>
+    const urlRegex = /(?<!<a[^>]*>)(https?:\/\/[^\s<>"{}|\\^`[\]]+)(?![^<]*<\/a>)/gi;
     
     return cleanHtml.replace(urlRegex, (url) => {
       return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 underline font-medium transition-colors duration-200">${url}</a>`;
@@ -214,10 +223,10 @@ export default function OilDetail() {
               <h1 className="text-3xl font-bold text-purple-800 mb-2">
                 {oil.nome}
               </h1>
-              <p className="text-lg text-gray-600 italic">
+              <p className="text-lg text-gray-600 italic mb-4">
                 {oil.nome_cientifico}
               </p>
-              <div className="text-sm text-gray-500 mt-1">
+              <div className="text-base text-gray-500">
                 {oil.descricao ? (
                   <div dangerouslySetInnerHTML={{ __html: highlightLinks(oil.descricao) }} />
                 ) : (
@@ -288,11 +297,13 @@ export default function OilDetail() {
                       </div>
                    <div>
                      <h3 className="font-semibold text-purple-800">Família Química em Maior Proporção:</h3>
-                     <div className="mt-1">
+                     <div className="mt-1 flex flex-wrap gap-2">
                        {oil.familia_quimica ? (
-                         <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">
-                           {oil.familia_quimica}
-                         </span>
+                         oil.familia_quimica.split(',').map((familia, index) => (
+                           <span key={index} className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">
+                             {familia.trim()}
+                           </span>
+                         ))
                        ) : (
                          <span className="text-gray-500 text-sm">Não informado</span>
                        )}
