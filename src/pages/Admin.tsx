@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Routes, Route } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
 import { AdminOils } from "@/components/admin/AdminOils";
+import { AdminDiseases } from "@/components/admin/AdminDiseases";
 import { AdminUsers } from "@/components/admin/AdminUsers";
+import { AdminAnalyticsSimple } from "@/components/admin/AdminAnalyticsSimple";
 import AdminOilForm from "./AdminOilForm";
-import { Routes, Route } from "react-router-dom";
+import AdminDiseaseForm from "./AdminDiseaseForm";
 
 export default function Admin() {
   const navigate = useNavigate();
@@ -27,6 +29,8 @@ export default function Admin() {
     const path = location.pathname;
     if (path.includes('/oils/new') || path.includes('/oils/edit/')) {
       setActiveTab('oils');
+    } else if (path.includes('/diseases/new') || path.includes('/diseases/edit/')) {
+      setActiveTab('diseases');
     } else if (path.includes('/users')) {
       setActiveTab('users');
     } else if (path.includes('/analytics')) {
@@ -48,13 +52,16 @@ export default function Admin() {
         return <AdminDashboard />;
       case "oils":
         return <AdminOils />;
+      case "diseases":
+        return <AdminDiseases />;
       case "users":
         return <AdminUsers />;
       case "analytics":
         return (
           <div className="text-center py-12">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Analytics</h2>
-            <p className="text-gray-600">Em desenvolvimento...</p>
+            <p className="text-gray-600">Testando se o componente carrega...</p>
+            <AdminAnalyticsSimple />
           </div>
         );
       case "settings":
@@ -81,6 +88,8 @@ export default function Admin() {
             <Route path="/" element={renderContent()} />
             <Route path="/oils/new" element={<AdminOilForm />} />
             <Route path="/oils/edit/:id" element={<AdminOilForm />} />
+            <Route path="/diseases/new" element={<AdminDiseaseForm />} />
+            <Route path="/diseases/edit/:id" element={<AdminDiseaseForm />} />
             <Route path="/users" element={<AdminUsers />} />
           </Routes>
         </div>

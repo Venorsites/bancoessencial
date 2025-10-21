@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, Heart, ChevronRight, ArrowLeft, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,79 +6,64 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
+import { doencasApi, DoencaGeral } from "@/services/doencasApi";
 
-const mockDiseases = [
-  {
-    id: 1,
-    name: "Ansiedade",
-    category: "Mental",
-    description: "Estado emocional caracterizado por preocupação excessiva e tensão.",
-    recommendedOils: ["Lavanda", "Bergamota", "Ylang Ylang"],
-    symptoms: ["Nervosismo", "Tensão muscular", "Insônia"],
-    isFavorite: false,
-  },
-  {
-    id: 2,
-    name: "Acne",
-    category: "Pele",
-    description: "Condição inflamatória da pele que causa espinhas e cravos.",
-    recommendedOils: ["Tea Tree", "Lavanda", "Manjericão"],
-    symptoms: ["Espinhas", "Cravos", "Vermelhidão"],
-    isFavorite: true,
-  },
-  {
-    id: 3,
-    name: "Gripe",
-    category: "Respiratório",
-    description: "Infecção viral que afeta o sistema respiratório.",
-    recommendedOils: ["Eucalipto", "Limão", "Ravensara"],
-    symptoms: ["Febre", "Tosse", "Congestão nasal"],
-    isFavorite: false,
-  },
-  {
-    id: 4,
-    name: "Insônia",
-    category: "Sono",
-    description: "Dificuldade para adormecer ou manter o sono.",
-    recommendedOils: ["Lavanda", "Camomila", "Cedro"],
-    symptoms: ["Dificuldade para dormir", "Despertar frequente", "Cansaço"],
-    isFavorite: false,
-  },
-  {
-    id: 5,
-    name: "Dor de Cabeça",
-    category: "Neurológico",
-    description: "Dor na região da cabeça, podendo ser tensional ou enxaqueca.",
-    recommendedOils: ["Hortelã-pimenta", "Lavanda", "Eucalipto"],
-    symptoms: ["Dor pulsante", "Sensibilidade à luz", "Náusea"],
-    isFavorite: false,
-  },
-  {
-    id: 6,
-    name: "Artrite",
-    category: "Articular",
-    description: "Inflamação das articulações causando dor e rigidez.",
-    recommendedOils: ["Gengibre", "Cúrcuma", "Eucalipto"],
-    symptoms: ["Dor nas articulações", "Rigidez matinal", "Inchaço"],
-    isFavorite: false,
-  },
-];
+interface Disease {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+  recommendedOils: string[];
+  symptoms: string[];
+  usageForm?: string;
+  isFavorite: boolean;
+}
 
 const alphabetLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
 export default function DoencasGeral() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedLetter, setSelectedLetter] = useState("");
-  const [diseases, setDiseases] = useState(mockDiseases);
-  const [selectedDisease, setSelectedDisease] = useState<typeof mockDiseases[0] | null>(null);
+  const [diseases, setDiseases] = useState<Disease[]>([]);
+  const [selectedDisease, setSelectedDisease] = useState<Disease | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const toggleFavorite = (id: number) => {
+  useEffect(() => {
+    loadDiseases();
+  }, []);
+
+  const loadDiseases = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await doencasApi.getAll();
+      const transformedData: Disease[] = data.map((doenca: DoencaGeral) => ({
+        id: doenca.id,
+        name: doenca.nome,
+        category: doenca.categoria,
+        description: doenca.descricao_short,
+        recommendedOils: doenca.oleos_recomendados || [],
+        symptoms: doenca.sintomas_comuns || [],
+        usageForm: doenca.forma_uso,
+        isFavorite: false,
+      }));
+      setDiseases(transformedData);
+    } catch (err) {
+      setError('Erro ao carregar doenças. Por favor, tente novamente.');
+      console.error('Erro ao carregar doenças:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleFavorite = (id: string) => {
     setDiseases(diseases.map(disease => 
       disease.id === id ? { ...disease, isFavorite: !disease.isFavorite } : disease
     ));
   };
 
-  const openDiseaseModal = (disease: typeof mockDiseases[0]) => {
+  const openDiseaseModal = (disease: Disease) => {
     setSelectedDisease(disease);
   };
 
@@ -102,7 +87,7 @@ export default function DoencasGeral() {
       acc[letter] = diseasesForLetter;
     }
     return acc;
-  }, {} as Record<string, typeof mockDiseases>);
+  }, {} as Record<string, Disease[]>);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-purple-50">
@@ -195,26 +180,54 @@ export default function DoencasGeral() {
           </div>
         </motion.div>
 
+        {/* Loading State */}
+        {loading && (
+          <motion.div 
+            className="text-center py-12"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6 }}
+          >
+            <p className="text-muted-foreground text-lg">Carregando doenças...</p>
+          </motion.div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <motion.div 
+            className="text-center py-12"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6 }}
+          >
+            <p className="text-red-600 text-lg mb-4">{error}</p>
+            <Button onClick={loadDiseases}>Tentar Novamente</Button>
+          </motion.div>
+        )}
+
         {/* Results Count */}
-        <motion.div 
-          className="mb-6"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-        >
-          <p className="text-muted-foreground text-center">
-            {filteredDiseases.length} doença{filteredDiseases.length !== 1 ? 's' : ''} encontrada{filteredDiseases.length !== 1 ? 's' : ''}
-          </p>
-        </motion.div>
+        {!loading && !error && (
+          <motion.div 
+            className="mb-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+          >
+            <p className="text-muted-foreground text-center">
+              {filteredDiseases.length} doença{filteredDiseases.length !== 1 ? 's' : ''} encontrada{filteredDiseases.length !== 1 ? 's' : ''}
+            </p>
+          </motion.div>
+        )}
 
         {/* Diseases by Letter */}
-        <motion.div 
-          className="space-y-8"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.5 }}
-        >
-          {Object.entries(groupedDiseases).map(([letter, letterDiseases]) => (
+        {!loading && !error && (
+          <motion.div 
+            className="space-y-8"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.5 }}
+          >
+            {Object.entries(groupedDiseases).map(([letter, letterDiseases]) => (
             <div key={letter}>
               <h2 className="text-2xl font-bold text-foreground mb-4 flex items-center">
                 <span className="w-12 h-12 rounded-2xl gradient-primary flex items-center justify-center text-white mr-4">
@@ -303,9 +316,10 @@ export default function DoencasGeral() {
               </div>
             </div>
           ))}
-        </motion.div>
+          </motion.div>
+        )}
 
-        {filteredDiseases.length === 0 && (
+        {!loading && !error && filteredDiseases.length === 0 && (
           <motion.div 
             className="text-center py-12"
             initial={{ opacity: 0 }}
@@ -400,8 +414,8 @@ export default function DoencasGeral() {
                   <div>
                     <h3 className="font-semibold text-foreground mb-3 text-lg">Modo de Uso:</h3>
                     <p className="text-muted-foreground text-sm leading-relaxed">
-                      Consulte um profissional de aromaterapia para orientações específicas sobre dosagem, 
-                      método de aplicação e contraindicações para esta condição.
+                      {selectedDisease.usageForm || 
+                        "Consulte um profissional de aromaterapia para orientações específicas sobre dosagem, método de aplicação e contraindicações para esta condição."}
                     </p>
                   </div>
                 </div>

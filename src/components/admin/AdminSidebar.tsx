@@ -10,7 +10,8 @@ import {
   Menu,
   X,
   ChevronRight,
-  Home
+  Home,
+  Stethoscope
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -32,6 +33,12 @@ const menuItems = [
     label: "Óleos Essenciais",
     icon: Droplets,
     description: "Gerenciar óleos"
+  },
+  {
+    id: "diseases",
+    label: "Doenças",
+    icon: Stethoscope,
+    description: "Gerenciar doenças"
   },
   {
     id: "users",
@@ -66,6 +73,9 @@ export function AdminSidebar({ activeTab, onTabChange }: AdminSidebarProps) {
         navigate('/admin');
         break;
       case 'oils':
+        navigate('/admin');
+        break;
+      case 'diseases':
         navigate('/admin');
         break;
       case 'users':
