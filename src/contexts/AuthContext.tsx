@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { authApi } from '@/services/api';
+import api from '@/services/api';
 import { useToast } from '@/hooks/use-toast';
 
 interface User {
@@ -41,21 +41,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     const loadStorageData = async () => {
-      const storedToken = localStorage.getItem('@BancoEssencial:token');
+      const storedAccessToken = localStorage.getItem('access_token');
+      const storedRefreshToken = localStorage.getItem('refresh_token');
       const storedUser = localStorage.getItem('@BancoEssencial:user');
 
-      if (storedToken && storedUser) {
+      if (storedAccessToken && storedRefreshToken && storedUser) {
         try {
-          const isValid = await authApi.validateToken(storedToken);
-          if (isValid) {
-            setToken(storedToken);
-            setUser(JSON.parse(storedUser));
-          } else {
-            localStorage.removeItem('@BancoEssencial:token');
-            localStorage.removeItem('@BancoEssencial:user');
-          }
+          // Testar se o token ainda é válido
+          const response = await api.get('/auth/me');
+          setToken(storedAccessToken);
+          setUser(JSON.parse(storedUser));
         } catch (error) {
-          localStorage.removeItem('@BancoEssencial:token');
+          // Se falhar, limpar tokens e redirecionar para login
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('refresh_token');
           localStorage.removeItem('@BancoEssencial:user');
         }
       }
@@ -68,17 +67,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await authApi.login(email, password);
+      const { data } = await api.post('/auth/login', { email, password });
       
-      setUser(response.user);
-      setToken(response.access_token);
+      setUser(data.user);
+      setToken(data.access_token);
       
-      localStorage.setItem('@BancoEssencial:token', response.access_token);
-      localStorage.setItem('@BancoEssencial:user', JSON.stringify(response.user));
+      localStorage.setItem('access_token', data.access_token);
+      localStorage.setItem('refresh_token', data.refresh_token);
+      localStorage.setItem('@BancoEssencial:user', JSON.stringify(data.user));
 
       toast({
         title: 'Login realizado com sucesso!',
-        description: `Bem-vindo, ${response.user.nome}!`,
+        description: `Bem-vindo, ${data.user.nome}!`,
       });
     } catch (error) {
       toast({
@@ -92,12 +92,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const register = async (data: RegisterData) => {
     try {
-      const response = await authApi.register(data);
+      const { data: response } = await api.post('/auth/register', data);
       
       setUser(response.user);
       setToken(response.access_token);
       
-      localStorage.setItem('@BancoEssencial:token', response.access_token);
+      localStorage.setItem('access_token', response.access_token);
+      localStorage.setItem('refresh_token', response.refresh_token);
       localStorage.setItem('@BancoEssencial:user', JSON.stringify(response.user));
 
       toast({
@@ -117,7 +118,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     setUser(null);
     setToken(null);
-    localStorage.removeItem('@BancoEssencial:token');
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
     localStorage.removeItem('@BancoEssencial:user');
     
     toast({

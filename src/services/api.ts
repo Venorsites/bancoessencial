@@ -1,117 +1,77 @@
-import { API_URL } from '@/config/api';
+import axios from 'axios';
 
-interface LoginResponse {
-  access_token: string;
-  user: {
-    id: string;
-    nome: string;
-    sobrenome: string;
-    email: string;
-    contato: string;
-    avatar?: string;
-  };
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL,
+});
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('access_token');
+  if (token) {
+    config.headers = config.headers ?? {};
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+let isRefreshing = false;
+let pendingQueue: Array<(token: string) => void> = [];
+
+function onRefreshed(newToken: string) {
+  pendingQueue.forEach((cb) => cb(newToken));
+  pendingQueue = [];
 }
 
-interface RegisterData {
-  nome: string;
-  sobrenome: string;
-  email: string;
-  contato: string;
-  senha: string;
-  avatar?: string;
-}
+api.interceptors.response.use(
+  (res) => res,
+  async (error) => {
+    const original = error.config;
 
-export const authApi = {
-  async login(email: string, password: string): Promise<LoginResponse> {
-    const response = await fetch(`${API_URL}/auth/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email, password }),
-    });
+    if (error.response?.status === 401 && !original._retry) {
+      original._retry = true;
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Erro ao fazer login');
+      if (isRefreshing) {
+        return new Promise((resolve) => {
+          pendingQueue.push((t) => {
+            original.headers = original.headers ?? {};
+            original.headers.Authorization = `Bearer ${t}`;
+            resolve(api(original));
+          });
+        });
+      }
+
+      isRefreshing = true;
+
+      try {
+        const refresh_token = localStorage.getItem('refresh_token');
+        if (!refresh_token) throw new Error('no refresh');
+
+        const { data } = await axios.post(
+          `${import.meta.env.VITE_API_URL}/auth/refresh`,
+          { refresh_token }
+        );
+
+        const newAccess = data.access_token;
+        localStorage.setItem('access_token', newAccess);
+
+        isRefreshing = false;
+        onRefreshed(newAccess);
+
+        original.headers = original.headers ?? {};
+        original.headers.Authorization = `Bearer ${newAccess}`;
+        return api(original);
+      } catch (err) {
+        isRefreshing = false;
+        pendingQueue = [];
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        // opcional: redirecionar para /login
+        // window.location.href = '/login';
+        return Promise.reject(err);
+      }
     }
 
-    return response.json();
-  },
+    return Promise.reject(error);
+  }
+);
 
-  async register(data: RegisterData): Promise<LoginResponse> {
-    const response = await fetch(`${API_URL}/auth/register`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Erro ao registrar');
-    }
-
-    return response.json();
-  },
-
-  async getProfile(token: string) {
-    const response = await fetch(`${API_URL}/auth/me`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error('Erro ao buscar perfil');
-    }
-
-    return response.json();
-  },
-
-  async validateToken(token: string): Promise<boolean> {
-    try {
-      const response = await fetch(`${API_URL}/auth/validate`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      return response.ok;
-    } catch {
-      return false;
-    }
-  },
-};
-
-export const adminApi = {
-  async getUsersStats(token: string) {
-    const response = await fetch(`${API_URL}/users/stats`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error('Erro ao buscar estatísticas de usuários');
-    }
-
-    return response.json();
-  },
-
-  async getAllUsers(token: string) {
-    const response = await fetch(`${API_URL}/users`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error('Erro ao buscar usuários');
-    }
-
-    return response.json();
-  },
-};
+export default api;

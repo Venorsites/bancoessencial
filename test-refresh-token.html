@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Refresh Token - Frontend</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background-color: #0056b3; }
+        button:disabled { background-color: #6c757d; cursor: not-allowed; }
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Teste do Sistema de Refresh Token</h1>
+        <p>Este arquivo testa o sistema de refresh automático de tokens implementado no frontend.</p>
+
+        <div class="test-section info">
+            <h3>📋 Instruções</h3>
+            <ol>
+                <li>Abra o DevTools (F12) e vá para a aba Network</li>
+                <li>Configure o backend com <code>JWT_EXPIRES_IN=10s</code> para testes rápidos</li>
+                <li>Execute os testes abaixo em sequência</li>
+                <li>Observe as requisições de refresh automático</li>
+            </ol>
+        </div>
+
+        <div class="test-section">
+            <h3>🔐 Teste 1: Login</h3>
+            <p>Faça login para obter os tokens iniciais.</p>
+            <button onclick="testLogin()">Fazer Login</button>
+            <div id="login-result" class="log"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔄 Teste 2: Requisição Normal</h3>
+            <p>Faça uma requisição normal para testar o token.</p>
+            <button onclick="testNormalRequest()">Fazer Requisição</button>
+            <div id="normal-result" class="log"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>⏰ Teste 3: Aguardar Expiração</h3>
+            <p>Aguarde o token expirar e faça uma nova requisição.</p>
+            <button onclick="testExpiredToken()">Testar Token Expirado</button>
+            <div id="expired-result" class="log"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔄 Teste 4: Múltiplas Requisições</h3>
+            <p>Faça várias requisições simultâneas para testar a queue.</p>
+            <button onclick="testMultipleRequests()">Fazer 3 Requisições</button>
+            <div id="multiple-result" class="log"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🧹 Teste 5: Limpeza</h3>
+            <p>Limpe os tokens e teste o fallback.</p>
+            <button onclick="testCleanup()">Limpar Tokens</button>
+            <div id="cleanup-result" class="log"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📊 Status dos Tokens</h3>
+            <button onclick="checkTokenStatus()">Verificar Status</button>
+            <div id="status-result" class="log"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000';
+        let logContainer = null;
+
+        function log(message, containerId) {
+            const container = document.getElementById(containerId);
+            const timestamp = new Date().toLocaleTimeString();
+            container.textContent += `[${timestamp}] ${message}\n`;
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function clearLog(containerId) {
+            document.getElementById(containerId).textContent = '';
+        }
+
+        async function testLogin() {
+            clearLog('login-result');
+            log('Iniciando teste de login...', 'login-result');
+            
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'admin@bancoessencial.com',
+                        password: 'admin123'
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    localStorage.setItem('access_token', data.access_token);
+                    localStorage.setItem('refresh_token', data.refresh_token);
+                    log('✅ Login realizado com sucesso!', 'login-result');
+                    log(`Access Token: ${data.access_token.substring(0, 50)}...`, 'login-result');
+                    log(`Refresh Token: ${data.refresh_token.substring(0, 50)}...`, 'login-result');
+                } else {
+                    log('❌ Erro no login', 'login-result');
+                }
+            } catch (error) {
+                log(`❌ Erro: ${error.message}`, 'login-result');
+            }
+        }
+
+        async function testNormalRequest() {
+            clearLog('normal-result');
+            log('Fazendo requisição normal...', 'normal-result');
+            
+            try {
+                const token = localStorage.getItem('access_token');
+                const response = await fetch(`${API_URL}/auth/me`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    log('✅ Requisição normal funcionou!', 'normal-result');
+                    log(`Usuário: ${data.nome}`, 'normal-result');
+                } else {
+                    log(`❌ Erro: ${response.status}`, 'normal-result');
+                }
+            } catch (error) {
+                log(`❌ Erro: ${error.message}`, 'normal-result');
+            }
+        }
+
+        async function testExpiredToken() {
+            clearLog('expired-result');
+            log('Testando token expirado...', 'expired-result');
+            log('Aguarde alguns segundos e observe o Network tab...', 'expired-result');
+            
+            // Simular requisição que pode falhar
+            setTimeout(async () => {
+                try {
+                    const token = localStorage.getItem('access_token');
+                    const response = await fetch(`${API_URL}/auth/me`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+
+                    if (response.ok) {
+                        log('✅ Token ainda válido ou foi renovado automaticamente!', 'expired-result');
+                    } else {
+                        log(`❌ Token expirado: ${response.status}`, 'expired-result');
+                    }
+                } catch (error) {
+                    log(`❌ Erro: ${error.message}`, 'expired-result');
+                }
+            }, 2000);
+        }
+
+        async function testMultipleRequests() {
+            clearLog('multiple-result');
+            log('Fazendo múltiplas requisições simultâneas...', 'multiple-result');
+            
+            const promises = [];
+            for (let i = 1; i <= 3; i++) {
+                promises.push(
+                    fetch(`${API_URL}/auth/me`, {
+                        headers: { 'Authorization': `Bearer ${localStorage.getItem('access_token')}` }
+                    }).then(response => {
+                        log(`Requisição ${i}: ${response.ok ? '✅' : '❌'} ${response.status}`, 'multiple-result');
+                        return response;
+                    })
+                );
+            }
+
+            try {
+                await Promise.all(promises);
+                log('✅ Todas as requisições concluídas!', 'multiple-result');
+            } catch (error) {
+                log(`❌ Erro: ${error.message}`, 'multiple-result');
+            }
+        }
+
+        function testCleanup() {
+            clearLog('cleanup-result');
+            log('Limpando tokens...', 'cleanup-result');
+            
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            
+            log('✅ Tokens removidos!', 'cleanup-result');
+            log('Agora faça uma requisição para testar o fallback...', 'cleanup-result');
+        }
+
+        function checkTokenStatus() {
+            clearLog('status-result');
+            
+            const accessToken = localStorage.getItem('access_token');
+            const refreshToken = localStorage.getItem('refresh_token');
+            
+            log('📊 Status dos Tokens:', 'status-result');
+            log(`Access Token: ${accessToken ? '✅ Presente' : '❌ Ausente'}`, 'status-result');
+            log(`Refresh Token: ${refreshToken ? '✅ Presente' : '❌ Ausente'}`, 'status-result');
+            
+            if (accessToken) {
+                try {
+                    const payload = JSON.parse(atob(accessToken.split('.')[1]));
+                    const exp = new Date(payload.exp * 1000);
+                    const now = new Date();
+                    const timeLeft = Math.max(0, Math.floor((exp - now) / 1000));
+                    
+                    log(`Expira em: ${timeLeft} segundos`, 'status-result');
+                    log(`Expira em: ${exp.toLocaleString()}`, 'status-result');
+                } catch (error) {
+                    log('❌ Erro ao decodificar token', 'status-result');
+                }
+            }
+        }
+
+        // Verificar status inicial
+        window.onload = () => {
+            checkTokenStatus();
+        };
+    </script>
+</body>
+</html>
