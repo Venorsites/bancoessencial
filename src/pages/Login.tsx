@@ -56,7 +56,7 @@ export default function Login() {
       {/* Background Image with Dark Overlay */}
       <div className="absolute inset-0 z-0">
         <img
-          src="/src/assets/hero-background.jpg"
+          src="/hero-background.jpg"
           alt="Background aromaterapia"
           className="w-full h-full object-cover"
         />
