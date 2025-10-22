@@ -27,9 +27,9 @@ export default function Admin() {
   // Sincronizar activeTab com a URL atual
   useEffect(() => {
     const path = location.pathname;
-    if (path.includes('/oils/new') || path.includes('/oils/edit/')) {
+    if (path.includes('/oils')) {
       setActiveTab('oils');
-    } else if (path.includes('/diseases/new') || path.includes('/diseases/edit/')) {
+    } else if (path.includes('/diseases')) {
       setActiveTab('diseases');
     } else if (path.includes('/users')) {
       setActiveTab('users');
