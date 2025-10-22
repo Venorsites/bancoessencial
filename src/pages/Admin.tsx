@@ -86,8 +86,10 @@ export default function Admin() {
         <div className="max-w-7xl mx-auto">
           <Routes>
             <Route path="/" element={renderContent()} />
+            <Route path="/oils" element={<AdminOils />} />
             <Route path="/oils/new" element={<AdminOilForm />} />
             <Route path="/oils/edit/:id" element={<AdminOilForm />} />
+            <Route path="/diseases" element={<AdminDiseases />} />
             <Route path="/diseases/new" element={<AdminDiseaseForm />} />
             <Route path="/diseases/edit/:id" element={<AdminDiseaseForm />} />
             <Route path="/users" element={<AdminUsers />} />

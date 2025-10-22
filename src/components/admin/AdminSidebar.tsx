@@ -73,10 +73,10 @@ export function AdminSidebar({ activeTab, onTabChange }: AdminSidebarProps) {
         navigate('/admin');
         break;
       case 'oils':
-        navigate('/admin');
+        navigate('/admin/oils');
         break;
       case 'diseases':
-        navigate('/admin');
+        navigate('/admin/diseases');
         break;
       case 'users':
         navigate('/admin/users');

@@ -8,6 +8,8 @@ export interface DoencaGeral {
   oleos_recomendados: string[];
   sintomas_comuns: string[];
   forma_uso?: string;
+  ativo: boolean;
+  data_liberacao?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -18,11 +20,11 @@ export interface CreateDoencaGeralData {
   descricao_short: string;
   oleos_recomendados?: string[];
   sintomas_comuns?: string[];
-  forma_uso?: string;
+  forma_uso?: string[] | string;
 }
 
 export const doencasApi = {
-  async getAll(searchTerm?: string, categoria?: string): Promise<DoencaGeral[]> {
+  async getAll(searchTerm?: string, categoria?: string, activeOnly: boolean = true): Promise<DoencaGeral[]> {
     let url = `${API_URL}/doencas-geral`;
     const params = new URLSearchParams();
     
@@ -31,6 +33,9 @@ export const doencasApi = {
     }
     if (categoria) {
       params.append('categoria', categoria);
+    }
+    if (activeOnly) {
+      params.append('active', 'true');
     }
     
     if (params.toString()) {
@@ -111,6 +116,40 @@ export const doencasApi = {
     if (!response.ok) {
       throw new Error('Erro ao deletar doença');
     }
+  },
+
+  async toggleActivation(id: string, ativo: boolean, data_liberacao?: string, token?: string): Promise<DoencaGeral> {
+    const response = await fetch(`${API_URL}/doencas-geral/${id}/toggle-activation`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ ativo, data_liberacao }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Erro ao alterar status da doença');
+    }
+
+    return response.json();
+  },
+
+  async scheduleRelease(id: string, data_liberacao: string, token: string): Promise<DoencaGeral> {
+    const response = await fetch(`${API_URL}/doencas-geral/${id}/schedule-release`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ data_liberacao }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Erro ao agendar liberação da doença');
+    }
+
+    return response.json();
   },
 };
 

@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Plus, Edit, Trash2, Search, Eye } from "lucide-react";
+import { Plus, Edit, Trash2, Search, Eye, ToggleLeft, ToggleRight, Calendar, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { DatePicker } from "@/components/ui/date-picker";
 import { oilsApi, Oil } from "@/services/oilsApi";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -15,6 +17,10 @@ export function AdminOils() {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showActivationModal, setShowActivationModal] = useState(false);
+  const [selectedOil, setSelectedOil] = useState<Oil | null>(null);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
 
   useEffect(() => {
     loadOils();
@@ -24,7 +30,7 @@ export function AdminOils() {
     try {
       setLoading(true);
       setError(null);
-      const data = await oilsApi.getAll();
+      const data = await oilsApi.getAll(undefined, false); // activeOnly = false para admin
       setOils(data);
     } catch (err) {
       setError("Erro ao carregar óleos essenciais");
@@ -44,6 +50,65 @@ export function AdminOils() {
       setOils(oils.filter(oil => oil.id !== id));
     } catch (err) {
       alert("Erro ao deletar óleo");
+      console.error(err);
+    }
+  };
+
+  const handleActivationToggle = (oil: Oil) => {
+    setSelectedOil(oil);
+    setShowActivationModal(true);
+    setShowScheduleModal(false);
+    setSelectedDate(undefined);
+  };
+
+  const handleScheduleClick = () => {
+    setShowActivationModal(false);
+    setShowScheduleModal(true);
+  };
+
+  const handleScheduleSubmit = async () => {
+    if (!selectedOil || !selectedDate || !token) return;
+
+    try {
+      const scheduledDate = selectedDate.toISOString().split('T')[0];
+      const updatedOil = await oilsApi.scheduleRelease(selectedOil.id, scheduledDate, token);
+
+      // Atualizar a lista local
+      const updatedOils = oils.map(oil => 
+        oil.id === selectedOil.id ? updatedOil : oil
+      );
+      setOils(updatedOils);
+      setShowScheduleModal(false);
+      setSelectedOil(null);
+      setSelectedDate(undefined);
+    } catch (err) {
+      alert("Erro ao agendar liberação do óleo");
+      console.error(err);
+    }
+  };
+
+  const handleActivationSubmit = async (action: 'activate' | 'deactivate' | 'schedule', scheduledDate?: string) => {
+    if (!selectedOil || !token) return;
+
+    try {
+      let updatedOil;
+      
+      if (action === 'schedule' && scheduledDate) {
+        updatedOil = await oilsApi.scheduleRelease(selectedOil.id, scheduledDate, token);
+      } else {
+        const ativo = action === 'activate';
+        updatedOil = await oilsApi.toggleActivation(selectedOil.id, ativo, scheduledDate, token);
+      }
+
+      // Atualizar a lista local
+      const updatedOils = oils.map(oil => 
+        oil.id === selectedOil.id ? updatedOil : oil
+      );
+      setOils(updatedOils);
+      setShowActivationModal(false);
+      setSelectedOil(null);
+    } catch (err) {
+      alert("Erro ao atualizar status do óleo");
       console.error(err);
     }
   };
@@ -117,83 +182,173 @@ export function AdminOils() {
         </motion.div>
       )}
 
-      {/* Oils Grid */}
-      {!loading && !error && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-        >
-          {filteredOils.map((oil, index) => (
-            <motion.div
-              key={oil.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.05 }}
-            >
-              <Card className="group hover:shadow-lg transition-all duration-300 border-0 shadow-md">
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={oil.avatar || "https://via.placeholder.com/50"}
-                        alt={oil.nome}
-                        className="w-12 h-12 rounded-lg object-cover"
-                      />
-                      <div>
-                        <CardTitle className="text-lg font-semibold text-gray-900">
-                          {oil.nome}
-                        </CardTitle>
-                        <p className="text-sm text-gray-500 italic">
-                          {oil.nome_cientifico}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="space-y-2 mb-4">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-gray-500">Família:</span>
-                      <span className="text-sm text-gray-700">{oil.familia_botanica}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => navigate(`/oleos/${oil.id}`)}
-                      className="flex-1 text-blue-600 border-blue-200 hover:bg-blue-50"
-                    >
-                      <Eye className="w-4 h-4 mr-1" />
-                      Visualizar
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => navigate(`/admin/oils/edit/${oil.id}`)}
-                      className="flex-1 text-purple-600 border-purple-200 hover:bg-purple-50"
-                    >
-                      <Edit className="w-4 h-4 mr-1" />
-                      Editar
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDelete(oil.id)}
-                      className="text-red-600 border-red-200 hover:bg-red-50"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </motion.div>
-      )}
+      {/* Stats */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="grid grid-cols-1 md:grid-cols-4 gap-4"
+      >
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Total de Óleos</p>
+                <p className="text-2xl font-bold text-purple-600">{oils.length}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Óleos Ativos</p>
+                <p className="text-2xl font-bold text-green-600">
+                  {oils.filter(oil => oil.ativo).length}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Agendados</p>
+                <p className="text-2xl font-bold text-blue-600">
+                  {oils.filter(oil => oil.data_liberacao && !oil.ativo).length}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Table */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.3 }}
+      >
+        <Card>
+          <CardHeader>
+            <CardTitle>Óleos Essenciais Cadastrados</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {filteredOils.length === 0 ? (
+              <div className="text-center py-12 text-gray-500">
+                <p>Nenhum óleo encontrado</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b">
+                    <tr>
+                      <th className="text-left p-4 font-semibold text-gray-700">Nome</th>
+                      <th className="text-left p-4 font-semibold text-gray-700">Família</th>
+                      <th className="text-left p-4 font-semibold text-gray-700">Status</th>
+                      <th className="text-left p-4 font-semibold text-gray-700">Data Liberação</th>
+                      <th className="text-right p-4 font-semibold text-gray-700">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredOils.map((oil, index) => (
+                      <motion.tr
+                        key={oil.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                        className="border-b hover:bg-gray-50 transition-colors"
+                      >
+                        <td className="p-4">
+                          <div className="flex items-center gap-3">
+                            <img
+                              src={oil.avatar || "https://via.placeholder.com/40"}
+                              alt={oil.nome}
+                              className="w-10 h-10 rounded-lg object-cover"
+                            />
+                            <div>
+                              <p className="font-medium text-gray-900">{oil.nome}</p>
+                              <p className="text-sm text-gray-500 italic">
+                                {oil.nome_cientifico}
+                              </p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="p-4">
+                          <span className="text-sm text-gray-700">{oil.familia_botanica}</span>
+                        </td>
+                        <td className="p-4">
+                          <div className="flex flex-col gap-1">
+                            <Badge 
+                              variant={oil.ativo ? "default" : "secondary"}
+                              className={oil.ativo ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}
+                            >
+                              {oil.ativo ? "Ativo" : "Inativo"}
+                            </Badge>
+                            {oil.data_liberacao && !oil.ativo && (
+                              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                                Agendado
+                              </Badge>
+                            )}
+                          </div>
+                        </td>
+                        <td className="p-4">
+                          {oil.data_liberacao ? (
+                            <div className="flex items-center gap-1 text-sm text-blue-600">
+                              <Calendar className="w-4 h-4" />
+                              {new Date(oil.data_liberacao).toLocaleDateString('pt-BR')}
+                            </div>
+                          ) : (
+                            <span className="text-sm text-gray-500">-</span>
+                          )}
+                        </td>
+                        <td className="p-4">
+                          <div className="flex items-center justify-end gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => navigate(`/oleos/${oil.id}`)}
+                              className="text-blue-600 hover:bg-blue-50"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => navigate(`/admin/oils/edit/${oil.id}`)}
+                              className="text-purple-600 hover:bg-purple-50"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleActivationToggle(oil)}
+                              className={oil.ativo ? "text-orange-600 hover:bg-orange-50" : "text-green-600 hover:bg-green-50"}
+                            >
+                              {oil.ativo ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDelete(oil.id)}
+                              className="text-red-600 hover:bg-red-50"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </td>
+                      </motion.tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
 
       {/* Empty State */}
       {!loading && !error && filteredOils.length === 0 && (
@@ -223,6 +378,136 @@ export function AdminOils() {
               Adicionar Primeiro Óleo
             </Button>
           )}
+        </motion.div>
+      )}
+
+      {/* Activation Modal */}
+      {showActivationModal && selectedOil && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          onClick={() => setShowActivationModal(false)}
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            className="bg-white rounded-2xl max-w-md w-full p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">
+              Gerenciar Status do Óleo
+            </h3>
+            <p className="text-gray-600 mb-6">
+              <strong>{selectedOil.nome}</strong> - Como deseja gerenciar a exibição deste óleo?
+            </p>
+            
+            <div className="space-y-3">
+              <Button
+                onClick={() => handleActivationSubmit('activate')}
+                className="w-full bg-green-600 hover:bg-green-700 text-white"
+              >
+                <ToggleRight className="w-4 h-4 mr-2" />
+                Ativar Agora
+              </Button>
+              
+              <Button
+                onClick={() => handleActivationSubmit('deactivate')}
+                variant="outline"
+                className="w-full border-gray-300 text-gray-700 hover:bg-gray-50"
+              >
+                <ToggleLeft className="w-4 h-4 mr-2" />
+                Desativar
+              </Button>
+              
+              <Button
+                onClick={handleScheduleClick}
+                variant="outline"
+                className="w-full border-blue-300 text-blue-700 hover:bg-blue-50"
+              >
+                <Calendar className="w-4 h-4 mr-2" />
+                Agendar Liberação
+              </Button>
+            </div>
+            
+            <div className="flex justify-end mt-6">
+              <Button
+                variant="ghost"
+                onClick={() => setShowActivationModal(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                Cancelar
+              </Button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+
+      {/* Schedule Modal */}
+      {showScheduleModal && selectedOil && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          onClick={() => {
+            setShowScheduleModal(false);
+            setSelectedDate(undefined);
+          }}
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            className="bg-white rounded-2xl max-w-md w-full p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">
+              Agendar Liberação
+            </h3>
+            <p className="text-gray-600 mb-6">
+              <strong>{selectedOil.nome}</strong> - Selecione a data para liberação:
+            </p>
+            
+            <div className="space-y-4">
+              <DatePicker
+                value={selectedDate}
+                onChange={setSelectedDate}
+                placeholder="Selecione uma data"
+              />
+              
+              {selectedDate && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <p className="text-sm text-blue-800">
+                    <strong>Data selecionada:</strong> {selectedDate.toLocaleDateString('pt-BR')}
+                  </p>
+                </div>
+              )}
+            </div>
+            
+            <div className="flex justify-end gap-3 mt-6">
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setShowScheduleModal(false);
+                  setSelectedDate(undefined);
+                }}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleScheduleSubmit}
+                disabled={!selectedDate}
+                className="bg-blue-600 hover:bg-blue-700 text-white disabled:bg-gray-300"
+              >
+                <Calendar className="w-4 h-4 mr-2" />
+                Agendar
+              </Button>
+            </div>
+          </motion.div>
         </motion.div>
       )}
     </div>

@@ -24,6 +24,8 @@ export interface Oil {
   substitutos?: string;
   combinacoes?: string;
   galeria_fotos?: string;
+  ativo: boolean;
+  data_liberacao?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -54,10 +56,18 @@ export interface CreateOilData {
 }
 
 export const oilsApi = {
-  async getAll(searchTerm?: string): Promise<Oil[]> {
-    const url = searchTerm
-      ? `${API_URL}/oils?search=${encodeURIComponent(searchTerm)}`
-      : `${API_URL}/oils`;
+  async getAll(searchTerm?: string, activeOnly: boolean = true): Promise<Oil[]> {
+    const params = new URLSearchParams();
+    
+    if (searchTerm) {
+      params.append('search', searchTerm);
+    }
+    
+    if (activeOnly) {
+      params.append('active', 'true');
+    }
+    
+    const url = `${API_URL}/oils${params.toString() ? `?${params.toString()}` : ''}`;
 
     const response = await fetch(url, {
       method: 'GET',
@@ -133,6 +143,40 @@ export const oilsApi = {
     if (!response.ok) {
       throw new Error('Erro ao deletar óleo');
     }
+  },
+
+  async toggleActivation(id: string, ativo: boolean, data_liberacao?: string, token?: string): Promise<Oil> {
+    const response = await fetch(`${API_URL}/oils/${id}/toggle-activation`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ ativo, data_liberacao }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Erro ao alterar status do óleo');
+    }
+
+    return response.json();
+  },
+
+  async scheduleRelease(id: string, data_liberacao: string, token: string): Promise<Oil> {
+    const response = await fetch(`${API_URL}/oils/${id}/schedule-release`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ data_liberacao }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Erro ao agendar liberação do óleo');
+    }
+
+    return response.json();
   },
 };
 

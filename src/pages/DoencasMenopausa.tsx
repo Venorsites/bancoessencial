@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Heart, ChevronRight, ArrowLeft, X } from "lucide-react";
+import { Search, Heart, ChevronRight, ArrowLeft, X, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -193,7 +193,6 @@ export default function DoencasMenopausa() {
                 size="sm"
                 onClick={() => setSelectedLetter(letter)}
                 className="rounded-xl w-10 h-10 p-0"
-                disabled={!Object.keys(groupedDiseases).includes(letter)}
               >
                 {letter}
               </Button>
@@ -428,11 +427,36 @@ export default function DoencasMenopausa() {
                   {/* Modo de Uso */}
                   <div>
                     <h3 className="font-semibold text-foreground mb-3 text-lg">Modo de Uso:</h3>
-                    <p className="text-muted-foreground text-sm leading-relaxed">
-                      A aromaterapia pode ajudar a aliviar os sintomas da menopausa, mas não substitui 
-                      o tratamento médico. Sempre consulte seu ginecologista antes de usar óleos essenciais, 
-                      especialmente se estiver fazendo terapia hormonal ou outros tratamentos.
-                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      <Badge 
+                        variant="secondary" 
+                        className="text-sm rounded-lg"
+                      >
+                        Não substitui o tratamento médico
+                      </Badge>
+                      <Badge 
+                        variant="secondary" 
+                        className="text-sm rounded-lg"
+                      >
+                        Consulte seu ginecologista antes de usar
+                      </Badge>
+                      <Badge 
+                        variant="secondary" 
+                        className="text-sm rounded-lg"
+                      >
+                        Especialmente se estiver fazendo terapia hormonal
+                      </Badge>
+                    </div>
+                  </div>
+
+                  {/* Alert Message */}
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                    <div className="flex items-start gap-3">
+                      <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                      <p className="text-amber-800 text-sm leading-relaxed">
+                        Consulte um profissional de aromaterapia para orientações específicas sobre dosagem, método de aplicação e contraindicações para esta condição ou verifique a aula respectiva.
+                      </p>
+                    </div>
                   </div>
                 </div>
               </motion.div>

@@ -27,11 +27,12 @@ export default function AdminDiseaseForm() {
     descricao_short: "",
     oleos_recomendados: [],
     sintomas_comuns: [],
-    forma_uso: "",
+    forma_uso: [],
   });
 
   const [newOil, setNewOil] = useState("");
   const [newSymptom, setNewSymptom] = useState("");
+  const [newFormaUso, setNewFormaUso] = useState("");
 
   useEffect(() => {
     if (isEditing) {
@@ -43,13 +44,26 @@ export default function AdminDiseaseForm() {
     try {
       setLoadingData(true);
       const disease = await doencasApi.getById(id!);
+      
+      // Parse forma_uso from string to array
+      let formaUsoArray: string[] = [];
+      if (disease.forma_uso) {
+        try {
+          // Try to parse as JSON array first
+          formaUsoArray = JSON.parse(disease.forma_uso);
+        } catch {
+          // If not JSON, split by comma and trim
+          formaUsoArray = disease.forma_uso.split(',').map(item => item.trim()).filter(item => item);
+        }
+      }
+      
       setFormData({
         nome: disease.nome,
         categoria: disease.categoria,
         descricao_short: disease.descricao_short,
         oleos_recomendados: disease.oleos_recomendados || [],
         sintomas_comuns: disease.sintomas_comuns || [],
-        forma_uso: disease.forma_uso || "",
+        forma_uso: formaUsoArray,
       });
     } catch (err) {
       setError("Erro ao carregar doença");
@@ -71,13 +85,19 @@ export default function AdminDiseaseForm() {
       setLoading(true);
       setError(null);
 
+      // Prepare data for submission - convert forma_uso array to string
+      const dataToSubmit = {
+        ...formData,
+        forma_uso: formData.forma_uso?.join(', ') || "",
+      };
+
       if (isEditing) {
-        await doencasApi.update(id!, formData, token!);
+        await doencasApi.update(id!, dataToSubmit, token!);
       } else {
-        await doencasApi.create(formData, token!);
+        await doencasApi.create(dataToSubmit, token!);
       }
 
-      navigate("/admin");
+      navigate("/admin/diseases");
     } catch (err) {
       setError(`Erro ao ${isEditing ? "atualizar" : "criar"} doença`);
       console.error(err);
@@ -130,6 +150,23 @@ export default function AdminDiseaseForm() {
     }));
   };
 
+  const addFormaUso = () => {
+    if (newFormaUso.trim() && !formData.forma_uso?.includes(newFormaUso.trim())) {
+      setFormData((prev) => ({
+        ...prev,
+        forma_uso: [...(prev.forma_uso || []), newFormaUso.trim()],
+      }));
+      setNewFormaUso("");
+    }
+  };
+
+  const removeFormaUso = (formaUso: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      forma_uso: (prev.forma_uso || []).filter((f) => f !== formaUso),
+    }));
+  };
+
   if (loadingData) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -153,7 +190,7 @@ export default function AdminDiseaseForm() {
         >
           <Button
             variant="ghost"
-            onClick={() => navigate("/admin")}
+            onClick={() => navigate("/admin/diseases")}
             className="mb-4"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -327,15 +364,33 @@ export default function AdminDiseaseForm() {
                 <CardHeader>
                   <CardTitle>Forma de Uso</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <Textarea
-                    id="forma_uso"
-                    name="forma_uso"
-                    value={formData.forma_uso}
-                    onChange={handleInputChange}
-                    placeholder="Instruções de uso dos óleos para esta condição (opcional)"
-                    rows={4}
-                  />
+                <CardContent className="space-y-4">
+                  <div className="flex gap-2">
+                    <Input
+                      value={newFormaUso}
+                      onChange={(e) => setNewFormaUso(e.target.value)}
+                      onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addFormaUso())}
+                      placeholder="Método de uso (ex: Inalação, Massagem, Banho)"
+                    />
+                    <Button type="button" onClick={addFormaUso} variant="outline">
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    {formData.forma_uso?.map((formaUso) => (
+                      <Badge key={formaUso} variant="secondary" className="px-3 py-1">
+                        {formaUso}
+                        <button
+                          type="button"
+                          onClick={() => removeFormaUso(formaUso)}
+                          className="ml-2 hover:text-red-500"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
                 </CardContent>
               </Card>
             </motion.div>
@@ -350,7 +405,7 @@ export default function AdminDiseaseForm() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => navigate("/admin")}
+                onClick={() => navigate("/admin/diseases")}
                 disabled={loading}
               >
                 Cancelar

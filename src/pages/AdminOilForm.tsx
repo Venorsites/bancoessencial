@@ -101,7 +101,7 @@ export default function AdminOilForm() {
       }
     } catch (err) {
       alert("Erro ao carregar óleo");
-      navigate('/admin');
+      navigate('/admin/oils');
     }
   };
 
@@ -141,7 +141,7 @@ export default function AdminOilForm() {
         await oilsApi.create(dataToSubmit, token!);
         alert("Óleo criado com sucesso!");
       }
-      navigate('/admin');
+      navigate('/admin/oils');
     } catch (err: any) {
       alert(err.message || "Erro ao salvar óleo");
     } finally {
@@ -165,7 +165,7 @@ export default function AdminOilForm() {
         <div>
           <Button
             variant="ghost"
-            onClick={() => navigate('/admin')}
+            onClick={() => navigate('/admin/oils')}
             className="mb-2"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />

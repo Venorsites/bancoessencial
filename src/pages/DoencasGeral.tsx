@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Heart, ChevronRight, ArrowLeft, X } from "lucide-react";
+import { Search, Heart, ChevronRight, ArrowLeft, X, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -37,7 +37,7 @@ export default function DoencasGeral() {
     try {
       setLoading(true);
       setError(null);
-      const data = await doencasApi.getAll();
+      const data = await doencasApi.getAll(undefined, undefined, true); // activeOnly = true
       const transformedData: Disease[] = data.map((doenca: DoencaGeral) => ({
         id: doenca.id,
         name: doenca.nome,
@@ -172,7 +172,6 @@ export default function DoencasGeral() {
                 size="sm"
                 onClick={() => setSelectedLetter(letter)}
                 className="rounded-xl w-10 h-10 p-0"
-                disabled={!Object.keys(groupedDiseases).includes(letter)}
               >
                 {letter}
               </Button>
@@ -413,10 +412,36 @@ export default function DoencasGeral() {
                   {/* Modo de Uso */}
                   <div>
                     <h3 className="font-semibold text-foreground mb-3 text-lg">Modo de Uso:</h3>
-                    <p className="text-muted-foreground text-sm leading-relaxed">
-                      {selectedDisease.usageForm || 
-                        "Consulte um profissional de aromaterapia para orientações específicas sobre dosagem, método de aplicação e contraindicações para esta condição."}
-                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedDisease.usageForm ? (
+                        selectedDisease.usageForm.split(',').map((usage, index) => (
+                          <Badge 
+                            key={index} 
+                            variant="secondary" 
+                            className="text-sm rounded-lg"
+                          >
+                            {usage.trim()}
+                          </Badge>
+                        ))
+                      ) : (
+                        <Badge 
+                          variant="outline" 
+                          className="text-sm rounded-lg"
+                        >
+                          Consulte um profissional de aromaterapia para orientações específicas sobre dosagem, método de aplicação e contraindicações para esta condição.
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Alert Message */}
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                    <div className="flex items-start gap-3">
+                      <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                      <p className="text-amber-800 text-sm leading-relaxed">
+                        Consulte um profissional de aromaterapia para orientações específicas sobre dosagem, método de aplicação e contraindicações para esta condição ou verifique a aula respectiva.
+                      </p>
+                    </div>
                   </div>
                 </div>
               </motion.div>
