@@ -109,7 +109,9 @@ export const oilsApi = {
     });
 
     if (!response.ok) {
-      throw new Error('Erro ao criar óleo');
+      const errorData = await response.json().catch(() => null);
+      const errorMessage = errorData?.message || 'Erro ao criar óleo';
+      throw new Error(errorMessage);
     }
 
     return response.json();
@@ -126,7 +128,9 @@ export const oilsApi = {
     });
 
     if (!response.ok) {
-      throw new Error('Erro ao atualizar óleo');
+      const errorData = await response.json().catch(() => null);
+      const errorMessage = errorData?.message || 'Erro ao atualizar óleo';
+      throw new Error(errorMessage);
     }
 
     return response.json();

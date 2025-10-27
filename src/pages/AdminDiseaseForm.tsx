@@ -27,8 +27,11 @@ export default function AdminDiseaseForm() {
     descricao_short: "",
     oleos_recomendados: [],
     sintomas_comuns: [],
-    forma_uso: [],
+    forma_uso: "",
   });
+
+  // Separate state for UI arrays
+  const [formaUsoArray, setFormaUsoArray] = useState<string[]>([]);
 
   const [newOil, setNewOil] = useState("");
   const [newSymptom, setNewSymptom] = useState("");
@@ -46,14 +49,14 @@ export default function AdminDiseaseForm() {
       const disease = await doencasApi.getById(id!);
       
       // Parse forma_uso from string to array
-      let formaUsoArray: string[] = [];
+      let formaUsoArrayData: string[] = [];
       if (disease.forma_uso) {
         try {
           // Try to parse as JSON array first
-          formaUsoArray = JSON.parse(disease.forma_uso);
+          formaUsoArrayData = JSON.parse(disease.forma_uso);
         } catch {
           // If not JSON, split by comma and trim
-          formaUsoArray = disease.forma_uso.split(',').map(item => item.trim()).filter(item => item);
+          formaUsoArrayData = disease.forma_uso.split(',').map(item => item.trim()).filter(item => item);
         }
       }
       
@@ -63,8 +66,10 @@ export default function AdminDiseaseForm() {
         descricao_short: disease.descricao_short,
         oleos_recomendados: disease.oleos_recomendados || [],
         sintomas_comuns: disease.sintomas_comuns || [],
-        forma_uso: formaUsoArray,
+        forma_uso: disease.forma_uso || "",
       });
+      
+      setFormaUsoArray(formaUsoArrayData);
     } catch (err) {
       setError("Erro ao carregar doença");
       console.error(err);
@@ -88,7 +93,7 @@ export default function AdminDiseaseForm() {
       // Prepare data for submission - convert forma_uso array to string
       const dataToSubmit = {
         ...formData,
-        forma_uso: formData.forma_uso?.join(', ') || "",
+        forma_uso: formaUsoArray.join(', '),
       };
 
       if (isEditing) {
@@ -151,20 +156,14 @@ export default function AdminDiseaseForm() {
   };
 
   const addFormaUso = () => {
-    if (newFormaUso.trim() && !formData.forma_uso?.includes(newFormaUso.trim())) {
-      setFormData((prev) => ({
-        ...prev,
-        forma_uso: [...(prev.forma_uso || []), newFormaUso.trim()],
-      }));
+    if (newFormaUso.trim() && !formaUsoArray.includes(newFormaUso.trim())) {
+      setFormaUsoArray((prev) => [...prev, newFormaUso.trim()]);
       setNewFormaUso("");
     }
   };
 
   const removeFormaUso = (formaUso: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      forma_uso: (prev.forma_uso || []).filter((f) => f !== formaUso),
-    }));
+    setFormaUsoArray((prev) => prev.filter((f) => f !== formaUso));
   };
 
   if (loadingData) {
@@ -378,7 +377,7 @@ export default function AdminDiseaseForm() {
                   </div>
 
                   <div className="flex flex-wrap gap-2">
-                    {formData.forma_uso?.map((formaUso) => (
+                    {formaUsoArray.map((formaUso) => (
                       <Badge key={formaUso} variant="secondary" className="px-3 py-1">
                         {formaUso}
                         <button

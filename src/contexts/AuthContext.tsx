@@ -38,9 +38,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  
+  // Modo de desenvolvimento - criar usuário admin automaticamente
+  const isDevMode = false; // DESATIVADO - usar login real
 
   useEffect(() => {
     const loadStorageData = async () => {
+      // Modo de desenvolvimento - criar usuário admin automaticamente
+      if (isDevMode) {
+        const devUser: User = {
+          id: 'dev-admin-id',
+          nome: 'Admin',
+          sobrenome: 'Sistema',
+          email: 'admin@bancoessencial.com',
+          contato: '11999999999',
+          role: 'ADMIN'
+        };
+        const devToken = 'dev-admin-token';
+        
+        setUser(devUser);
+        setToken(devToken);
+        setLoading(false);
+        return;
+      }
+
       const storedAccessToken = localStorage.getItem('access_token');
       const storedRefreshToken = localStorage.getItem('refresh_token');
       const storedUser = localStorage.getItem('@BancoEssencial:user');
@@ -63,7 +84,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     loadStorageData();
-  }, []);
+  }, [isDevMode]);
 
   const login = async (email: string, password: string) => {
     try {

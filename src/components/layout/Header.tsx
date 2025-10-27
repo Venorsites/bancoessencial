@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Heart, Menu, X, User, Settings, LogOut } from "lucide-react";
+import { Search, Heart, Menu, X, User, Settings, LogOut, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -124,6 +124,15 @@ export function Header({}: HeaderProps) {
                       <Heart className="w-4 h-4 mr-2" />
                       Favoritos
                     </DropdownMenuItem>
+                    {user?.role === 'admin' && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => navigate("/admin")}>
+                          <Shield className="w-4 h-4 mr-2" />
+                          Admin Sistema
+                        </DropdownMenuItem>
+                      </>
+                    )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={logout}>
                       <LogOut className="w-4 h-4 mr-2" />

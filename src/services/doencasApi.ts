@@ -20,7 +20,7 @@ export interface CreateDoencaGeralData {
   descricao_short: string;
   oleos_recomendados?: string[];
   sintomas_comuns?: string[];
-  forma_uso?: string[] | string;
+  forma_uso?: string;
 }
 
 export const doencasApi = {
@@ -82,7 +82,9 @@ export const doencasApi = {
     });
 
     if (!response.ok) {
-      throw new Error('Erro ao criar doença');
+      const errorData = await response.json().catch(() => null);
+      const errorMessage = errorData?.message || 'Erro ao criar doença';
+      throw new Error(errorMessage);
     }
 
     return response.json();
@@ -99,7 +101,9 @@ export const doencasApi = {
     });
 
     if (!response.ok) {
-      throw new Error('Erro ao atualizar doença');
+      const errorData = await response.json().catch(() => null);
+      const errorMessage = errorData?.message || 'Erro ao atualizar doença';
+      throw new Error(errorMessage);
     }
 
     return response.json();
