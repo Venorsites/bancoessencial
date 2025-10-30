@@ -70,7 +70,15 @@ export function AdminOils() {
     if (!selectedOil || !selectedDate || !token) return;
 
     try {
-      const scheduledDate = selectedDate.toISOString().split('T')[0];
+      // Enviar data completa em ISO para evitar problemas de timezone/parse no backend
+      const scheduledDate = new Date(
+        Date.UTC(
+          selectedDate.getFullYear(),
+          selectedDate.getMonth(),
+          selectedDate.getDate(),
+          12, 0, 0, 0
+        )
+      ).toISOString();
       const updatedOil = await oilsApi.scheduleRelease(selectedOil.id, scheduledDate, token);
 
       // Atualizar a lista local
@@ -94,7 +102,8 @@ export function AdminOils() {
       let updatedOil;
       
       if (action === 'schedule' && scheduledDate) {
-        updatedOil = await oilsApi.scheduleRelease(selectedOil.id, scheduledDate, token);
+        const isoDate = new Date(scheduledDate).toISOString();
+        updatedOil = await oilsApi.scheduleRelease(selectedOil.id, isoDate, token);
       } else {
         const ativo = action === 'activate';
         updatedOil = await oilsApi.toggleActivation(selectedOil.id, ativo, scheduledDate, token);
