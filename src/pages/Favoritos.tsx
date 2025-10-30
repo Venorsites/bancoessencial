@@ -5,44 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "@/contexts/AuthContext";
+import { getFavorites, removeFavorite as removeFav, FavoriteItem } from "@/utils/favorites";
+import { useNavigate } from "react-router-dom";
 
-interface FavoriteItem {
-  id: string;
-  type: 'oil' | 'disease' | 'content';
-  title: string;
-  subtitle?: string;
-  description: string;
-  tags: string[];
-  addedAt: string;
-}
-
-const mockFavorites: FavoriteItem[] = [
-  {
-    id: "oil-1",
-    type: "oil",
-    title: "Lavanda",
-    subtitle: "Lavandula angustifolia",
-    description: "Óleo essencial com propriedades calmantes e cicatrizantes.",
-    tags: ["Calmante", "Cicatrizante", "Floral"],
-    addedAt: "2024-01-15T10:30:00Z",
-  },
-  {
-    id: "disease-1",
-    type: "disease",
-    title: "Acne",
-    description: "Condição inflamatória da pele que causa espinhas e cravos.",
-    tags: ["Pele", "Tea Tree", "Lavanda"],
-    addedAt: "2024-01-14T15:45:00Z",
-  },
-  {
-    id: "content-1",
-    type: "content",
-    title: "Como Fazer Blend Energizante",
-    description: "Tutorial sobre criação de misturas energizantes com óleos essenciais.",
-    tags: ["Energia", "Blend", "DIY"],
-    addedAt: "2024-01-13T09:20:00Z",
-  },
-];
+// Using shared FavoriteItem from utils
 
 const getTypeIcon = (type: string) => {
   switch (type) {
@@ -63,25 +30,45 @@ const getTypeLabel = (type: string) => {
 };
 
 export default function Favoritos() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+
+  // Sanitiza e melhora links dentro do HTML vindo salvo
+  const highlightLinks = (html: string) => {
+    if (!html) return html;
+    let cleanHtml = html
+      .replace(/style="[^"]*"/gi, "")
+      .replace(/data-[^=]*="[^"]*"/gi, "")
+      .replace(/<!--[\s\S]*?-->/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    cleanHtml = cleanHtml.replace(/<a\s+([^>]*?)href="([^"]*?)"([^>]*?)>/gi, (match, before, url, after) => {
+      const beforeClean = before.replace(/class="[^"]*"/gi, '').replace(/target="[^"]*"/gi, '').replace(/rel="[^"]*"/gi, '');
+      const afterClean = after.replace(/class="[^"]*"/gi, '').replace(/target="[^"]*"/gi, '').replace(/rel="[^"]*"/gi, '');
+      return `<a ${beforeClean}href="${url}"${afterClean} target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 underline font-medium transition-colors duration-200">`;
+    });
+    const urlRegex = /(?<!<a[^>]*>)(https?:\/\/[^\s<>"]+)(?![^<]*<\/a>)/gi;
+    return cleanHtml.replace(urlRegex, (url) => {
+      return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 underline font-medium transition-colors duration-200">${url}</a>`;
+    });
+  };
+
+  const stripHtml = (html: string) => html.replace(/<[^>]+>/g, '').trim();
 
   useEffect(() => {
-    // Load favorites from localStorage
-    const savedFavorites = localStorage.getItem('favorites');
-    if (savedFavorites) {
-      setFavorites(JSON.parse(savedFavorites));
-    } else {
-      // Use mock data for demo
-      setFavorites(mockFavorites);
-      localStorage.setItem('favorites', JSON.stringify(mockFavorites));
-    }
-  }, []);
+    setFavorites(getFavorites(user?.id));
+  }, [user?.id]);
 
   const removeFavorite = (id: string) => {
-    const updatedFavorites = favorites.filter(item => item.id !== id);
-    setFavorites(updatedFavorites);
-    localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
+    const target = favorites.find((f) => f.id === id);
+    if (!target) return;
+    const prefix = `${target.type}-`;
+    const rawId = id.startsWith(prefix) ? id.slice(prefix.length) : id;
+    removeFav(target.type, rawId, user?.id);
+    setFavorites(getFavorites(user?.id));
   };
 
   const filteredFavorites = favorites.filter(item => {
@@ -90,6 +77,13 @@ export default function Favoritos() {
                          item.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
     return matchesSearch;
   });
+
+  const openOilPage = (fav: FavoriteItem) => {
+    if (fav.type !== 'oil') return;
+    const rawId = fav.id.split('-')[1];
+    if (fav.url) return navigate(fav.url);
+    if (rawId) navigate(`/oleos/${rawId}`);
+  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-BR', {
@@ -216,9 +210,19 @@ export default function Favoritos() {
                             {item.subtitle}
                           </p>
                         )}
-                        <p className="text-muted-foreground">
-                          {item.description}
-                        </p>
+                        <div className="text-xs text-muted-foreground">Adicionado em {formatDate(item.addedAt)}</div>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {item.type === 'oil' && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="rounded-xl border-purple-300 text-purple-700 hover:bg-purple-50"
+                              onClick={() => openOilPage(item)}
+                            >
+                              Ver mais
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     </div>
                     <Button
@@ -231,24 +235,7 @@ export default function Favoritos() {
                     </Button>
                   </div>
                 </CardHeader>
-
-                <CardContent className="space-y-3">
-                  <div className="flex flex-wrap gap-1">
-                    {item.tags.map((tag) => (
-                      <Badge 
-                        key={tag} 
-                        variant="outline" 
-                        className="text-xs rounded-lg"
-                      >
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                  
-                  <div className="text-xs text-muted-foreground">
-                    Adicionado em {formatDate(item.addedAt)}
-                  </div>
-                </CardContent>
+                <CardContent className="space-y-3" />
               </Card>
             </motion.div>
           ))}
@@ -297,6 +284,7 @@ export default function Favoritos() {
         </motion.div>
       )}
       </div>
+      {/* no popup; navigation only */}
     </div>
   );
 }

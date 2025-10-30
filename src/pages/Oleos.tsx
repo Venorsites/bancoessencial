@@ -12,6 +12,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/contexts/AuthContext";
+import { isFavorite as isFav, toggleFavorite as toggleFav, FavoriteItem } from "@/utils/favorites";
 
 const mockOils = [
   {
@@ -146,6 +148,7 @@ const chemicalGroups = ["Todos", "Ésteres", "Monoterpenos", "Óxidos", "Aldeíd
 
 export default function Oleos() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Todos");
   const [selectedChemicalGroup, setSelectedChemicalGroup] = useState("Todos");
@@ -170,7 +173,12 @@ export default function Oleos() {
       setLoading(true);
       setError(null);
       const data = await oilsApi.getAll();
-      setOils(data);
+      // annotate favorites based on localStorage per user
+      const withFavs = data.map((oil: Oil) => ({
+        ...oil,
+        isFavorite: isFav('oil', oil.id, user?.id),
+      }));
+      setOils(withFavs as any);
     } catch (err) {
       setError("Erro ao carregar óleos essenciais. Tente novamente mais tarde.");
       console.error(err);
@@ -180,11 +188,30 @@ export default function Oleos() {
   };
 
   const toggleFavorite = (id: number) => {
+    const oil = oils.find((o) => o.id === id);
+    if (!oil) return;
+    const toggled = toggleFav((): FavoriteItem => ({
+      id: `oil-${oil.id}`,
+      type: 'oil',
+      title: oil.nome,
+      subtitle: oil.nome_cientifico,
+      description: oil.descricao || '',
+      tags: [
+        ...(oil.categoria_aromatica ? oil.categoria_aromatica.split(',').map((t: string) => t.trim()) : []),
+        ...(oil.aroma ? oil.aroma.split(',').map((t: string) => t.trim()) : []),
+      ].slice(0, 5),
+      addedAt: new Date().toISOString(),
+      image: oil.avatar,
+      url: `/oleos/${oil.id}`,
+    }), user?.id);
     setOils((o) =>
-      o.map((oil) =>
-        oil.id === id ? { ...oil, isFavorite: !oil.isFavorite } : oil
+      o.map((it) =>
+        it.id === id ? { ...it, isFavorite: toggled } : it
       )
     );
+    if (selectedOil && selectedOil.id === id) {
+      setSelectedOil({ ...selectedOil, isFavorite: toggled } as any);
+    }
   };
 
   const openOilModal = (oil: any) => {

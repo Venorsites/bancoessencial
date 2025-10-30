@@ -73,18 +73,16 @@ export default function Profile() {
       }));
     }
 
-    // Carregar número de favoritos
-    const savedFavorites = localStorage.getItem('favorites');
-    if (savedFavorites) {
-      try {
-        const favorites = JSON.parse(savedFavorites);
-        setProfile(prev => ({
-          ...prev,
-          totalFavorites: favorites.length
-        }));
-      } catch (error) {
-        console.error('Erro ao carregar favoritos:', error);
-      }
+    // Carregar número de favoritos por usuário
+    try {
+      const saved = localStorage.getItem(`favorites:${user?.id || 'guest'}`);
+      const favorites = saved ? JSON.parse(saved) : [];
+      setProfile(prev => ({
+        ...prev,
+        totalFavorites: Array.isArray(favorites) ? favorites.length : 0
+      }));
+    } catch (error) {
+      console.error('Erro ao carregar favoritos:', error);
     }
   }, [user]);
 

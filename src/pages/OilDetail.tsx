@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   ArrowLeft, 
   Heart, 
-  Share2, 
   AlertTriangle, 
   Atom, 
   CheckSquare, 
@@ -16,10 +15,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { oilsApi, Oil } from "@/services/oilsApi";
+import { useAuth } from "@/contexts/AuthContext";
+import { isFavorite as isFav, toggleFavorite as toggleFav, FavoriteItem } from "@/utils/favorites";
 
 export default function OilDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [oil, setOil] = useState<Oil | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -44,6 +46,7 @@ export default function OilDetail() {
       setError(null);
       const data = await oilsApi.getById(id!);
       setOil(data);
+      setIsFavorite(isFav('oil', data.id, user?.id));
     } catch (err) {
       setError("Erro ao carregar óleo essencial. Tente novamente mais tarde.");
       console.error(err);
@@ -53,7 +56,22 @@ export default function OilDetail() {
   };
 
   const toggleFavorite = () => {
-    setIsFavorite(!isFavorite);
+    if (!oil) return;
+    const toggled = toggleFav((): FavoriteItem => ({
+      id: `oil-${oil.id}`,
+      type: 'oil',
+      title: oil.nome,
+      subtitle: oil.nome_cientifico,
+      description: oil.descricao || '',
+      tags: [
+        ...(oil.categoria_aromatica ? oil.categoria_aromatica.split(',').map((t: string) => t.trim()) : []),
+        ...(oil.aroma ? oil.aroma.split(',').map((t: string) => t.trim()) : []),
+      ].slice(0, 5),
+      addedAt: new Date().toISOString(),
+      image: oil.avatar,
+      url: `/oleos/${oil.id}`,
+    }), user?.id);
+    setIsFavorite(toggled);
   };
 
   const toggleSection = (section: string) => {
@@ -101,23 +119,7 @@ export default function OilDetail() {
     setSelectedImage(null);
   };
 
-  const shareOil = async () => {
-    if (navigator.share && oil) {
-      try {
-        await navigator.share({
-          title: oil.nome,
-          text: `Confira informações sobre ${oil.nome} - ${oil.nome_cientifico}`,
-          url: window.location.href,
-        });
-      } catch (err) {
-        console.log('Erro ao compartilhar:', err);
-      }
-    } else {
-      // Fallback para copiar URL
-      navigator.clipboard.writeText(window.location.href);
-      alert('Link copiado para a área de transferência!');
-    }
-  };
+  // share removed per request
 
   if (loading) {
     return (
@@ -176,14 +178,6 @@ export default function OilDetail() {
                       : "text-gray-600"
                   }`}
                 />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={shareOil}
-                className="rounded-full"
-              >
-                <Share2 className="w-5 h-5 text-gray-600" />
               </Button>
             </div>
           </div>
