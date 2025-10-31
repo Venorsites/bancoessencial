@@ -169,6 +169,12 @@ const Index = () => {
                           alt={card.title}
                           className="absolute inset-0 w-full h-full object-cover"
                         />
+                        {card.href !== '/oleos' && (
+                          <span className="absolute top-2 right-2 flex items-center gap-1 rounded-full bg-purple-100 text-purple-800 border border-purple-200 px-2 py-0.5 text-[10px] font-semibold shadow">
+                            <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" />
+                            Em breve
+                          </span>
+                        )}
                       </div>
 
                       <div className="bg-white p-3 sm:p-4">

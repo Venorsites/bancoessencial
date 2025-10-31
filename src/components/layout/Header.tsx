@@ -43,10 +43,13 @@ export function Header({}: HeaderProps) {
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3">
             <motion.div 
-              className="w-16 h-16 flex items-center justify-center"
+              className="relative w-16 h-16 flex items-center justify-center"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
+              <Badge className="absolute -top-2 left-1/2 -translate-x-1/2 rounded-full px-2 py-0.5 text-[10px] bg-purple-600 text-white shadow">
+                Beta
+              </Badge>
               <img 
                 src={logo} 
                 alt="Logo Banco de Dados Essencial" 
@@ -64,9 +67,17 @@ export function Header({}: HeaderProps) {
               <Link key={item.href} to={item.href}>
                 <Button 
                   variant={item.active ? "default" : "ghost"}
-                  className="rounded-xl"
+                  className="relative rounded-xl overflow-visible"
                 >
-                  {item.label}
+                  <span className="inline-flex items-center">
+                    {item.label}
+                  </span>
+                  {(item.href === '/doencas' || item.href === '/quimica' || item.href === '/conteudos') && (
+                    <span className="absolute -top-3 -right-2 flex items-center gap-1 rounded-full bg-purple-100 text-purple-800 border border-purple-200 px-2 py-0.5 text-[10px] font-semibold shadow-sm">
+                      <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" />
+                      Em breve
+                    </span>
+                  )}
                 </Button>
               </Link>
             ))}
@@ -187,10 +198,18 @@ export function Header({}: HeaderProps) {
                   <Link key={item.href} to={item.href}>
                     <Button 
                       variant={item.active ? "default" : "ghost"}
-                      className="w-full justify-start rounded-xl"
+                      className="w-full justify-start rounded-xl relative overflow-visible"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
-                      {item.label}
+                      <span className="inline-flex items-center">
+                        {item.label}
+                      </span>
+                      {(item.href === '/doencas' || item.href === '/quimica' || item.href === '/conteudos') && (
+                        <span className="absolute -top-1 right-2 flex items-center gap-1 rounded-full bg-purple-100 text-purple-800 border border-purple-200 px-2 py-0.5 text-[10px] font-semibold shadow-sm">
+                          <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" />
+                          Em breve
+                        </span>
+                      )}
                     </Button>
                   </Link>
                 ))}
