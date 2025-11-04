@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Plus, Edit, Trash2, Search, Eye, ToggleLeft, ToggleRight, Calendar, Clock } from "lucide-react";
+import { Plus, Edit, Trash2, Search, Eye, ToggleLeft, ToggleRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { DatePicker } from "@/components/ui/date-picker";
 import { oilsApi, Oil } from "@/services/oilsApi";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -19,8 +18,6 @@ export function AdminOils() {
   const [error, setError] = useState<string | null>(null);
   const [showActivationModal, setShowActivationModal] = useState(false);
   const [selectedOil, setSelectedOil] = useState<Oil | null>(null);
-  const [showScheduleModal, setShowScheduleModal] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
 
   useEffect(() => {
     loadOils();
@@ -57,57 +54,14 @@ export function AdminOils() {
   const handleActivationToggle = (oil: Oil) => {
     setSelectedOil(oil);
     setShowActivationModal(true);
-    setShowScheduleModal(false);
-    setSelectedDate(undefined);
   };
 
-  const handleScheduleClick = () => {
-    setShowActivationModal(false);
-    setShowScheduleModal(true);
-  };
-
-  const handleScheduleSubmit = async () => {
-    if (!selectedOil || !selectedDate || !token) return;
-
-    try {
-      // Enviar data completa em ISO para evitar problemas de timezone/parse no backend
-      const scheduledDate = new Date(
-        Date.UTC(
-          selectedDate.getFullYear(),
-          selectedDate.getMonth(),
-          selectedDate.getDate(),
-          12, 0, 0, 0
-        )
-      ).toISOString();
-      const updatedOil = await oilsApi.scheduleRelease(selectedOil.id, scheduledDate, token);
-
-      // Atualizar a lista local
-      const updatedOils = oils.map(oil => 
-        oil.id === selectedOil.id ? updatedOil : oil
-      );
-      setOils(updatedOils);
-      setShowScheduleModal(false);
-      setSelectedOil(null);
-      setSelectedDate(undefined);
-    } catch (err) {
-      alert("Erro ao agendar liberação do óleo");
-      console.error(err);
-    }
-  };
-
-  const handleActivationSubmit = async (action: 'activate' | 'deactivate' | 'schedule', scheduledDate?: string) => {
+  const handleActivationSubmit = async (action: 'activate' | 'deactivate') => {
     if (!selectedOil || !token) return;
 
     try {
-      let updatedOil;
-      
-      if (action === 'schedule' && scheduledDate) {
-        const isoDate = new Date(scheduledDate).toISOString();
-        updatedOil = await oilsApi.scheduleRelease(selectedOil.id, isoDate, token);
-      } else {
-        const ativo = action === 'activate';
-        updatedOil = await oilsApi.toggleActivation(selectedOil.id, ativo, scheduledDate, token);
-      }
+      const ativo = action === 'activate';
+      const updatedOil = await oilsApi.toggleActivation(selectedOil.id, ativo, undefined, token);
 
       // Atualizar a lista local
       const updatedOils = oils.map(oil => 
@@ -430,15 +384,6 @@ export function AdminOils() {
                 <ToggleLeft className="w-4 h-4 mr-2" />
                 Desativar
               </Button>
-              
-              <Button
-                onClick={handleScheduleClick}
-                variant="outline"
-                className="w-full border-blue-300 text-blue-700 hover:bg-blue-50"
-              >
-                <Calendar className="w-4 h-4 mr-2" />
-                Agendar Liberação
-              </Button>
             </div>
             
             <div className="flex justify-end mt-6">
@@ -454,71 +399,6 @@ export function AdminOils() {
         </motion.div>
       )}
 
-      {/* Schedule Modal */}
-      {showScheduleModal && selectedOil && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
-          onClick={() => {
-            setShowScheduleModal(false);
-            setSelectedDate(undefined);
-          }}
-        >
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.9, opacity: 0 }}
-            className="bg-white rounded-2xl max-w-md w-full p-6"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-xl font-semibold text-gray-900 mb-4">
-              Agendar Liberação
-            </h3>
-            <p className="text-gray-600 mb-6">
-              <strong>{selectedOil.nome}</strong> - Selecione a data para liberação:
-            </p>
-            
-            <div className="space-y-4">
-              <DatePicker
-                value={selectedDate}
-                onChange={setSelectedDate}
-                placeholder="Selecione uma data"
-              />
-              
-              {selectedDate && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                  <p className="text-sm text-blue-800">
-                    <strong>Data selecionada:</strong> {selectedDate.toLocaleDateString('pt-BR')}
-                  </p>
-                </div>
-              )}
-            </div>
-            
-            <div className="flex justify-end gap-3 mt-6">
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  setShowScheduleModal(false);
-                  setSelectedDate(undefined);
-                }}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                Cancelar
-              </Button>
-              <Button
-                onClick={handleScheduleSubmit}
-                disabled={!selectedDate}
-                className="bg-blue-600 hover:bg-blue-700 text-white disabled:bg-gray-300"
-              >
-                <Calendar className="w-4 h-4 mr-2" />
-                Agendar
-              </Button>
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
     </div>
   );
 }
