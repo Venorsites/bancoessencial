@@ -10,8 +10,14 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useMemo } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const isAdmin = user?.role?.toUpperCase() === 'ADMIN';
+  
   // ===== Nome do usuário para saudação =====
   const userName = useMemo(() => {
     try {
@@ -22,7 +28,23 @@ const Index = () => {
     return alt || "você";
   }, []);
 
-  const contentCards = [
+  const handleCardClick = (e: React.MouseEvent, href: string, adminOnly?: boolean) => {
+    if (adminOnly && !isAdmin) {
+      e.preventDefault();
+      toast({
+        title: "Em breve!",
+        description: "Esta página estará disponível em breve.",
+        className: "border-0",
+        style: {
+          backgroundColor: '#7D5FBB',
+          color: '#ffffff',
+        },
+      });
+      return false;
+    }
+  };
+
+  const allContentCards = [
     {
       image:
         "https://i.ibb.co/N2CVmNZL/Banco-de-Dados-leos-Essenciais-Fichas-Completas.webp",
@@ -41,6 +63,7 @@ const Index = () => {
         "Recomendações de óleos essenciais para diferentes condições de saúde",
       href: "/doencas",
       color: "from-pink-400 to-pink-600",
+      adminOnly: true,
     },
     {
       image:
@@ -50,6 +73,7 @@ const Index = () => {
         "Compreenda a química por trás dos óleos essenciais e suas propriedades",
       href: "/quimica",
       color: "from-green-400 to-green-600",
+      adminOnly: true,
     },
     {
       image: "https://i.ibb.co/whpd6f5J/Banco-de-Conte-dos-Insta-da-Dai.webp",
@@ -57,6 +81,7 @@ const Index = () => {
       description: "Acesso organizado aos conteúdos educativos do Instagram",
       href: "/conteudos",
       color: "from-blue-400 to-blue-600",
+      adminOnly: true,
     },
     {
       image:
@@ -68,6 +93,9 @@ const Index = () => {
       color: "from-orange-400 to-orange-600",
     },
   ];
+
+  // Mostrar todos os cards (filtro removido)
+  const contentCards = allContentCards;
 
   const socialNetworks = [
     { 
@@ -161,7 +189,10 @@ const Index = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                 >
-                  <Link to={card.href}>
+                  <Link 
+                    to={card.href}
+                    onClick={(e) => handleCardClick(e, card.href, card.adminOnly)}
+                  >
                     <Card className="dashboard-card group flex flex-col overflow-hidden">
                       <div className="relative w-full aspect-[16/9]">
                         <img

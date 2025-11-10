@@ -7,6 +7,7 @@ import { Layout } from "@/components/layout/Layout";
 import { UserProvider } from "./contexts/UserContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
+import { AdminRoute } from "./components/auth/AdminRoute";
 import Index from "./pages/Index";
 import Oleos from "./pages/Oleos";
 import OilDetail from "./pages/OilDetail";
@@ -55,13 +56,44 @@ const App = () => (
                       <Route path="/" element={<Index />} />
                       <Route path="/oleos" element={<Oleos />} />
                       <Route path="/oleos/:id" element={<OilDetail />} />
-                      <Route path="/doencas" element={<Doencas />} />
-                      <Route path="/doencas/geral" element={<DoencasGeral />} />
-                      <Route path="/doencas/pediatrica" element={<DoencasPediatrica />} />
-                      <Route path="/doencas/gestacao" element={<DoencasGestacao />} />
-                      <Route path="/doencas/menopausa" element={<DoencasMenopausa />} />
-                      <Route path="/quimica" element={<Quimica />} />
-                      <Route path="/conteudos" element={<Conteudos />} />
+                      
+                      {/* Rotas restritas apenas para ADMIN */}
+                      <Route path="/doencas" element={
+                        <AdminRoute>
+                          <Doencas />
+                        </AdminRoute>
+                      } />
+                      <Route path="/doencas/geral" element={
+                        <AdminRoute>
+                          <DoencasGeral />
+                        </AdminRoute>
+                      } />
+                      <Route path="/doencas/pediatrica" element={
+                        <AdminRoute>
+                          <DoencasPediatrica />
+                        </AdminRoute>
+                      } />
+                      <Route path="/doencas/gestacao" element={
+                        <AdminRoute>
+                          <DoencasGestacao />
+                        </AdminRoute>
+                      } />
+                      <Route path="/doencas/menopausa" element={
+                        <AdminRoute>
+                          <DoencasMenopausa />
+                        </AdminRoute>
+                      } />
+                      <Route path="/quimica" element={
+                        <AdminRoute>
+                          <Quimica />
+                        </AdminRoute>
+                      } />
+                      <Route path="/conteudos" element={
+                        <AdminRoute>
+                          <Conteudos />
+                        </AdminRoute>
+                      } />
+                      
                       <Route path="/favoritos" element={<Favoritos />} />
                       <Route path="/profile" element={<Profile />} />
                       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

@@ -13,17 +13,18 @@ export function Toaster() {
 
   return (
     <ToastProvider>
-      {toasts.map(function ({ id, title, description, action, ...props }) {
+      {toasts.map(function ({ id, title, description, action, style, ...props }) {
+        const isCustomStyle = style?.backgroundColor === '#7D5FBB';
         return (
-          <Toast key={id} {...props}>
+          <Toast key={id} {...props} style={style}>
             <div className="grid gap-1">
-              {title && <ToastTitle>{title}</ToastTitle>}
+              {title && <ToastTitle className={isCustomStyle ? "text-white" : ""}>{title}</ToastTitle>}
               {description && (
-                <ToastDescription>{description}</ToastDescription>
+                <ToastDescription className={isCustomStyle ? "text-white opacity-100" : ""}>{description}</ToastDescription>
               )}
             </div>
             {action}
-            <ToastClose />
+            <ToastClose className={isCustomStyle ? "text-white hover:text-white/80" : ""} />
           </Toast>
         )
       })}

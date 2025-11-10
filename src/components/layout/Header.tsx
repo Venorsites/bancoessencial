@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 import logo from "@/assets/logo.svg";
 
 interface HeaderProps {}
@@ -23,6 +24,27 @@ export function Header({}: HeaderProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { toast } = useToast();
+
+  const isAdmin = user?.role?.toUpperCase() === 'ADMIN';
+
+  const adminOnlyRoutes = ['/doencas', '/quimica', '/conteudos'];
+
+  const handleNavClick = (e: React.MouseEvent, href: string) => {
+    if (adminOnlyRoutes.some(route => href.startsWith(route)) && !isAdmin) {
+      e.preventDefault();
+      toast({
+        title: "Em breve!",
+        description: "Esta página estará disponível em breve.",
+        className: "border-0",
+        style: {
+          backgroundColor: '#7D5FBB',
+          color: '#ffffff',
+        },
+      });
+      return false;
+    }
+  };
 
   const navItems = [
     { href: "/oleos", label: "Óleos Essenciais", active: location.pathname === "/oleos" },
@@ -64,7 +86,11 @@ export function Header({}: HeaderProps) {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-1">
             {navItems.map((item) => (
-              <Link key={item.href} to={item.href}>
+              <Link 
+                key={item.href} 
+                to={item.href}
+                onClick={(e) => handleNavClick(e, item.href)}
+              >
                 <Button 
                   variant={item.active ? "default" : "ghost"}
                   className="relative rounded-xl overflow-visible"
@@ -195,11 +221,19 @@ export function Header({}: HeaderProps) {
               {/* Mobile Navigation */}
               <div className="space-y-2">
                 {navItems.map((item) => (
-                  <Link key={item.href} to={item.href}>
+                  <Link 
+                    key={item.href} 
+                    to={item.href}
+                    onClick={(e) => {
+                      if (handleNavClick(e, item.href) === false) {
+                        return;
+                      }
+                      setIsMobileMenuOpen(false);
+                    }}
+                  >
                     <Button 
                       variant={item.active ? "default" : "ghost"}
                       className="w-full justify-start rounded-xl relative overflow-visible"
-                      onClick={() => setIsMobileMenuOpen(false)}
                     >
                       <span className="inline-flex items-center">
                         {item.label}
