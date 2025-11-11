@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import logo from "@/assets/logo.svg";
+import logo from "@/assets/logo-banco.svg";
 
 interface HeaderProps {}
 
@@ -63,24 +63,22 @@ export function Header({}: HeaderProps) {
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-3">
+          <Link to="/" className="flex items-center space-x-2 relative">
             <motion.div 
-              className="relative w-16 h-16 flex items-center justify-center"
+              className="h-16 flex items-center justify-center relative"
+              style={{ width: 'auto' }}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              <Badge className="absolute -top-2 left-1/2 -translate-x-1/2 rounded-full px-2 py-0.5 text-[10px] bg-purple-600 text-white shadow">
-                Beta
-              </Badge>
               <img 
                 src={logo} 
                 alt="Logo Banco de Dados Essencial" 
-                className="w-full h-full object-contain"
+                className="h-full w-auto object-contain"
               />
+              <Badge className="absolute -top-2 left-0 -translate-x-1/2 rounded-full px-2 py-0.5 text-[10px] bg-purple-600 text-white shadow z-10">
+                Beta
+              </Badge>
             </motion.div>
-            <h1 className="text-2xl font-bold hidden sm:block" style={{ color: '#7D5FBB' }}>
-              Banco de Dados Essencial
-            </h1>
           </Link>
 
           {/* Desktop Navigation */}

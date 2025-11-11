@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Lock, Mail, Eye, EyeOff } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import logo from "@/assets/logov1.svg";
+import logo from "@/assets/logo-banco-branca.svg";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -32,8 +32,7 @@ export default function Login() {
       await login(email, password);
       navigate("/");
     } catch (error) {
-      // O toast de erro já é exibido no AuthContext
-      console.error('Erro no login:', error);
+      console.error("Erro no login:", error);
     } finally {
       setIsLoading(false);
     }
@@ -45,7 +44,9 @@ export default function Login() {
       <div className="min-h-screen bg-gradient-subtle flex items-center justify-center px-4">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Redirecionando para a página principal...</p>
+          <p className="text-muted-foreground">
+            Redirecionando para a página principal...
+          </p>
         </div>
       </div>
     );
@@ -60,29 +61,26 @@ export default function Login() {
           alt="Background aromaterapia"
           className="w-full h-full object-cover"
         />
-        {/* Dark gradient overlay for better readability */}
         <div className="absolute inset-0 bg-gradient-to-br from-black/30 via-black/60 to-purple-900/50"></div>
       </div>
-      
+
       {/* Content */}
       <div className="relative z-10 w-full max-w-md">
         {/* Header */}
-        <motion.div 
+        <motion.div
           className="text-center mb-8"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <div className="w-28 h-28 flex items-center justify-center mx-auto mb-4">
-            <img 
-              src={logo} 
-              alt="Logo Banco de Dados Essencial" 
-              className="h-24 w-auto md:h-28 object-contain"
+          <div className="flex items-center justify-center mx-auto mb-5">
+            <img
+              src={logo}
+              alt="Logo Banco de Dados Essencial"
+              className="h-16 w-auto md:h-24 object-contain"
             />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">
-            Banco de Dados Essencial
-          </h1>
+
           <p className="text-white/90">
             Faça login para acessar a plataforma
           </p>
@@ -105,7 +103,10 @@ export default function Login() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Email Field */}
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-foreground font-medium">
+                  <Label
+                    htmlFor="email"
+                    className="text-foreground font-medium"
+                  >
                     E-mail
                   </Label>
                   <div className="relative">
@@ -124,7 +125,10 @@ export default function Login() {
 
                 {/* Password Field */}
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-foreground font-medium">
+                  <Label
+                    htmlFor="password"
+                    className="text-foreground font-medium"
+                  >
                     Senha
                   </Label>
                   <div className="relative">
@@ -154,7 +158,7 @@ export default function Login() {
                   </div>
                 </div>
 
-                {/* Forgot Password Link */}
+                {/* Forgot Password */}
                 <div className="text-right">
                   <Link to="/forgot-password">
                     <Button
@@ -167,7 +171,7 @@ export default function Login() {
                   </Link>
                 </div>
 
-                {/* Submit Button */}
+                {/* Submit */}
                 <Button
                   type="submit"
                   className="w-full rounded-2xl bg-[#8B5CF6] hover:bg-[#7C3AED] text-white font-medium py-3 transition-colors"
@@ -181,7 +185,7 @@ export default function Login() {
         </motion.div>
 
         {/* Additional Info */}
-        <motion.div 
+        <motion.div
           className="text-center mt-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -189,7 +193,10 @@ export default function Login() {
         >
           <p className="text-sm text-white/80">
             Ainda não tem uma conta?{" "}
-            <Button variant="link" className="p-0 h-auto text-white hover:text-purple-200">
+            <Button
+              variant="link"
+              className="p-0 h-auto text-white hover:text-purple-200"
+            >
               Entre em contato
             </Button>
           </p>
