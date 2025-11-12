@@ -28,7 +28,12 @@ api.interceptors.response.use(
   async (error) => {
     const original = error.config;
 
-    if (error.response?.status === 401 && !original._retry) {
+    // NÃO tentar refresh em rotas de autenticação (login, register, refresh)
+    const isAuthRoute = original.url?.includes('/auth/login') || 
+                        original.url?.includes('/auth/register') ||
+                        original.url?.includes('/auth/refresh');
+
+    if (error.response?.status === 401 && !original._retry && !isAuthRoute) {
       original._retry = true;
 
       if (isRefreshing) {

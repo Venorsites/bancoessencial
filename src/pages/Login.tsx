@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Lock, Mail, Eye, EyeOff } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 import logo from "@/assets/logo-banco-branca.svg";
 
 export default function Login() {
@@ -16,6 +17,7 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { login, isAuthenticated } = useAuth();
+  const { toast } = useToast();
 
   // Redirecionar se já estiver autenticado
   useEffect(() => {
@@ -31,8 +33,64 @@ export default function Login() {
     try {
       await login(email, password);
       navigate("/");
-    } catch (error) {
-      console.error("Erro no login:", error);
+    } catch (error: any) {
+      console.log("🔴 Erro capturado no login:", error);
+      
+      // Extrair a mensagem de erro de diferentes formatos possíveis
+      let errorMessage = '';
+      
+      // Tentar diferentes formas de extrair a mensagem
+      if (error?.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (typeof error?.response?.data === 'string') {
+        errorMessage = error.response.data;
+      } else if (error?.response?.data && typeof error.response.data === 'object') {
+        // Tentar pegar a propriedade message ou a primeira propriedade string
+        errorMessage = error.response.data.message || 
+                      error.response.data.error || 
+                      Object.values(error.response.data)[0] as string || '';
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
+      console.log("📝 Mensagem extraída:", errorMessage);
+      
+      // Normalizar a mensagem para comparação (case insensitive e remover espaços)
+      const normalizedMessage = errorMessage.toUpperCase().trim();
+      
+      console.log("🔍 Mensagem normalizada:", normalizedMessage);
+      
+      // Verificar qual tipo de erro é
+      if (normalizedMessage === 'USER_NOT_FOUND' || normalizedMessage.includes('USER_NOT_FOUND')) {
+        console.log("✅ Mostrando notificação: Usuário não encontrado");
+        toast({
+          title: 'Usuário não encontrado',
+          description: 'O e-mail informado não está cadastrado no sistema.',
+          variant: 'destructive',
+        });
+      } else if (normalizedMessage === 'INVALID_PASSWORD' || normalizedMessage.includes('INVALID_PASSWORD')) {
+        console.log("✅ Mostrando notificação: Senha incorreta");
+        toast({
+          title: 'Senha incorreta',
+          description: 'A senha informada está incorreta. Verifique e tente novamente.',
+          variant: 'destructive',
+        });
+      } else if (normalizedMessage === 'ACCOUNT_SUSPENDED' || normalizedMessage.includes('ACCOUNT_SUSPENDED') || normalizedMessage.includes('SUSPENSA') || normalizedMessage.includes('SUSPENSO')) {
+        console.log("✅ Mostrando notificação: Conta suspensa");
+        toast({
+          title: 'Conta suspensa',
+          description: 'Sua conta foi suspensa por falta de pagamento. Entre em contato com o suporte para regularizar.',
+          variant: 'destructive',
+        });
+      } else {
+        console.log("⚠️ Erro não reconhecido, mostrando mensagem genérica");
+        // Erro genérico caso não seja nenhum dos casos acima
+        toast({
+          title: 'Erro ao fazer login',
+          description: errorMessage || 'Ocorreu um erro ao tentar fazer login. Tente novamente.',
+          variant: 'destructive',
+        });
+      }
     } finally {
       setIsLoading(false);
     }

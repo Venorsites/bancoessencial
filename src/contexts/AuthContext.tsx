@@ -87,28 +87,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [isDevMode]);
 
   const login = async (email: string, password: string) => {
-    try {
-      const { data } = await api.post('/auth/login', { email, password });
-      
-      setUser(data.user);
-      setToken(data.access_token);
-      
-      localStorage.setItem('access_token', data.access_token);
-      localStorage.setItem('refresh_token', data.refresh_token);
-      localStorage.setItem('@BancoEssencial:user', JSON.stringify(data.user));
+    const { data } = await api.post('/auth/login', { email, password });
+    
+    setUser(data.user);
+    setToken(data.access_token);
+    
+    localStorage.setItem('access_token', data.access_token);
+    localStorage.setItem('refresh_token', data.refresh_token);
+    localStorage.setItem('@BancoEssencial:user', JSON.stringify(data.user));
 
-      toast({
-        title: 'Login realizado com sucesso!',
-        description: `Bem-vindo, ${data.user.nome}!`,
-      });
-    } catch (error) {
-      toast({
-        title: 'Erro ao fazer login',
-        description: error instanceof Error ? error.message : 'Tente novamente',
-        variant: 'destructive',
-      });
-      throw error;
-    }
+    toast({
+      title: 'Login realizado com sucesso!',
+      description: `Bem-vindo, ${data.user.nome}!`,
+    });
   };
 
   const register = async (data: RegisterData) => {
