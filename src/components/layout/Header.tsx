@@ -14,12 +14,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { SearchBar } from "@/components/SearchBar";
 import logo from "@/assets/logo-banco.svg";
 
 interface HeaderProps {}
 
 export function Header({}: HeaderProps) {
-  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -112,17 +112,7 @@ export function Header({}: HeaderProps) {
             className="hidden md:flex items-center space-x-4"
             layout
           >
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar óleos, doenças..."
-                className={`pl-10 pr-4 w-64 rounded-2xl transition-all duration-300 ${
-                  isSearchFocused ? 'w-80 shadow-medium' : ''
-                }`}
-                onFocus={() => setIsSearchFocused(true)}
-                onBlur={() => setIsSearchFocused(false)}
-              />
-            </div>
+            <SearchBar />
 
             {/* Action Buttons */}
             <Link to="/favoritos">
@@ -208,12 +198,8 @@ export function Header({}: HeaderProps) {
               className="md:hidden mt-4 space-y-3 border-t border-border/50 pt-4"
             >
               {/* Mobile Search */}
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar óleos, doenças..."
-                  className="pl-10 pr-4 rounded-2xl"
-                />
+              <div className="px-2">
+                <SearchBar />
               </div>
 
               {/* Mobile Navigation */}

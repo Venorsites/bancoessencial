@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { doencasApi, DoencaGeral } from "@/services/doencasApi";
 
 interface Disease {
@@ -22,7 +22,9 @@ interface Disease {
 const alphabetLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
 export default function DoencasGeral() {
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialSearch = searchParams.get('search') || '';
+  const [searchTerm, setSearchTerm] = useState(initialSearch);
   const [selectedLetter, setSelectedLetter] = useState("");
   const [diseases, setDiseases] = useState<Disease[]>([]);
   const [selectedDisease, setSelectedDisease] = useState<Disease | null>(null);
@@ -32,6 +34,14 @@ export default function DoencasGeral() {
   useEffect(() => {
     loadDiseases();
   }, []);
+
+  // Atualizar searchTerm quando a URL mudar
+  useEffect(() => {
+    const urlSearch = searchParams.get('search');
+    if (urlSearch && urlSearch !== searchTerm) {
+      setSearchTerm(urlSearch);
+    }
+  }, [searchParams]);
 
   const loadDiseases = async () => {
     try {

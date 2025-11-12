@@ -1,17 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Filter, Heart, ChevronDown, ChevronRight, AlertTriangle, Atom, CheckSquare, Beaker, X, Info, ExternalLink } from "lucide-react";
+import { Search, Heart, ChevronRight, ChevronDown, AlertTriangle, Atom, CheckSquare, Beaker, X, Info, ExternalLink } from "lucide-react";
 import { oilsApi, Oil } from "@/services/oilsApi";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
 import { isFavorite as isFav, toggleFavorite as toggleFav, FavoriteItem } from "@/utils/favorites";
 
@@ -143,19 +137,16 @@ const mockOils = [
   },
 ];
 
-const categories = ["Todos", "Floral", "Medicinal", "Respiratório", "Cítrico"];
-const chemicalGroups = ["Todos", "Ésteres", "Monoterpenos", "Óxidos", "Aldeídos"];
+type OilWithFavorite = Oil & { isFavorite: boolean };
 
 export default function Oleos() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("Todos");
-  const [selectedChemicalGroup, setSelectedChemicalGroup] = useState("Todos");
-  const [oils, setOils] = useState<Oil[]>([]);
+  const [oils, setOils] = useState<OilWithFavorite[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedOil, setSelectedOil] = useState<Oil | null>(null);
+  const [selectedOil, setSelectedOil] = useState<OilWithFavorite | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [expandedSections, setExpandedSections] = useState({
     contraindications: false,
@@ -163,22 +154,22 @@ export default function Oleos() {
     substitutes: false,
     combinations: false
   });
+  const isFirstRender = useRef(true);
 
-  useEffect(() => {
-    loadOils();
-  }, []);
-
-  const loadOils = async () => {
+  const loadOils = async (searchTerm?: string) => {
     try {
       setLoading(true);
       setError(null);
-      const data = await oilsApi.getAll();
+      // Se houver termo de busca, usar a busca do backend, senão buscar todos
+      const data = searchTerm 
+        ? await oilsApi.getAll(searchTerm, true)
+        : await oilsApi.getAll(undefined, true);
       // annotate favorites based on localStorage per user
-      const withFavs = data.map((oil: Oil) => ({
+      const withFavs: OilWithFavorite[] = data.map((oil: Oil) => ({
         ...oil,
         isFavorite: isFav('oil', oil.id, user?.id),
       }));
-      setOils(withFavs as any);
+      setOils(withFavs);
     } catch (err) {
       setError("Erro ao carregar óleos essenciais. Tente novamente mais tarde.");
       console.error(err);
@@ -187,7 +178,30 @@ export default function Oleos() {
     }
   };
 
-  const toggleFavorite = (id: number) => {
+  // Carregar óleos na montagem inicial
+  useEffect(() => {
+    loadOils();
+    isFirstRender.current = false;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Buscar quando o termo de busca mudar (com debounce)
+  useEffect(() => {
+    // Pular na montagem inicial (já carregado no useEffect anterior)
+    if (isFirstRender.current) {
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      // Se o termo estiver vazio, buscar todos os óleos, senão buscar com o termo
+      loadOils(searchTerm.trim() || undefined);
+    }, 300); // Debounce de 300ms
+
+    return () => clearTimeout(timeoutId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm]);
+
+  const toggleFavorite = (id: string) => {
     const oil = oils.find((o) => o.id === id);
     if (!oil) return;
     const toggled = toggleFav((): FavoriteItem => ({
@@ -273,20 +287,8 @@ export default function Oleos() {
     });
   };
 
-  const filteredOils = oils.filter((oil) => {
-    const matchesSearch =
-      oil.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      oil.nome_cientifico.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (oil.familia_botanica && oil.familia_botanica.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (oil.aroma && oil.aroma.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesCategory =
-      selectedCategory === "Todos" || (oil.categoria_aromatica && oil.categoria_aromatica === selectedCategory);
-    const matchesChemicalGroup =
-      selectedChemicalGroup === "Todos" ||
-      (oil.familia_quimica && oil.familia_quimica === selectedChemicalGroup);
-
-    return matchesSearch && matchesCategory && matchesChemicalGroup;
-  });
+  // A busca já é feita no backend, então apenas usamos os óleos retornados
+  const filteredOils = oils;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-purple-50">
@@ -389,7 +391,7 @@ export default function Oleos() {
           </div>
         </motion.div>
 
-        {/* Search and Filters */}
+        {/* Search */}
         <motion.div
           className="flex flex-col md:flex-row gap-4 mb-8"
           initial={{ opacity: 0, y: 20 }}
@@ -405,51 +407,6 @@ export default function Oleos() {
               className="pl-10 pr-4 rounded-2xl shadow-soft"
             />
           </div>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                className="rounded-2xl min-w-[180px] justify-between"
-              >
-                <Filter className="w-4 h-4 mr-2" />
-                {selectedCategory}
-                <ChevronDown className="w-4 h-4 ml-2" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              {categories.map((category) => (
-                <DropdownMenuItem
-                  key={category}
-                  onClick={() => setSelectedCategory(category)}
-                >
-                  {category}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                className="rounded-2xl min-w-[180px] justify-between"
-              >
-                Grupo Químico
-                <ChevronDown className="w-4 h-4 ml-2" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              {chemicalGroups.map((group) => (
-                <DropdownMenuItem
-                  key={group}
-                  onClick={() => setSelectedChemicalGroup(group)}
-                >
-                  {group}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
         </motion.div>
 
         {/* Loading and Error States */}
@@ -462,7 +419,7 @@ export default function Oleos() {
         {error && (
           <div className="text-center py-12">
             <p className="text-red-500 text-lg">{error}</p>
-            <Button onClick={loadOils} className="mt-4">
+            <Button onClick={() => loadOils()} className="mt-4">
               Tentar Novamente
             </Button>
           </div>
