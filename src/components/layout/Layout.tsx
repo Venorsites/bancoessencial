@@ -1,5 +1,5 @@
-
 import { Header } from "./Header";
+import { Footer } from "./Footer";
 import { motion } from "framer-motion";
 import { useLocation } from "react-router-dom";
 
@@ -14,7 +14,7 @@ export function Layout({ children }: LayoutProps) {
   const isLoginPage = location.pathname === "/login";
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       {!isLoginPage && <Header />}
       <motion.main 
         className="flex-1"
@@ -24,6 +24,7 @@ export function Layout({ children }: LayoutProps) {
       >
         {children}
       </motion.main>
+      {!isLoginPage && <Footer />}
     </div>
   );
 }

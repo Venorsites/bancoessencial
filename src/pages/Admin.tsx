@@ -6,6 +6,7 @@ import { AdminDashboard } from "@/components/admin/AdminDashboard";
 import { AdminOils } from "@/components/admin/AdminOils";
 import { AdminDiseases } from "@/components/admin/AdminDiseases";
 import { AdminUsers } from "@/components/admin/AdminUsers";
+import { AdminPolicyAcceptances } from "@/components/admin/AdminPolicyAcceptances";
 import { AdminAnalyticsSimple } from "@/components/admin/AdminAnalyticsSimple";
 import AdminOilForm from "./AdminOilForm";
 import AdminDiseaseForm from "./AdminDiseaseForm";
@@ -33,6 +34,8 @@ export default function Admin() {
       setActiveTab('diseases');
     } else if (path.includes('/users')) {
       setActiveTab('users');
+    } else if (path.includes('/policy-acceptances')) {
+      setActiveTab('policy-acceptances');
     } else if (path.includes('/analytics')) {
       setActiveTab('analytics');
     } else if (path.includes('/settings')) {
@@ -56,6 +59,8 @@ export default function Admin() {
         return <AdminDiseases />;
       case "users":
         return <AdminUsers />;
+      case "policy-acceptances":
+        return <AdminPolicyAcceptances />;
       case "analytics":
         return (
           <div className="text-center py-12">

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Heart, Menu, X, User, Settings, LogOut, Shield } from "lucide-react";
+import { Search, Heart, Menu, X, User, Settings, LogOut, Shield, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -21,12 +21,57 @@ interface HeaderProps {}
 
 export function Header({}: HeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { toast } = useToast();
 
   const isAdmin = user?.role?.toUpperCase() === 'ADMIN';
+
+  // Buscar contador de notificações não lidas do localStorage
+  useEffect(() => {
+    const updateUnreadCount = () => {
+      try {
+        const stored = localStorage.getItem('notifications');
+        if (stored) {
+          const notifications = JSON.parse(stored);
+          const unreadCount = notifications.filter((n: any) => !n.read).length;
+          setUnreadNotifications(unreadCount);
+        } else {
+          // Se não houver no localStorage, calcular das notificações padrão
+          const defaultNotifications = [
+            { id: '1', read: false },
+            { id: '2', read: false },
+            { id: '3', read: true },
+          ];
+          const unreadCount = defaultNotifications.filter(n => !n.read).length;
+          setUnreadNotifications(unreadCount);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar notificações:', error);
+      }
+    };
+
+    updateUnreadCount();
+    
+    // Escutar mudanças no localStorage
+    const handleStorageChange = () => {
+      updateUnreadCount();
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    // Escutar evento customizado para atualizações na mesma aba
+    window.addEventListener('notifications-updated', handleStorageChange);
+    // Também verificar periodicamente para mudanças na mesma aba
+    const interval = setInterval(updateUnreadCount, 1000);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('notifications-updated', handleStorageChange);
+      clearInterval(interval);
+    };
+  }, [location.pathname]);
 
   const adminOnlyRoutes = ['/doencas', '/quimica', '/conteudos'];
 
@@ -121,6 +166,16 @@ export function Header({}: HeaderProps) {
               </Button>
             </Link>
 
+            {/* Notifications Bell */}
+            <Link to="/notificacoes">
+              <Button variant="ghost" size="icon" className="rounded-xl relative">
+                <Bell className="w-5 h-5" />
+                {unreadNotifications > 0 && (
+                  <span className="absolute top-1 right-1 w-2 h-2 bg-purple-600 rounded-full border-2 border-background"></span>
+                )}
+              </Button>
+            </Link>
+
             {/* User Menu */}
             <div className="flex items-center space-x-4">
               {user ? (
@@ -148,6 +203,15 @@ export function Header({}: HeaderProps) {
                     <DropdownMenuItem onClick={() => navigate("/favoritos")}>
                       <Heart className="w-4 h-4 mr-2" />
                       Favoritos
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate("/notificacoes")}>
+                      <Bell className="w-4 h-4 mr-2" />
+                      Notificações
+                      {unreadNotifications > 0 && (
+                        <Badge variant="destructive" className="ml-auto">
+                          {unreadNotifications}
+                        </Badge>
+                      )}
                     </DropdownMenuItem>
                     {user?.role === 'admin' && (
                       <>
@@ -248,7 +312,18 @@ export function Header({}: HeaderProps) {
                       <Button variant="ghost" className="w-full justify-start rounded-xl">
                         <Heart className="w-4 h-4 mr-2" />
                         Favoritos
-                        <Badge variant="destructive" className="ml-2">3</Badge>
+                      </Button>
+                    </Link>
+
+                    <Link to="/notificacoes">
+                      <Button variant="ghost" className="w-full justify-start rounded-xl">
+                        <Bell className="w-4 h-4 mr-2" />
+                        Notificações
+                        {unreadNotifications > 0 && (
+                          <Badge variant="destructive" className="ml-auto">
+                            {unreadNotifications}
+                          </Badge>
+                        )}
                       </Button>
                     </Link>
 

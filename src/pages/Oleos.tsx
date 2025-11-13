@@ -293,11 +293,11 @@ export default function Oleos() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-purple-50">
       {/* ===== Banner ===== */}
-      <section className="relative w-full h-32 sm:h-32 lg:h-40">
+      <section className="relative w-full h-32 sm:h-32 lg:h-40 overflow-hidden flex items-center justify-center">
         <img
           src="https://i.ibb.co/N2CVmNZL/Banco-de-Dados-leos-Essenciais-Fichas-Completas.webp"
           alt="Banner Banco de Dados Essencial - Óleos Essenciais"
-          className="absolute inset-0 w-full h-full object-cover object-center sm:object-top"
+          className="w-full h-full object-cover object-center"
         />
       </section>
 

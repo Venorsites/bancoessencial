@@ -11,7 +11,8 @@ import {
   X,
   ChevronRight,
   Home,
-  Stethoscope
+  Stethoscope,
+  FileCheck
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -47,6 +48,12 @@ const menuItems = [
     description: "Gerenciar usuários"
   },
   {
+    id: "policy-acceptances",
+    label: "Aceites de Política",
+    icon: FileCheck,
+    description: "Visualizar aceites de política"
+  },
+  {
     id: "analytics",
     label: "Analytics",
     icon: BarChart3,
@@ -80,6 +87,9 @@ export function AdminSidebar({ activeTab, onTabChange }: AdminSidebarProps) {
         break;
       case 'users':
         navigate('/admin/users');
+        break;
+      case 'policy-acceptances':
+        navigate('/admin');
         break;
       case 'analytics':
         navigate('/admin');

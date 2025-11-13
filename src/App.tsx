@@ -20,6 +20,8 @@ import Quimica from "./pages/Quimica";
 import Conteudos from "./pages/Conteudos";
 import Favoritos from "./pages/Favoritos";
 import Profile from "./pages/Profile";
+import Notificacoes from "./pages/Notificacoes";
+import PoliticaTermos from "./pages/PoliticaTermos";
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
 import NotFound from "./pages/NotFound";
@@ -96,6 +98,8 @@ const App = () => (
                       
                       <Route path="/favoritos" element={<Favoritos />} />
                       <Route path="/profile" element={<Profile />} />
+                      <Route path="/notificacoes" element={<Notificacoes />} />
+                      <Route path="/politica-e-termos" element={<PoliticaTermos />} />
                       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                       <Route path="*" element={<NotFound />} />
                     </Routes>
