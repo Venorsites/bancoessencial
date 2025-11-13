@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { PolicyAcceptanceModal } from "@/components/PolicyAcceptanceModal";
+import { BetaVersionModal, shouldShowBetaNotification } from "@/components/BetaVersionModal";
 import { API_URL } from "@/config/api";
 
 const Index = () => {
@@ -15,8 +16,10 @@ const Index = () => {
   const { toast } = useToast();
   const isAdmin = user?.role?.toUpperCase() === 'ADMIN';
   const [showPolicyModal, setShowPolicyModal] = useState(false);
+  const [showBetaModal, setShowBetaModal] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
   const [hasChecked, setHasChecked] = useState(false);
+  const [betaModalChecked, setBetaModalChecked] = useState(false);
 
   // Verificar se o usuário já aceitou a política
   useEffect(() => {
@@ -61,6 +64,8 @@ const Index = () => {
             setShowPolicyModal(true);
           } else {
             console.log("✅ [Policy] Usuário já aceitou a política");
+            // Não mostrar o modal beta aqui - ele só deve aparecer após aceitar os termos
+            // ou na primeira vez após login (que será tratado separadamente)
           }
         } else {
           // Se a resposta não for OK, mostrar o modal para garantir
@@ -87,6 +92,22 @@ const Index = () => {
 
   const handlePolicyAccept = () => {
     setShowPolicyModal(false);
+    // Mostrar modal beta logo após aceitar os termos, se o usuário não tiver optado por não ver mais
+    // Só mostrar se o usuário estiver autenticado
+    if (user && shouldShowBetaNotification(user.id)) {
+      // Marcar que o modal será mostrado nesta sessão
+      const sessionKey = `beta_notification_shown_${user.id}`;
+      sessionStorage.setItem(sessionKey, "true");
+      
+      // Pequeno delay para melhor UX
+      setTimeout(() => {
+        setShowBetaModal(true);
+      }, 300);
+    }
+  };
+
+  const handleBetaModalClose = () => {
+    setShowBetaModal(false);
   };
 
   const handleCardClick = (e: React.MouseEvent, href: string, adminOnly?: boolean) => {
@@ -187,11 +208,77 @@ const Index = () => {
     return () => clearTimeout(timeout);
   }, [user, token, authLoading, isChecking, hasChecked]);
 
+  // Mostrar modal beta apenas uma vez após login, se o usuário já aceitou os termos
+  useEffect(() => {
+    // Aguardar o auth terminar de carregar
+    if (authLoading) {
+      return;
+    }
+
+    // Se não tiver usuário autenticado, não mostrar
+    if (!user || !token) {
+      return;
+    }
+
+    // Se já verificou o modal beta, não verificar novamente
+    if (betaModalChecked) {
+      return;
+    }
+
+    // Só verificar após a verificação de política terminar
+    if (isChecking || !hasChecked) {
+      return;
+    }
+
+    // Verificar se o usuário já aceitou os termos e se deve mostrar o modal beta
+    const checkBetaModal = async () => {
+      try {
+        const response = await fetch(`${API_URL}/policy-acceptance/check?version=2.0`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          
+          // Se já aceitou os termos e ainda não viu o modal beta, mostrar
+          if (data.hasAccepted && shouldShowBetaNotification(user.id)) {
+            // Marcar que o modal será mostrado nesta sessão
+            const sessionKey = `beta_notification_shown_${user.id}`;
+            sessionStorage.setItem(sessionKey, "true");
+            
+            // Pequeno delay para melhor UX
+            setTimeout(() => {
+              setShowBetaModal(true);
+              setBetaModalChecked(true);
+            }, 1000);
+          } else {
+            setBetaModalChecked(true);
+          }
+        } else {
+          setBetaModalChecked(true);
+        }
+      } catch (error) {
+        console.error("❌ [Beta Modal] Erro ao verificar:", error);
+        setBetaModalChecked(true);
+      }
+    };
+
+    checkBetaModal();
+  }, [user, token, authLoading, isChecking, hasChecked, betaModalChecked]);
+
   return (
     <>
       <PolicyAcceptanceModal 
         open={showPolicyModal && !isChecking} 
         onAccept={handlePolicyAccept}
+      />
+      <BetaVersionModal 
+        open={showBetaModal} 
+        onClose={handleBetaModalClose}
+        userId={user?.id}
       />
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-purple-50">
       {/* ===== Banner full-width com imagem ===== */}
