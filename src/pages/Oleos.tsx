@@ -352,42 +352,6 @@ export default function Oleos() {
                 essenciais seja o mais <strong>seguro e eficaz</strong> possível!
               </div>
             </details>
-
-            {/* Linha sutil divisória */}
-            <div className="h-px bg-neutral-200/70 mx-1" />
-
-            {/* Drop 2 */}
-            <details className="group px-2 py-3 rounded-lg">
-              <summary className="flex items-center gap-2 cursor-pointer list-none select-none">
-                <ChevronDown className="h-5 w-5 text-neutral-500 transition-transform group-open:rotate-180" />
-                <span className="text-[15px] font-semibold text-neutral-900">
-                  Regras de Convivência e Compartilhamento
-                </span>
-              </summary>
-              <div className="mt-3 text-[15px] text-neutral-700 leading-relaxed pl-7">
-                <ul className="space-y-3 list-disc pl-5">
-                  <li>
-                    <strong>Não compartilhe seu acesso:</strong> o acesso ao banco de dados e aos conteúdos é pessoal e
-                    intransferível. Compartilhar seu login compromete a integridade do material e não é permitido.
-                  </li>
-                  <li>
-                    <strong>Evite copiar o conteúdo:</strong> o conteúdo aqui é exclusivo e criado com muito cuidado.
-                    Copiar ou distribuir sem permissão vai contra a nossa comunidade de apoio e aprendizado.
-                  </li>
-                  <li>
-                    <strong>Somos uma comunidade que se ajuda:</strong> se você encontrar alguma informação errada ou
-                    desatualizada, me avise para que eu possa corrigir! Entre em contato pelo e-mail{" "}
-                    <a href="mailto:suporte@daianealaniz.com.br" className="text-purple-700 underline">
-                      suporte@daianealaniz.com.br
-                    </a>.
-                  </li>
-                  <li>
-                    <strong>Busque os conteúdos completos nas aulas:</strong> antes de replicar qualquer informação ou
-                    ideia, certifique-se de buscar o conteúdo completo dentro das aulas e materiais disponíveis.
-                  </li>
-                </ul>
-              </div>
-            </details>
           </div>
         </motion.div>
 
