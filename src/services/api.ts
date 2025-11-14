@@ -83,4 +83,43 @@ api.interceptors.response.use(
 
 export default api;
 
-export { api as adminApi };
+// Admin API functions
+export const adminApi = {
+  // Buscar todos os usuários
+  getAllUsers: async (token?: string) => {
+    try {
+      // O interceptor do axios já adiciona o token automaticamente
+      // Mas podemos garantir que o token está sendo enviado
+      const response = await api.get('/users');
+      console.log('✅ Usuários carregados:', response.data?.length || 0);
+      return response.data || [];
+    } catch (error: any) {
+      console.error('❌ Erro ao buscar usuários:', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        message: error.message,
+        data: error.response?.data
+      });
+      throw error;
+    }
+  },
+
+  // Buscar estatísticas de usuários
+  getUsersStats: async (token?: string) => {
+    try {
+      const response = await api.get('/users/stats');
+      return response.data;
+    } catch (error) {
+      // Se o endpoint não existir, calcular estatísticas localmente
+      const users = await adminApi.getAllUsers(token);
+      return {
+        totalUsers: users.length,
+        activeUsers: users.length,
+        usersByRole: {
+          USER: users.filter((u: any) => u.role?.toUpperCase() === 'USER').length,
+          ADMIN: users.filter((u: any) => u.role?.toUpperCase() === 'ADMIN').length,
+        },
+      };
+    }
+  },
+};

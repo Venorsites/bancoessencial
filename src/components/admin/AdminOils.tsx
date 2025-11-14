@@ -150,7 +150,7 @@ export function AdminOils() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
-        className="grid grid-cols-1 md:grid-cols-4 gap-4"
+        className="grid grid-cols-1 md:grid-cols-3 gap-4"
       >
         <Card>
           <CardContent className="p-6">
@@ -169,18 +169,6 @@ export function AdminOils() {
                 <p className="text-sm text-gray-600">Óleos Ativos</p>
                 <p className="text-2xl font-bold text-green-600">
                   {oils.filter(oil => oil.ativo).length}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Agendados</p>
-                <p className="text-2xl font-bold text-blue-600">
-                  {oils.filter(oil => oil.data_liberacao && !oil.ativo).length}
                 </p>
               </div>
             </div>
@@ -211,7 +199,6 @@ export function AdminOils() {
                       <th className="text-left p-4 font-semibold text-gray-700">Nome</th>
                       <th className="text-left p-4 font-semibold text-gray-700">Família</th>
                       <th className="text-left p-4 font-semibold text-gray-700">Status</th>
-                      <th className="text-left p-4 font-semibold text-gray-700">Data Liberação</th>
                       <th className="text-right p-4 font-semibold text-gray-700">Ações</th>
                     </tr>
                   </thead>
@@ -243,29 +230,12 @@ export function AdminOils() {
                           <span className="text-sm text-gray-700">{oil.familia_botanica}</span>
                         </td>
                         <td className="p-4">
-                          <div className="flex flex-col gap-1">
-                            <Badge 
-                              variant={oil.ativo ? "default" : "secondary"}
-                              className={oil.ativo ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}
-                            >
-                              {oil.ativo ? "Ativo" : "Inativo"}
-                            </Badge>
-                            {oil.data_liberacao && !oil.ativo && (
-                              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                                Agendado
-                              </Badge>
-                            )}
-                          </div>
-                        </td>
-                        <td className="p-4">
-                          {oil.data_liberacao ? (
-                            <div className="flex items-center gap-1 text-sm text-blue-600">
-                              <Calendar className="w-4 h-4" />
-                              {new Date(oil.data_liberacao).toLocaleDateString('pt-BR')}
-                            </div>
-                          ) : (
-                            <span className="text-sm text-gray-500">-</span>
-                          )}
+                          <Badge 
+                            variant={oil.ativo ? "default" : "secondary"}
+                            className={oil.ativo ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}
+                          >
+                            {oil.ativo ? "Ativo" : "Inativo"}
+                          </Badge>
                         </td>
                         <td className="p-4">
                           <div className="flex items-center justify-end gap-2">

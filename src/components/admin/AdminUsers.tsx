@@ -30,8 +30,9 @@ interface User {
   email: string;
   contato: string;
   role: string;
-  created_at: string;
-  updated_at: string;
+  is_suspended?: boolean;
+  created_at: string | Date;
+  updated_at: string | Date;
   avatar?: string;
 }
 
@@ -39,23 +40,65 @@ export function AdminUsers() {
   const { token } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
   const [showPasswords, setShowPasswords] = useState<{ [key: string]: boolean }>({});
 
   useEffect(() => {
-    loadUsers();
+    if (token) {
+      loadUsers();
+    } else {
+      setError("Você precisa estar autenticado para acessar esta página.");
+      setLoading(false);
+    }
   }, [token]);
 
   const loadUsers = async () => {
     try {
       setLoading(true);
-      if (token) {
-        const usersData = await adminApi.getAllUsers(token);
-        setUsers(usersData);
+      setError(null);
+      console.log('🔄 Carregando usuários...', { token: token ? 'Token presente' : 'Sem token' });
+      
+      // O token será adicionado automaticamente pelo interceptor do axios
+      const usersData = await adminApi.getAllUsers(token);
+      
+      console.log('✅ Dados recebidos:', usersData);
+      console.log('✅ Primeiro usuário exemplo:', usersData?.[0]);
+      console.log('✅ is_suspended do primeiro:', usersData?.[0]?.is_suspended, 'tipo:', typeof usersData?.[0]?.is_suspended);
+      
+      // Normalizar is_suspended: null/undefined = false (ativo)
+      const normalizedUsers = Array.isArray(usersData) 
+        ? usersData.map(user => ({
+            ...user,
+            is_suspended: user.is_suspended === true ? true : false
+          }))
+        : [];
+      
+      setUsers(normalizedUsers);
+      console.log('✅ Usuários normalizados:', normalizedUsers.length);
+      console.log('✅ Exemplo de usuário normalizado:', normalizedUsers[0]);
+      console.log('✅ Filtros ativos:', { statusFilter, roleFilter, searchTerm });
+    } catch (error: any) {
+      console.error("❌ Erro ao carregar usuários:", error);
+      
+      let errorMessage = "Erro ao carregar usuários. ";
+      
+      if (error.response?.status === 401) {
+        errorMessage += "Você não está autenticado. Faça login novamente.";
+      } else if (error.response?.status === 403) {
+        errorMessage += "Você não tem permissão para acessar esta página. É necessário ser administrador.";
+      } else if (error.response?.status === 404) {
+        errorMessage += "Endpoint não encontrado. Verifique se o backend está rodando.";
+      } else if (error.code === 'ECONNREFUSED' || error.message?.includes('Network Error')) {
+        errorMessage += "Não foi possível conectar ao servidor. Verifique se o backend está rodando em http://localhost:3000";
+      } else {
+        errorMessage += error.response?.data?.message || error.message || "Erro desconhecido.";
       }
-    } catch (error) {
-      console.error("Erro ao carregar usuários:", error);
+      
+      setError(errorMessage);
+      setUsers([]);
     } finally {
       setLoading(false);
     }
@@ -70,7 +113,32 @@ export function AdminUsers() {
     
     const matchesRole = roleFilter === "all" || user.role.toLowerCase() === roleFilter.toLowerCase();
     
-    return matchesSearch && matchesRole;
+    // Normalizar is_suspended para comparação (null/undefined = false = ativo)
+    const isSuspended = user.is_suspended === true;
+    
+    const matchesStatus = 
+      statusFilter === "all" || 
+      (statusFilter === "active" && !isSuspended) ||
+      (statusFilter === "inactive" && isSuspended);
+    
+    const matches = matchesSearch && matchesRole && matchesStatus;
+    
+    // Debug apenas para o primeiro usuário
+    if (users.indexOf(user) === 0) {
+      console.log('🔍 Debug filtro:', {
+        email: user.email,
+        matchesSearch,
+        matchesRole,
+        matchesStatus,
+        isSuspended,
+        statusFilter,
+        roleFilter,
+        searchTerm,
+        finalMatch: matches
+      });
+    }
+    
+    return matches;
   });
 
   const togglePasswordVisibility = (userId: string) => {
@@ -91,14 +159,22 @@ export function AdminUsers() {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+  const formatDate = (dateString: string | Date) => {
+    try {
+      const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
+      if (isNaN(date.getTime())) {
+        return 'Data inválida';
+      }
+      return date.toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      return 'Data inválida';
+    }
   };
 
   if (loading) {
@@ -137,7 +213,7 @@ export function AdminUsers() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4"
       >
         <Card>
           <CardContent className="p-4">
@@ -185,19 +261,50 @@ export function AdminUsers() {
               <div>
                 <p className="text-sm text-gray-600">Usuários Ativos</p>
                 <p className="text-2xl font-bold text-green-600">
-                  {users.filter(u => {
-                    const createdDate = new Date(u.created_at);
-                    const thirtyDaysAgo = new Date();
-                    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-                    return createdDate > thirtyDaysAgo;
-                  }).length}
+                  {users.filter(u => u.is_suspended !== true).length}
                 </p>
               </div>
-              <Calendar className="w-8 h-8 text-green-600" />
+              <User className="w-8 h-8 text-green-600" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Usuários Inativos</p>
+                <p className="text-2xl font-bold text-orange-600">
+                  {users.filter(u => u.is_suspended === true).length}
+                </p>
+              </div>
+              <User className="w-8 h-8 text-orange-600" />
             </div>
           </CardContent>
         </Card>
       </motion.div>
+
+      {/* Error Message */}
+      {error && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-800"
+        >
+          <div className="flex items-center gap-2">
+            <span className="font-semibold">Erro:</span>
+            <span>{error}</span>
+          </div>
+          <Button
+            onClick={loadUsers}
+            variant="outline"
+            size="sm"
+            className="mt-2 border-red-300 text-red-700 hover:bg-red-100"
+          >
+            Tentar Novamente
+          </Button>
+        </motion.div>
+      )}
 
       {/* Filters */}
       <motion.div
@@ -215,28 +322,56 @@ export function AdminUsers() {
             className="pl-10"
           />
         </div>
-        <div className="flex gap-2">
-          <Button
-            variant={roleFilter === "all" ? "default" : "outline"}
-            onClick={() => setRoleFilter("all")}
-            size="sm"
-          >
-            Todos
-          </Button>
-          <Button
-            variant={roleFilter === "admin" ? "default" : "outline"}
-            onClick={() => setRoleFilter("admin")}
-            size="sm"
-          >
-            Admins
-          </Button>
-          <Button
-            variant={roleFilter === "user" ? "default" : "outline"}
-            onClick={() => setRoleFilter("user")}
-            size="sm"
-          >
-            Usuários
-          </Button>
+        <div className="flex flex-wrap gap-2">
+          <div className="flex gap-2">
+            <Button
+              variant={roleFilter === "all" ? "default" : "outline"}
+              onClick={() => setRoleFilter("all")}
+              size="sm"
+            >
+              Todos
+            </Button>
+            <Button
+              variant={roleFilter === "admin" ? "default" : "outline"}
+              onClick={() => setRoleFilter("admin")}
+              size="sm"
+            >
+              Admins
+            </Button>
+            <Button
+              variant={roleFilter === "user" ? "default" : "outline"}
+              onClick={() => setRoleFilter("user")}
+              size="sm"
+            >
+              Usuários
+            </Button>
+          </div>
+          <div className="flex gap-2 border-l pl-2 ml-2">
+            <Button
+              variant={statusFilter === "all" ? "default" : "outline"}
+              onClick={() => setStatusFilter("all")}
+              size="sm"
+              className={statusFilter === "all" ? "bg-purple-600 hover:bg-purple-700" : ""}
+            >
+              Todos Status
+            </Button>
+            <Button
+              variant={statusFilter === "active" ? "default" : "outline"}
+              onClick={() => setStatusFilter("active")}
+              size="sm"
+              className={statusFilter === "active" ? "bg-green-600 hover:bg-green-700 text-white" : ""}
+            >
+              Ativos
+            </Button>
+            <Button
+              variant={statusFilter === "inactive" ? "default" : "outline"}
+              onClick={() => setStatusFilter("inactive")}
+              size="sm"
+              className={statusFilter === "inactive" ? "bg-orange-600 hover:bg-orange-700 text-white" : ""}
+            >
+              Inativos
+            </Button>
+          </div>
         </div>
       </motion.div>
 
@@ -291,6 +426,15 @@ export function AdminUsers() {
                           </h3>
                           <Badge variant={getRoleBadgeVariant(user.role)}>
                             {user.role.toUpperCase()}
+                          </Badge>
+                          <Badge 
+                            variant={user.is_suspended === true ? "secondary" : "default"}
+                            className={user.is_suspended === true 
+                              ? "bg-orange-100 text-orange-800 border-orange-200" 
+                              : "bg-green-100 text-green-800 border-green-200"
+                            }
+                          >
+                            {user.is_suspended === true ? "Inativo" : "Ativo"}
                           </Badge>
                         </div>
                         <div className="flex items-center gap-4 text-sm text-gray-600">
