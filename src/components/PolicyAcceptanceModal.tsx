@@ -52,12 +52,38 @@ export function PolicyAcceptanceModal({ open, onAccept }: PolicyAcceptanceModalP
         }),
       });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Erro ao registrar aceite");
+      const data = await response.json();
+
+      // Verificar se já foi aceito (backend retorna status 200 mesmo quando já aceitou)
+      if (data.message && data.message.includes('já foi aceita')) {
+        // Se já foi aceito, apenas fechar o modal e atualizar cache
+        console.log("✅ [Policy] Política já estava aceita anteriormente");
+        toast({
+          title: "Política já aceita",
+          description: "Esta política já foi aceita anteriormente.",
+        });
+        
+        // Salvar no cache local
+        try {
+          localStorage.setItem(`policy_accepted_${user.id}_2.0`, 'true');
+        } catch (error) {
+          console.error('Erro ao salvar cache:', error);
+        }
+        
+        onAccept();
+        return;
       }
 
-      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Erro ao registrar aceite");
+      }
+      
+      // Salvar no cache local após aceitar com sucesso
+      try {
+        localStorage.setItem(`policy_accepted_${user.id}_2.0`, 'true');
+      } catch (error) {
+        console.error('Erro ao salvar cache:', error);
+      }
       
       toast({
         title: "Política aceita",

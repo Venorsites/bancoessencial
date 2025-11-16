@@ -134,6 +134,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('@BancoEssencial:user');
     
+    // Limpar cache de aceite de política
+    if (user?.id) {
+      localStorage.removeItem(`policy_accepted_${user.id}_2.0`);
+    }
+    
     toast({
       title: 'Logout realizado',
       description: 'Você saiu da sua conta',

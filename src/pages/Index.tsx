@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import {
@@ -20,6 +20,27 @@ const Index = () => {
   const [isChecking, setIsChecking] = useState(true);
   const [hasChecked, setHasChecked] = useState(false);
   const [betaModalChecked, setBetaModalChecked] = useState(false);
+
+  // Funções auxiliares para gerenciar cache local (usando useCallback para evitar recriações)
+  const getCachedAcceptance = useCallback((userId: string): boolean | null => {
+    try {
+      const cached = localStorage.getItem(`policy_accepted_${userId}_2.0`);
+      if (cached === 'true') {
+        return true;
+      }
+      return null; // null significa que não há cache
+    } catch (error) {
+      return null;
+    }
+  }, []);
+
+  const setCachedAcceptance = useCallback((userId: string, accepted: boolean) => {
+    try {
+      localStorage.setItem(`policy_accepted_${userId}_2.0`, accepted ? 'true' : 'false');
+    } catch (error) {
+      console.error('Erro ao salvar cache de aceite:', error);
+    }
+  }, []);
 
   // Verificar se o usuário já aceitou a política
   useEffect(() => {
@@ -45,6 +66,15 @@ const Index = () => {
     const checkPolicyAcceptance = async () => {
       console.log("🔍 [Policy] Iniciando verificação para usuário:", user.id);
 
+      // Primeiro, verificar cache local
+      const cached = getCachedAcceptance(user.id);
+      if (cached === true) {
+        console.log("✅ [Policy] Aceite encontrado no cache local");
+        setIsChecking(false);
+        setHasChecked(true);
+        return; // Não mostrar modal se já aceitou
+      }
+
       try {
         const response = await fetch(`${API_URL}/policy-acceptance/check?version=2.0`, {
           headers: {
@@ -62,25 +92,38 @@ const Index = () => {
           if (!data.hasAccepted) {
             console.log("✅ [Policy] Usuário não aceitou, mostrando modal");
             setShowPolicyModal(true);
+            // Não salvar no cache se não aceitou
           } else {
             console.log("✅ [Policy] Usuário já aceitou a política");
-            // Não mostrar o modal beta aqui - ele só deve aparecer após aceitar os termos
-            // ou na primeira vez após login (que será tratado separadamente)
+            // Salvar no cache local
+            setCachedAcceptance(user.id, true);
           }
         } else {
-          // Se a resposta não for OK, mostrar o modal para garantir
-          const errorText = await response.text();
-          console.warn("⚠️ [Policy] Resposta não OK, mostrando modal por segurança:", {
-            status: response.status,
-            error: errorText
-          });
-          setShowPolicyModal(true);
+          // Se a resposta não for OK, verificar cache antes de mostrar modal
+          const cached = getCachedAcceptance(user.id);
+          if (cached === true) {
+            console.log("⚠️ [Policy] Erro na verificação, mas cache indica que já aceitou");
+            // Não mostrar modal se o cache indica que já aceitou
+          } else {
+            const errorText = await response.text();
+            console.warn("⚠️ [Policy] Resposta não OK e sem cache, mostrando modal por segurança:", {
+              status: response.status,
+              error: errorText
+            });
+            setShowPolicyModal(true);
+          }
         }
       } catch (error: any) {
         console.error("❌ [Policy] Erro ao verificar aceite da política:", error);
-        // Em caso de erro, mostrar o modal para garantir que o usuário aceite
-        console.log("✅ [Policy] Mostrando modal devido a erro");
-        setShowPolicyModal(true);
+        // Em caso de erro, verificar cache antes de mostrar modal
+        const cached = getCachedAcceptance(user.id);
+        if (cached === true) {
+          console.log("✅ [Policy] Erro na verificação, mas cache indica que já aceitou");
+          // Não mostrar modal se o cache indica que já aceitou
+        } else {
+          console.log("✅ [Policy] Mostrando modal devido a erro e sem cache");
+          setShowPolicyModal(true);
+        }
       } finally {
         setIsChecking(false);
         setHasChecked(true);
@@ -92,6 +135,10 @@ const Index = () => {
 
   const handlePolicyAccept = () => {
     setShowPolicyModal(false);
+    // Salvar no cache local imediatamente após aceitar
+    if (user) {
+      setCachedAcceptance(user.id, true);
+    }
     // Mostrar modal beta logo após aceitar os termos, se o usuário não tiver optado por não ver mais
     // Só mostrar se o usuário estiver autenticado
     if (user && shouldShowBetaNotification(user.id)) {
@@ -192,21 +239,21 @@ const Index = () => {
     });
   }, [showPolicyModal, isChecking, hasChecked, authLoading, user, token]);
 
-  // Fallback: se após 3 segundos ainda estiver verificando e tiver usuário, mostrar modal
-  useEffect(() => {
-    if (!user || !token || authLoading) return;
-    
-    const timeout = setTimeout(() => {
-      if (isChecking && !hasChecked) {
-        console.warn("⚠️ [Policy] Timeout na verificação, mostrando modal por segurança");
-        setShowPolicyModal(true);
-        setIsChecking(false);
-        setHasChecked(true);
-      }
-    }, 3000);
-
-    return () => clearTimeout(timeout);
-  }, [user, token, authLoading, isChecking, hasChecked]);
+  // Remover ou ajustar o timeout - não é mais necessário com cache
+  // useEffect(() => {
+  //   if (!user || !token || authLoading) return;
+  //   
+  //   const timeout = setTimeout(() => {
+  //     if (isChecking && !hasChecked) {
+  //       console.warn("⚠️ [Policy] Timeout na verificação, mostrando modal por segurança");
+  //       setShowPolicyModal(true);
+  //       setIsChecking(false);
+  //       setHasChecked(true);
+  //     }
+  //   }, 3000);
+  //
+  //   return () => clearTimeout(timeout);
+  // }, [user, token, authLoading, isChecking, hasChecked]);
 
   // Mostrar modal beta apenas uma vez após login, se o usuário já aceitou os termos
   useEffect(() => {
