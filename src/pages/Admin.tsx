@@ -38,8 +38,6 @@ export default function Admin() {
       setActiveTab('policy-acceptances');
     } else if (path.includes('/analytics')) {
       setActiveTab('analytics');
-    } else if (path.includes('/settings')) {
-      setActiveTab('settings');
     } else {
       setActiveTab('dashboard');
     }
@@ -69,13 +67,6 @@ export default function Admin() {
             <AdminAnalyticsSimple />
           </div>
         );
-      case "settings":
-        return (
-          <div className="text-center py-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Configurações</h2>
-            <p className="text-gray-600">Em desenvolvimento...</p>
-          </div>
-        );
       default:
         return <AdminDashboard />;
     }
@@ -98,6 +89,7 @@ export default function Admin() {
             <Route path="/diseases/new" element={<AdminDiseaseForm />} />
             <Route path="/diseases/edit/:id" element={<AdminDiseaseForm />} />
             <Route path="/users" element={<AdminUsers />} />
+            <Route path="/policy-acceptances" element={<AdminPolicyAcceptances />} />
           </Routes>
         </div>
       </div>

@@ -7,7 +7,8 @@ import {
   TrendingUp,
   Activity,
   Calendar,
-  BarChart3
+  BarChart3,
+  CheckCircle2
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { oilsApi } from "@/services/oilsApi";
@@ -16,6 +17,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 interface DashboardStats {
   totalOils: number;
+  activeOils: number;
   totalUsers: number;
   activeUsers: number;
   recentActivity: number;
@@ -25,6 +27,7 @@ export function AdminDashboard() {
   const { token } = useAuth();
   const [stats, setStats] = useState<DashboardStats>({
     totalOils: 0,
+    activeOils: 0,
     totalUsers: 0,
     activeUsers: 0,
     recentActivity: 0
@@ -39,8 +42,11 @@ export function AdminDashboard() {
     try {
       setLoading(true);
       
-      // Carregar óleos
-      const oils = await oilsApi.getAll();
+      // Carregar todos os óleos (incluindo inativos)
+      const allOils = await oilsApi.getAll('', false);
+      
+      // Contar apenas óleos ativos
+      const activeOilsCount = allOils.filter(oil => oil.ativo).length;
       
       // Carregar estatísticas de usuários
       let usersStats = { totalUsers: 0, activeUsers: 0 };
@@ -55,7 +61,8 @@ export function AdminDashboard() {
       }
       
       setStats({
-        totalOils: oils.length,
+        totalOils: allOils.length,
+        activeOils: activeOilsCount,
         totalUsers: usersStats.totalUsers,
         activeUsers: usersStats.activeUsers,
         recentActivity: 12 // Simular atividades recentes por enquanto
@@ -75,7 +82,16 @@ export function AdminDashboard() {
       color: "from-blue-500 to-blue-600",
       bgColor: "bg-blue-50",
       iconColor: "text-blue-600",
-      description: "Total de óleos essenciais"
+      description: "Total de óleos no sistema"
+    },
+    {
+      title: "Óleos Ativos",
+      value: stats.activeOils,
+      icon: CheckCircle2,
+      color: "from-emerald-500 to-emerald-600",
+      bgColor: "bg-emerald-50",
+      iconColor: "text-emerald-600",
+      description: "Óleos visíveis aos usuários"
     },
     {
       title: "Usuários Cadastrados",
@@ -130,7 +146,7 @@ export function AdminDashboard() {
       </motion.div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
         {statCards.map((card, index) => {
           const Icon = card.icon;
           return (

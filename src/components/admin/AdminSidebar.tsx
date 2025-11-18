@@ -5,17 +5,18 @@ import {
   LayoutDashboard, 
   Droplets, 
   Users, 
-  Settings, 
   BarChart3,
   Menu,
   X,
   ChevronRight,
   Home,
   Stethoscope,
-  FileCheck
+  FileCheck,
+  LogOut
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface AdminSidebarProps {
   activeTab: string;
@@ -58,18 +59,13 @@ const menuItems = [
     label: "Analytics",
     icon: BarChart3,
     description: "Relatórios e métricas"
-  },
-  {
-    id: "settings",
-    label: "Configurações",
-    icon: Settings,
-    description: "Configurações do sistema"
   }
 ];
 
 export function AdminSidebar({ activeTab, onTabChange }: AdminSidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   const handleTabChange = (tabId: string) => {
     onTabChange(tabId);
@@ -89,17 +85,19 @@ export function AdminSidebar({ activeTab, onTabChange }: AdminSidebarProps) {
         navigate('/admin/users');
         break;
       case 'policy-acceptances':
-        navigate('/admin');
+        navigate('/admin/policy-acceptances');
         break;
       case 'analytics':
-        navigate('/admin');
-        break;
-      case 'settings':
         navigate('/admin');
         break;
       default:
         navigate('/admin');
     }
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
   };
 
   return (
@@ -204,23 +202,32 @@ export function AdminSidebar({ activeTab, onTabChange }: AdminSidebarProps) {
           )}
         </motion.button>
 
-        {/* Info do Sistema */}
-        {!isCollapsed && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-          >
-            <div className="bg-purple-700/30 rounded-xl p-3 border border-purple-600/30">
-              <div className="text-xs text-purple-200">
-                Sistema de Administração
+        {/* Botão Sair */}
+        <motion.button
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          onClick={handleLogout}
+          className={cn(
+            "w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-200 group bg-red-500/10 hover:bg-red-500/20 text-red-200 hover:text-white border border-red-500/20",
+            isCollapsed && "justify-center"
+          )}
+        >
+          <LogOut className="w-5 h-5" />
+          {!isCollapsed && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.1 }}
+              className="flex-1 text-left"
+            >
+              <div className="font-medium">Sair</div>
+              <div className="text-xs text-red-300 opacity-0 group-hover:opacity-100 transition-opacity">
+                Fazer logout
               </div>
-              <div className="text-xs text-purple-300">
-                v1.0.0
-              </div>
-            </div>
-          </motion.div>
-        )}
+            </motion.div>
+          )}
+        </motion.button>
       </div>
     </motion.div>
   );
