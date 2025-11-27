@@ -27,6 +27,7 @@ export default function AdminOilForm() {
     forma_extracao: "",
     aroma: "",
     parte_planta: "",
+    origem: "",
     familia_quimica: "",
     avatar: "",
     composto_quimico: "",
@@ -49,6 +50,7 @@ export default function AdminOilForm() {
   const [categoriaTags, setCategoriaTags] = useState<string[]>([]);
   const [familiaQuimicaTags, setFamiliaQuimicaTags] = useState<string[]>([]);
   const [compostoQuimicoTags, setCompostoQuimicoTags] = useState<string[]>([]);
+  const [origemTags, setOrigemTags] = useState<string[]>([]);
   const [psicoaromaTags, setPsicoaromaTags] = useState<string[]>([]);
   const [esteticaTags, setEsteticaTags] = useState<string[]>([]);
   const [saudeTags, setSaudeTags] = useState<string[]>([]);
@@ -79,6 +81,7 @@ export default function AdminOilForm() {
       setCategoriaTags(oil.categoria_aromatica ? oil.categoria_aromatica.split(',').map(tag => tag.trim()).filter(Boolean) : []);
       setFamiliaQuimicaTags(oil.familia_quimica ? oil.familia_quimica.split(',').map(tag => tag.trim()).filter(Boolean) : []);
       setCompostoQuimicoTags(oil.composto_quimico ? oil.composto_quimico.split(',').map(tag => tag.trim()).filter(Boolean) : []);
+      setOrigemTags(oil.origem ? oil.origem.split(',').map(tag => tag.trim()).filter(Boolean) : []);
       setPsicoaromaTags(oil.psicoaromas ? oil.psicoaromas.split(',').map(tag => tag.trim()).filter(Boolean) : []);
       setEsteticaTags(oil.estetica ? oil.estetica.split(',').map(tag => tag.trim()).filter(Boolean) : []);
       setSaudeTags(oil.saude_fisica ? oil.saude_fisica.split(',').map(tag => tag.trim()).filter(Boolean) : []);
@@ -124,6 +127,7 @@ export default function AdminOilForm() {
         categoria_aromatica: categoriaTags.join(', '),
         familia_quimica: familiaQuimicaTags.join(', '),
         composto_quimico: compostoQuimicoTags.join(', '),
+        origem: origemTags.join(', '),
         composicao_quimica_majoritaria: JSON.stringify(chemicalComponents),
         psicoaromas: psicoaromaTags.join(', '),
         estetica: esteticaTags.join(', '),
@@ -251,6 +255,16 @@ export default function AdminOilForm() {
                     value={formData.parte_planta}
                     onChange={handleChange}
                     placeholder="Ex: Flores"
+                    className="mt-1"
+                  />
+                </div>
+
+                <div>
+                  <Label>Origem</Label>
+                  <TagInput
+                    value={origemTags}
+                    onChange={setOrigemTags}
+                    placeholder="Digite as origens..."
                     className="mt-1"
                   />
                 </div>

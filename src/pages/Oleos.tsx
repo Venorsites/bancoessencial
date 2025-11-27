@@ -606,6 +606,23 @@ export default function Oleos() {
                            )}
                          </div>
                        </div>
+                       <div>
+                         <h3 className="font-semibold text-purple-800">Origem:</h3>
+                         <div className="flex flex-wrap gap-1 mt-1">
+                           {selectedOil.origem ? (
+                             selectedOil.origem.split(',').map((tag, index) => (
+                               <span
+                                 key={index}
+                                 className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800"
+                               >
+                                 {tag.trim()}
+                               </span>
+                             ))
+                           ) : (
+                             <span className="text-gray-500 text-sm">Não informado</span>
+                           )}
+                         </div>
+                       </div>
                      </div>
                     <div className="space-y-3">
                       <div>

@@ -10,6 +10,7 @@ export interface Oil {
   forma_extracao: string;
   aroma: string;
   parte_planta: string;
+  origem?: string;
   familia_quimica: string;
   composto_quimico?: string;
   categoria_aromatica?: string;
@@ -39,6 +40,7 @@ export interface CreateOilData {
   forma_extracao: string;
   aroma: string;
   parte_planta: string;
+  origem?: string;
   familia_quimica: string;
   composto_quimico?: string;
   categoria_aromatica?: string;
