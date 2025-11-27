@@ -193,14 +193,14 @@ export default function OilDetail() {
           className="bg-white rounded-3xl shadow-lg overflow-hidden"
         >
           {/* Hero Section */}
-          <div className="relative">
+          <div className="relative bg-gradient-to-br from-purple-50 to-purple-100">
             <img
               src={oil.avatar || "https://via.placeholder.com/1200x400/8B5CF6/FFFFFF?text=Óleo+Essencial"}
               alt={oil.nome}
-              className="w-full h-64 sm:h-80 object-cover"
+              className="w-full h-auto max-h-80 sm:max-h-96 object-contain"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-            <div className="absolute bottom-6 left-6 right-6">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
+            <div className="absolute bottom-6 left-6 right-6 hidden sm:block">
               <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
                 {oil.nome}
               </h1>

@@ -267,55 +267,74 @@ export function Header({}: HeaderProps) {
               </div>
 
               {/* Mobile Navigation */}
-              <div className="space-y-2">
-                {navItems.map((item) => (
-                  <Link 
-                    key={item.href} 
-                    to={item.href}
-                    onClick={(e) => {
-                      if (handleNavClick(e, item.href) === false) {
-                        return;
-                      }
-                      setIsMobileMenuOpen(false);
-                    }}
-                  >
-                    <Button 
-                      variant={item.active ? "default" : "ghost"}
-                      className="w-full justify-start rounded-xl relative overflow-visible"
+              <div className="space-y-0">
+                {navItems.map((item, index) => (
+                  <div key={item.href}>
+                    <Link 
+                      to={item.href}
+                      onClick={(e) => {
+                        if (handleNavClick(e, item.href) === false) {
+                          return;
+                        }
+                        setIsMobileMenuOpen(false);
+                      }}
                     >
-                      <span className="inline-flex items-center">
-                        {item.label}
-                      </span>
-                      {(item.href === '/doencas' || item.href === '/quimica' || item.href === '/conteudos') && (
-                        <span className="absolute -top-1 right-2 flex items-center gap-1 rounded-full bg-purple-100 text-purple-800 border border-purple-200 px-2 py-0.5 text-[10px] font-semibold shadow-sm">
-                          <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" />
-                          Em breve
+                      <Button 
+                        variant={item.active ? "default" : "ghost"}
+                        className="w-full justify-start rounded-xl relative overflow-visible"
+                      >
+                        <span className="inline-flex items-center">
+                          {item.label}
                         </span>
-                      )}
-                    </Button>
-                  </Link>
+                        {(item.href === '/doencas' || item.href === '/quimica' || item.href === '/conteudos') && (
+                          <span className="absolute top-1/2 -translate-y-1/2 right-2 flex items-center gap-1 rounded-full bg-purple-100 text-purple-800 border border-purple-200 px-2 py-0.5 text-[10px] font-semibold shadow-sm">
+                            <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" />
+                            Em breve
+                          </span>
+                        )}
+                      </Button>
+                    </Link>
+                    {/* Linha divisória suave entre os itens de navegação (exceto após o último) */}
+                    {index < navItems.length - 1 && (
+                      <div className="border-b border-gray-200/50 my-1" />
+                    )}
+                  </div>
                 ))}
               </div>
 
+              {/* Linha divisória grossa entre Conteúdos e Meu Perfil */}
+              <div className="border-t-2 border-gray-300/60 my-3" />
+
               {/* Mobile Actions */}
-              <div className="space-y-2 pt-2">
+              <div className="space-y-0">
                 {user ? (
                   <>
-                    <Link to="/profile">
+                    <Link 
+                      to="/profile"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
                       <Button variant="ghost" className="w-full justify-start rounded-xl">
                         <User className="w-4 h-4 mr-2" />
                         Meu Perfil
                       </Button>
                     </Link>
+                    <div className="border-b border-gray-200/50 my-1" />
                     
-                    <Link to="/favoritos">
+                    <Link 
+                      to="/favoritos"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
                       <Button variant="ghost" className="w-full justify-start rounded-xl">
                         <Heart className="w-4 h-4 mr-2" />
                         Favoritos
                       </Button>
                     </Link>
+                    <div className="border-b border-gray-200/50 my-1" />
 
-                    <Link to="/notificacoes">
+                    <Link 
+                      to="/notificacoes"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
                       <Button variant="ghost" className="w-full justify-start rounded-xl">
                         <Bell className="w-4 h-4 mr-2" />
                         Notificações
@@ -326,6 +345,7 @@ export function Header({}: HeaderProps) {
                         )}
                       </Button>
                     </Link>
+                    <div className="border-b border-gray-200/50 my-1" />
 
                     <Button 
                       variant="ghost" 
@@ -342,7 +362,10 @@ export function Header({}: HeaderProps) {
                   </>
                 ) : (
                   <>
-                    <Link to="/login">
+                    <Link 
+                      to="/login"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
                       <Button variant="outline" className="w-full justify-start rounded-xl">
                         <User className="w-4 h-4 mr-2" />
                         Entrar

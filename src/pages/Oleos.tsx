@@ -510,11 +510,11 @@ export default function Oleos() {
               onClick={(e) => e.stopPropagation()}
             >
               {/* Modal Header */}
-              <div className="relative">
+              <div className="relative bg-gradient-to-br from-purple-50 to-purple-100">
                 <img
                   src={selectedOil.avatar || "https://via.placeholder.com/800x300/8B5CF6/FFFFFF?text=Óleo+Essencial"}
                   alt={selectedOil.nome}
-                  className="w-full h-64 object-cover rounded-t-3xl"
+                  className="w-full h-auto max-h-80 sm:max-h-96 object-contain rounded-t-3xl"
                 />
                 <div className="absolute top-4 right-4 flex gap-2">
                   <Button

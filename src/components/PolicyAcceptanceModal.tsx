@@ -106,7 +106,7 @@ export function PolicyAcceptanceModal({ open, onAccept }: PolicyAcceptanceModalP
   return (
     <Dialog open={open} onOpenChange={() => {}} modal={true}>
       <DialogContent 
-        className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto [&>button]:hidden"
+        className="max-w-[95%] sm:max-w-[600px] max-h-[90vh] overflow-y-auto [&>button]:hidden"
       >
         <DialogHeader>
           <div className="flex items-center space-x-3 mb-2">
