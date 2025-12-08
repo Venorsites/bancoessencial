@@ -87,7 +87,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [isDevMode]);
 
   const login = async (email: string, password: string) => {
-    const { data } = await api.post('/auth/login', { email, password });
+    console.log('🔵 Tentando fazer login...', { email });
+    
+    const response = await api.post('/auth/login', { email, password });
+    
+    console.log('🟢 Resposta da API:', response);
+    console.log('📦 Dados recebidos:', response.data);
+    
+    const { data } = response;
+    
+    // Verificar se a resposta contém os dados esperados
+    if (!data || !data.user || !data.access_token) {
+      console.error('❌ Resposta inválida da API:', data);
+      throw new Error('Resposta inválida do servidor');
+    }
+    
+    console.log('✅ Login bem-sucedido, salvando dados...');
     
     setUser(data.user);
     setToken(data.access_token);

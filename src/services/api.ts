@@ -1,7 +1,10 @@
 import axios from 'axios';
 
+const apiBaseURL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+console.log('🌐 API Base URL configurada:', apiBaseURL);
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000',
+  baseURL: apiBaseURL,
 });
 
 api.interceptors.request.use((config) => {
@@ -24,14 +27,29 @@ function onRefreshed(newToken: string) {
 }
 
 api.interceptors.response.use(
-  (res) => res,
+  (res) => {
+    console.log('✅ Resposta bem-sucedida:', {
+      url: res.config.url,
+      status: res.status,
+      data: res.data
+    });
+    return res;
+  },
   async (error) => {
+    console.error('❌ Erro na requisição:', {
+      url: error.config?.url,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      message: error.message
+    });
+    
     const original = error.config;
 
     // NÃO tentar refresh em rotas de autenticação (login, register, refresh)
-    const isAuthRoute = original.url?.includes('/auth/login') || 
-                        original.url?.includes('/auth/register') ||
-                        original.url?.includes('/auth/refresh');
+    const isAuthRoute = original?.url?.includes('/auth/login') || 
+                        original?.url?.includes('/auth/register') ||
+                        original?.url?.includes('/auth/refresh');
 
     if (error.response?.status === 401 && !original._retry && !isAuthRoute) {
       original._retry = true;
