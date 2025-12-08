@@ -98,7 +98,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     toast({
       title: 'Login realizado com sucesso!',
-      description: `Bem-vindo, ${data.user.nome}!`,
+      description: `Bem-vindo, ${data.user?.nome || 'usuário'}!`,
     });
   };
 
@@ -115,7 +115,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       toast({
         title: 'Cadastro realizado com sucesso!',
-        description: `Bem-vindo, ${response.user.nome}!`,
+        description: `Bem-vindo, ${response.user?.nome || 'usuário'}!`,
       });
     } catch (error) {
       toast({
