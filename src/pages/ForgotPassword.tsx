@@ -6,8 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Mail, ArrowLeft, CheckCircle } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useToast } from "@/components/ui/use-toast";
-import logo from "@/assets/logov1.svg";
+import { useToast } from "@/hooks/use-toast";
+import api from "@/services/api";
+import logo from "@/assets/logo-banco-branca.svg";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -19,23 +20,22 @@ export default function ForgotPassword() {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulação de envio de email (remover quando conectar com backend real)
-    setTimeout(() => {
-      if (email) {
-        setIsEmailSent(true);
-        toast({
-          title: "Email enviado com sucesso!",
-          description: "Verifique sua caixa de entrada para redefinir a senha.",
-        });
-      } else {
-        toast({
-          title: "Erro",
-          description: "Por favor, insira um email válido.",
-          variant: "destructive",
-        });
-      }
+    try {
+      await api.post('/auth/forgot-password', { email });
+      setIsEmailSent(true);
+      toast({
+        title: "Email enviado com sucesso!",
+        description: "Verifique sua caixa de entrada para redefinir a senha.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erro ao enviar email",
+        description: error.response?.data?.message || "Tente novamente mais tarde.",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   const handleBackToLogin = () => {
@@ -48,7 +48,7 @@ export default function ForgotPassword() {
       {/* Background Image with Dark Overlay */}
       <div className="absolute inset-0 z-0">
         <img
-          src="/src/assets/hero-background.jpg"
+          src="/hero-background.jpg"
           alt="Background aromaterapia"
           className="w-full h-full object-cover"
         />

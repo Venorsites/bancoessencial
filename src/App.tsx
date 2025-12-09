@@ -24,6 +24,7 @@ import Notificacoes from "./pages/Notificacoes";
 import PoliticaTermos from "./pages/PoliticaTermos";
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import Admin from "./pages/Admin";
 import AdminOilForm from "./pages/AdminOilForm";
@@ -42,6 +43,7 @@ const App = () => (
               {/* Rotas públicas (sem menu) */}
               <Route path="/login" element={<Login />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password/:token" element={<ResetPassword />} />
               
               {/* Rotas administrativas (sem menu) */}
               <Route path="/admin/*" element={
