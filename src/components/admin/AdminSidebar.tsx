@@ -12,7 +12,8 @@ import {
   Home,
   Stethoscope,
   FileCheck,
-  LogOut
+  LogOut,
+  MessageSquare
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -55,6 +56,12 @@ const menuItems = [
     description: "Visualizar aceites de política"
   },
   {
+    id: "feedbacks",
+    label: "Feedbacks",
+    icon: MessageSquare,
+    description: "Relatos e sugestões dos usuários"
+  },
+  {
     id: "analytics",
     label: "Analytics",
     icon: BarChart3,
@@ -86,6 +93,9 @@ export function AdminSidebar({ activeTab, onTabChange }: AdminSidebarProps) {
         break;
       case 'policy-acceptances':
         navigate('/admin/policy-acceptances');
+        break;
+      case 'feedbacks':
+        navigate('/admin/feedbacks');
         break;
       case 'analytics':
         navigate('/admin');

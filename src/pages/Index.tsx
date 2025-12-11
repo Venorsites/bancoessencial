@@ -215,11 +215,12 @@ const Index = () => {
     {
       image:
         "https://i.ibb.co/b5SmSFzS/Chat-GPT-Image-9-de-abr-de-2025-17-30-51.webp",
-      title: "Repositório de receitas e protocolos prontos [em construção]",
+      title: "Repositório de receitas e protocolos prontos",
       description:
         "Coleção de receitas e protocolos para uso dos óleos essenciais",
-      href: "/favoritos",
+      href: "/receitas",
       color: "from-orange-400 to-orange-600",
+      adminOnly: true,
     },
   ];
 

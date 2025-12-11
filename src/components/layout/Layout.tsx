@@ -1,5 +1,6 @@
 import { Header } from "./Header";
 import { Footer } from "./Footer";
+import { FeedbackButton } from "../FeedbackButton";
 import { motion } from "framer-motion";
 import { useLocation } from "react-router-dom";
 
@@ -25,6 +26,7 @@ export function Layout({ children }: LayoutProps) {
         {children}
       </motion.main>
       {!isLoginPage && <Footer />}
+      {!isLoginPage && <FeedbackButton />}
     </div>
   );
 }

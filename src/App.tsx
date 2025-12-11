@@ -18,6 +18,7 @@ import DoencasGestacao from "./pages/DoencasGestacao";
 import DoencasMenopausa from "./pages/DoencasMenopausa";
 import Quimica from "./pages/Quimica";
 import Conteudos from "./pages/Conteudos";
+import Receitas from "./pages/Receitas";
 import Favoritos from "./pages/Favoritos";
 import Profile from "./pages/Profile";
 import Notificacoes from "./pages/Notificacoes";
@@ -95,6 +96,11 @@ const App = () => (
                       <Route path="/conteudos" element={
                         <AdminRoute>
                           <Conteudos />
+                        </AdminRoute>
+                      } />
+                      <Route path="/receitas" element={
+                        <AdminRoute>
+                          <Receitas />
                         </AdminRoute>
                       } />
                       
