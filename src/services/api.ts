@@ -1,96 +1,61 @@
 import axios from 'axios';
 
 const apiBaseURL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-console.log('🌐 API Base URL configurada:', apiBaseURL);
 
 const api = axios.create({
   baseURL: apiBaseURL,
-});
-
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('access_token');
-  if (token) {
-    if (!config.headers) {
-      config.headers = {} as any;
-    }
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
+  withCredentials: true, // IMPORTANTE: Enviar cookies automaticamente
 });
 
 let isRefreshing = false;
-let pendingQueue: Array<(token: string) => void> = [];
+let pendingQueue: Array<(success: boolean) => void> = [];
 
-function onRefreshed(newToken: string) {
-  pendingQueue.forEach((cb) => cb(newToken));
+function onRefreshed(success: boolean) {
+  pendingQueue.forEach((cb) => cb(success));
   pendingQueue = [];
 }
 
 api.interceptors.response.use(
-  (res) => {
-    console.log('✅ Resposta bem-sucedida:', {
-      url: res.config.url,
-      status: res.status,
-      data: res.data
-    });
-    return res;
-  },
+  (res) => res,
   async (error) => {
-    console.error('❌ Erro na requisição:', {
-      url: error.config?.url,
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      data: error.response?.data,
-      message: error.message
-    });
-    
     const original = error.config;
 
-    // NÃO tentar refresh em rotas de autenticação (login, register, refresh)
+    // NÃO tentar refresh em rotas de autenticação
     const isAuthRoute = original?.url?.includes('/auth/login') || 
                         original?.url?.includes('/auth/register') ||
                         original?.url?.includes('/auth/refresh');
 
     if (error.response?.status === 401 && !original._retry && !isAuthRoute) {
-      original._retry = true;
-
       if (isRefreshing) {
-        return new Promise((resolve) => {
-          pendingQueue.push((t) => {
-            original.headers = original.headers ?? {};
-            original.headers.Authorization = `Bearer ${t}`;
-            resolve(api(original));
+        return new Promise((resolve, reject) => {
+          pendingQueue.push((success: boolean) => {
+            if (success) {
+              resolve(api(original));
+            } else {
+              reject(error);
+            }
           });
         });
       }
 
+      original._retry = true;
       isRefreshing = true;
 
       try {
-        const refresh_token = localStorage.getItem('refresh_token');
-        if (!refresh_token) throw new Error('no refresh');
-
-        const { data } = await axios.post(
-          `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/auth/refresh`,
-          { refresh_token }
-        );
-
-        const newAccess = data.access_token;
-        localStorage.setItem('access_token', newAccess);
-
+        // Tentar renovar token (refresh_token está no cookie)
+        await api.post('/auth/refresh');
+        
         isRefreshing = false;
-        onRefreshed(newAccess);
-
-        original.headers = original.headers ?? {};
-        original.headers.Authorization = `Bearer ${newAccess}`;
+        onRefreshed(true);
+        
+        // Retentar requisição original
         return api(original);
       } catch (err) {
         isRefreshing = false;
-        pendingQueue = [];
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        // opcional: redirecionar para /login
-        // window.location.href = '/login';
+        onRefreshed(false);
+        
+        // Redirecionar para login
+        window.location.href = '/login';
         return Promise.reject(err);
       }
     }
@@ -103,32 +68,20 @@ export default api;
 
 // Admin API functions
 export const adminApi = {
-  // Buscar todos os usuários
   getAllUsers: async (token?: string) => {
     try {
-      // O interceptor do axios já adiciona o token automaticamente
-      // Mas podemos garantir que o token está sendo enviado
       const response = await api.get('/users');
-      console.log('✅ Usuários carregados:', response.data?.length || 0);
       return response.data || [];
     } catch (error: any) {
-      console.error('❌ Erro ao buscar usuários:', {
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        message: error.message,
-        data: error.response?.data
-      });
       throw error;
     }
   },
 
-  // Buscar estatísticas de usuários
   getUsersStats: async (token?: string) => {
     try {
       const response = await api.get('/users/stats');
       return response.data;
     } catch (error) {
-      // Se o endpoint não existir, calcular estatísticas localmente
       const users = await adminApi.getAllUsers(token);
       return {
         totalUsers: users.length,

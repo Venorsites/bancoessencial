@@ -38,99 +38,51 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  
-  // Modo de desenvolvimento - criar usuário admin automaticamente
-  const isDevMode = false; // DESATIVADO - usar login real
 
   useEffect(() => {
     const loadStorageData = async () => {
-      // Modo de desenvolvimento - criar usuário admin automaticamente
-      if (isDevMode) {
-        const devUser: User = {
-          id: 'dev-admin-id',
-          nome: 'Admin',
-          sobrenome: 'Sistema',
-          email: 'admin@bancoessencial.com',
-          contato: '11999999999',
-          role: 'ADMIN'
-        };
-        const devToken = 'dev-admin-token';
-        
-        setUser(devUser);
-        setToken(devToken);
-        setLoading(false);
-        return;
-      }
-
-      const storedAccessToken = localStorage.getItem('access_token');
-      const storedRefreshToken = localStorage.getItem('refresh_token');
-      const storedUser = localStorage.getItem('@BancoEssencial:user');
-
-      if (storedAccessToken && storedRefreshToken && storedUser) {
-        try {
-          // Testar se o token ainda é válido
-          const response = await api.get('/auth/me');
-          setToken(storedAccessToken);
-          setUser(JSON.parse(storedUser));
-        } catch (error) {
-          // Se falhar, limpar tokens e redirecionar para login
-          localStorage.removeItem('access_token');
-          localStorage.removeItem('refresh_token');
-          localStorage.removeItem('@BancoEssencial:user');
-        }
+      try {
+        // Verificar se há sessão válida checando o endpoint /auth/me
+        // O token está nos cookies, não precisa enviar nada
+        const response = await api.get('/auth/me');
+        setUser(response.data);
+        setToken('cookie'); // Placeholder - token está no cookie httpOnly
+      } catch (error) {
+        // Sem sessão válida
+        setUser(null);
+        setToken(null);
       }
 
       setLoading(false);
     };
 
     loadStorageData();
-  }, [isDevMode]);
+  }, []);
 
   const login = async (email: string, password: string) => {
-    console.log('🔵 Tentando fazer login...', { email });
-    
     const response = await api.post('/auth/login', { email, password });
+    const { user: userData } = response.data;
     
-    console.log('🟢 Resposta da API:', response);
-    console.log('📦 Dados recebidos:', response.data);
-    
-    const { data } = response;
-    
-    // Verificar se a resposta contém os dados esperados
-    if (!data || !data.user || !data.access_token) {
-      console.error('❌ Resposta inválida da API:', data);
-      throw new Error('Resposta inválida do servidor');
-    }
-    
-    console.log('✅ Login bem-sucedido, salvando dados...');
-    
-    setUser(data.user);
-    setToken(data.access_token);
-    
-    localStorage.setItem('access_token', data.access_token);
-    localStorage.setItem('refresh_token', data.refresh_token);
-    localStorage.setItem('@BancoEssencial:user', JSON.stringify(data.user));
+    setUser(userData);
+    setToken('cookie'); // Token está no cookie httpOnly
 
     toast({
       title: 'Login realizado com sucesso!',
-      description: `Bem-vindo, ${data.user?.nome || 'usuário'}!`,
+      description: `Bem-vindo, ${userData?.nome || 'usuário'}!`,
     });
   };
 
   const register = async (data: RegisterData) => {
     try {
-      const { data: response } = await api.post('/auth/register', data);
+      const response = await api.post('/auth/register', data);
+      const { user: userData } = response.data;
       
-      setUser(response.user);
-      setToken(response.access_token);
-      
-      localStorage.setItem('access_token', response.access_token);
-      localStorage.setItem('refresh_token', response.refresh_token);
-      localStorage.setItem('@BancoEssencial:user', JSON.stringify(response.user));
+      setUser(userData);
+      setToken('cookie'); // Token está no cookie httpOnly
 
       toast({
         title: 'Cadastro realizado com sucesso!',
-        description: `Bem-vindo, ${response.user?.nome || 'usuário'}!`,
+        description: `Bem-vindo, ${userData?.nome || 'usuário'}!`,
       });
     } catch (error) {
       toast({
@@ -142,17 +94,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await api.post('/auth/logout');
+    } catch (error) {
+      // Ignorar erro de logout
+    }
+    
     setUser(null);
     setToken(null);
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('@BancoEssencial:user');
-    
-    // Limpar cache de aceite de política
-    if (user?.id) {
-      localStorage.removeItem(`policy_accepted_${user.id}_2.0`);
-    }
     
     toast({
       title: 'Logout realizado',

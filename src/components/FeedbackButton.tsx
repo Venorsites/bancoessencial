@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Bug, X, Send, AlertCircle } from "lucide-react";
+import { Info, X, Send, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -81,7 +81,7 @@ export function FeedbackButton() {
         className="fixed bottom-6 right-6 z-50 rounded-full w-14 h-14 shadow-lg hover:shadow-xl transition-all duration-300 bg-purple-600 hover:bg-purple-700 text-white"
         size="icon"
       >
-        <Bug className="w-6 h-6" />
+        <Info className="w-6 h-6" />
       </Button>
 
       {/* Modal de Feedback */}
