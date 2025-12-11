@@ -20,10 +20,11 @@ api.interceptors.response.use(
   async (error) => {
     const original = error.config;
 
-    // NÃO tentar refresh em rotas de autenticação
+    // NÃO tentar refresh em rotas de autenticação ou verificação inicial
     const isAuthRoute = original?.url?.includes('/auth/login') || 
                         original?.url?.includes('/auth/register') ||
-                        original?.url?.includes('/auth/refresh');
+                        original?.url?.includes('/auth/refresh') ||
+                        original?.url?.includes('/auth/me'); // Não tentar refresh na verificação inicial
 
     if (error.response?.status === 401 && !original._retry && !isAuthRoute) {
       if (isRefreshing) {

@@ -40,23 +40,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { toast } = useToast();
 
   useEffect(() => {
+    let isMounted = true; // Flag para evitar atualizações após desmontagem
+
     const loadStorageData = async () => {
       try {
         // Verificar se há sessão válida checando o endpoint /auth/me
         // O token está nos cookies, não precisa enviar nada
         const response = await api.get('/auth/me');
-        setUser(response.data);
-        setToken('cookie'); // Placeholder - token está no cookie httpOnly
-      } catch (error) {
-        // Sem sessão válida
-        setUser(null);
-        setToken(null);
+        
+        if (isMounted) {
+          setUser(response.data);
+          setToken('cookie'); // Placeholder - token está no cookie httpOnly
+        }
+      } catch (error: any) {
+        // Sem sessão válida - não é um erro crítico, apenas não há usuário logado
+        if (isMounted) {
+          setUser(null);
+          setToken(null);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
       }
-
-      setLoading(false);
     };
 
     loadStorageData();
+
+    // Cleanup: evitar atualizações se o componente for desmontado
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const login = async (email: string, password: string) => {
