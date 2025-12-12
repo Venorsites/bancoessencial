@@ -58,7 +58,7 @@ const Index = () => {
       return;
     }
 
-    // Evitar verificar múltiplas vezes
+    // Evitar verificar múltiplas vezes na mesma sessão
     if (hasChecked) {
       return;
     }
@@ -70,6 +70,37 @@ const Index = () => {
       const cached = getCachedAcceptance(user.id);
       if (cached === true) {
         console.log("✅ [Policy] Aceite encontrado no cache local");
+        // Verificar no servidor para confirmar (mas não bloquear se o servidor falhar)
+        try {
+          const response = await fetch(`${API_URL}/policy-acceptance/check?version=2.0`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            if (data.hasAccepted) {
+              console.log("✅ [Policy] Servidor confirma que já aceitou");
+              // Atualizar cache se necessário
+              setCachedAcceptance(user.id, true);
+            } else {
+              // Se o servidor diz que não aceitou, mas o cache diz que sim, limpar cache e mostrar modal
+              console.warn("⚠️ [Policy] Cache indica aceite, mas servidor não confirma. Limpando cache.");
+              try {
+                localStorage.removeItem(`policy_accepted_${user.id}_2.0`);
+              } catch (e) {
+                console.error('Erro ao limpar cache:', e);
+              }
+              setShowPolicyModal(true);
+            }
+          }
+        } catch (error) {
+          // Se houver erro na verificação, confiar no cache
+          console.warn("⚠️ [Policy] Erro ao verificar no servidor, confiando no cache:", error);
+        }
+        
         setIsChecking(false);
         setHasChecked(true);
         return; // Não mostrar modal se já aceitou
@@ -131,14 +162,20 @@ const Index = () => {
     };
 
     checkPolicyAcceptance();
-  }, [user, token, authLoading, hasChecked]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, token, authLoading]);
 
   const handlePolicyAccept = () => {
+    console.log("✅ [Policy] handlePolicyAccept chamado");
     setShowPolicyModal(false);
     // Salvar no cache local imediatamente após aceitar
     if (user) {
       setCachedAcceptance(user.id, true);
+      console.log("✅ [Policy] Cache atualizado para usuário:", user.id);
     }
+    // Garantir que hasChecked seja true para evitar verificação novamente nesta sessão
+    setHasChecked(true);
+    
     // Mostrar modal beta logo após aceitar os termos, se o usuário não tiver optado por não ver mais
     // Só mostrar se o usuário estiver autenticado
     if (user && shouldShowBetaNotification(user.id)) {
