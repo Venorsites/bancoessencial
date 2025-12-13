@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { 
@@ -13,7 +13,8 @@ import {
   Stethoscope,
   FileCheck,
   LogOut,
-  MessageSquare
+  MessageSquare,
+  Webhook
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -22,6 +23,8 @@ import { useAuth } from "@/contexts/AuthContext";
 interface AdminSidebarProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
+  isMobileOpen?: boolean;
+  onMobileClose?: () => void;
 }
 
 const menuItems = [
@@ -47,7 +50,13 @@ const menuItems = [
     id: "users",
     label: "Usuários",
     icon: Users,
-    description: "Gerenciar usuários"
+    description: "Gerenciar usuários e suspensões"
+  },
+  {
+    id: "webhooks",
+    label: "Webhooks",
+    icon: Webhook,
+    description: "Visualizar webhooks recebidos"
   },
   {
     id: "policy-acceptances",
@@ -69,13 +78,33 @@ const menuItems = [
   }
 ];
 
-export function AdminSidebar({ activeTab, onTabChange }: AdminSidebarProps) {
+export function AdminSidebar({ activeTab, onTabChange, isMobileOpen = false, onMobileClose }: AdminSidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const navigate = useNavigate();
   const { logout } = useAuth();
 
+  // Detectar se está em mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024); // lg breakpoint
+      if (window.innerWidth >= 1024) {
+        setIsCollapsed(false); // Sempre expandido em desktop
+      }
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   const handleTabChange = (tabId: string) => {
     onTabChange(tabId);
+    
+    // Fechar sidebar em mobile após selecionar item
+    if (isMobile && onMobileClose) {
+      onMobileClose();
+    }
     
     // Navegar para a rota correspondente
     switch (tabId) {
@@ -90,6 +119,9 @@ export function AdminSidebar({ activeTab, onTabChange }: AdminSidebarProps) {
         break;
       case 'users':
         navigate('/admin/users');
+        break;
+      case 'webhooks':
+        navigate('/admin/webhooks');
         break;
       case 'policy-acceptances':
         navigate('/admin/policy-acceptances');
@@ -110,20 +142,41 @@ export function AdminSidebar({ activeTab, onTabChange }: AdminSidebarProps) {
     navigate('/');
   };
 
+  // Em mobile, sidebar só aparece se isMobileOpen for true
+  if (isMobile && !isMobileOpen) {
+    return null;
+  }
+
   return (
-    <motion.div
-      initial={{ x: -300 }}
-      animate={{ x: 0 }}
-      transition={{ duration: 0.3 }}
-      className={cn(
-        "fixed left-0 top-0 h-full bg-gradient-to-b from-purple-900 to-purple-800 text-white z-40 transition-all duration-300 shadow-2xl",
-        isCollapsed ? "w-16" : "w-64"
+    <>
+      {/* Overlay para mobile */}
+      {isMobile && isMobileOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={onMobileClose}
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+        />
       )}
-    >
+
+      <motion.div
+        initial={isMobile ? { x: -300 } : { x: 0 }}
+        animate={{ x: 0 }}
+        exit={isMobile ? { x: -300 } : { x: 0 }}
+        transition={{ duration: 0.3 }}
+        className={cn(
+          "fixed left-0 top-0 h-full bg-gradient-to-b from-purple-900 to-purple-800 text-white transition-all duration-300 shadow-2xl z-50 flex flex-col",
+          // Desktop: largura fixa ou colapsada
+          !isMobile && (isCollapsed ? "w-16" : "w-64"),
+          // Mobile: sempre largura total quando aberto
+          isMobile && "w-64"
+        )}
+      >
       {/* Header */}
       <div className="p-4 border-b border-purple-700/50">
         <div className="flex items-center justify-between">
-          {!isCollapsed && (
+          {(!isCollapsed || isMobile) && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -133,19 +186,33 @@ export function AdminSidebar({ activeTab, onTabChange }: AdminSidebarProps) {
               <p className="text-purple-200 text-sm">Banco Essencial</p>
             </motion.div>
           )}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="text-white hover:bg-purple-700/50 p-2"
-          >
-            {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <X className="w-4 h-4" />}
-          </Button>
+          <div className="flex items-center gap-2">
+            {/* Botão de fechar/colapsar */}
+            {isMobile ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onMobileClose}
+                className="text-white hover:bg-purple-700/50 p-2"
+              >
+                <X className="w-5 h-5" />
+              </Button>
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsCollapsed(!isCollapsed)}
+                className="text-white hover:bg-purple-700/50 p-2"
+              >
+                {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <X className="w-4 h-4" />}
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Navigation */}
-      <nav className="p-4 space-y-2">
+      <nav className="p-4 space-y-2 overflow-y-auto flex-1 min-h-0">
         {menuItems.map((item, index) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
@@ -164,18 +231,20 @@ export function AdminSidebar({ activeTab, onTabChange }: AdminSidebarProps) {
                   : "text-purple-200 hover:bg-white/10 hover:text-white"
               )}
             >
-              <Icon className={cn("w-5 h-5", isActive && "text-yellow-300")} />
-              {!isCollapsed && (
+              <Icon className={cn("w-5 h-5 flex-shrink-0", isActive && "text-yellow-300")} />
+              {(!isCollapsed || isMobile) && (
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.1 }}
-                  className="flex-1 text-left"
+                  className="flex-1 text-left min-w-0"
                 >
-                  <div className="font-medium">{item.label}</div>
-                  <div className="text-xs text-purple-300 opacity-0 group-hover:opacity-100 transition-opacity">
-                    {item.description}
-                  </div>
+                  <div className="font-medium truncate">{item.label}</div>
+                  {!isMobile && (
+                    <div className="text-xs text-purple-300 opacity-80 mt-0.5">
+                      {item.description}
+                    </div>
+                  )}
                 </motion.div>
               )}
             </motion.button>
@@ -184,30 +253,32 @@ export function AdminSidebar({ activeTab, onTabChange }: AdminSidebarProps) {
       </nav>
 
       {/* Footer */}
-      <div className="absolute bottom-4 left-4 right-4 space-y-2">
+      <div className="p-4 space-y-2 border-t border-purple-700/50 bg-purple-900 flex-shrink-0">
         {/* Botão Home */}
         <motion.button
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          onClick={() => navigate('/')}
+          onClick={() => {
+            navigate('/');
+            if (isMobile && onMobileClose) {
+              onMobileClose();
+            }
+          }}
           className={cn(
-            "w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-200 group bg-white/10 hover:bg-white/20 text-purple-200 hover:text-white",
-            isCollapsed && "justify-center"
+            "w-full flex items-center gap-3 rounded-xl transition-all duration-200 group bg-white/10 hover:bg-white/20 text-purple-200 hover:text-white",
+            (isCollapsed && !isMobile) ? "justify-center p-2" : "p-2.5"
           )}
         >
-          <Home className="w-5 h-5" />
-          {!isCollapsed && (
+          <Home className={cn("flex-shrink-0", (isCollapsed && !isMobile) ? "w-4 h-4" : "w-5 h-5")} />
+          {(!isCollapsed || isMobile) && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.1 }}
-              className="flex-1 text-left"
+              className="flex-1 text-left min-w-0"
             >
-              <div className="font-medium">Voltar ao Site</div>
-              <div className="text-xs text-purple-300 opacity-0 group-hover:opacity-100 transition-opacity">
-                Retornar à página inicial
-              </div>
+              <div className="font-medium truncate text-sm">Voltar ao Site</div>
             </motion.div>
           )}
         </motion.button>
@@ -217,28 +288,31 @@ export function AdminSidebar({ activeTab, onTabChange }: AdminSidebarProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          onClick={handleLogout}
+          onClick={() => {
+            handleLogout();
+            if (isMobile && onMobileClose) {
+              onMobileClose();
+            }
+          }}
           className={cn(
-            "w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-200 group bg-red-500/10 hover:bg-red-500/20 text-red-200 hover:text-white border border-red-500/20",
-            isCollapsed && "justify-center"
+            "w-full flex items-center gap-3 rounded-xl transition-all duration-200 group bg-red-500/10 hover:bg-red-500/20 text-red-200 hover:text-white border border-red-500/20",
+            (isCollapsed && !isMobile) ? "justify-center p-2" : "p-2.5"
           )}
         >
-          <LogOut className="w-5 h-5" />
-          {!isCollapsed && (
+          <LogOut className={cn("flex-shrink-0", (isCollapsed && !isMobile) ? "w-4 h-4" : "w-5 h-5")} />
+          {(!isCollapsed || isMobile) && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.1 }}
-              className="flex-1 text-left"
+              className="flex-1 text-left min-w-0"
             >
-              <div className="font-medium">Sair</div>
-              <div className="text-xs text-red-300 opacity-0 group-hover:opacity-100 transition-opacity">
-                Fazer logout
-              </div>
+              <div className="font-medium truncate text-sm">Sair</div>
             </motion.div>
           )}
         </motion.button>
       </div>
     </motion.div>
+    </>
   );
 }

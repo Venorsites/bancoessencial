@@ -14,7 +14,15 @@ import {
   Phone,
   Calendar,
   Eye,
-  EyeOff
+  EyeOff,
+  UserX,
+  UserCheck,
+  Webhook,
+  RefreshCw,
+  CreditCard,
+  AlertCircle,
+  CheckCircle,
+  XCircle
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,6 +30,8 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { adminApi } from "@/services/api";
 import { useAuth } from "@/contexts/AuthContext";
+import { API_URL } from "@/config/api";
+import { useToast } from "@/hooks/use-toast";
 
 interface User {
   id: string;
@@ -36,15 +46,30 @@ interface User {
   avatar?: string;
 }
 
+interface WebhookData {
+  id: string;
+  webhook_id: string;
+  event: string;
+  transaction_id: string;
+  user_email: string;
+  status: 'pending' | 'processed' | 'error';
+  error_message?: string;
+  created_at: string;
+}
+
 export function AdminUsers() {
   const { token } = useAuth();
+  const { toast } = useToast();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
-  const [showPasswords, setShowPasswords] = useState<{ [key: string]: boolean }>({});
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "suspended">("all");
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [userWebhooks, setUserWebhooks] = useState<WebhookData[]>([]);
+  const [loadingWebhooks, setLoadingWebhooks] = useState(false);
+  const [processingId, setProcessingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (token) {
@@ -61,14 +86,10 @@ export function AdminUsers() {
       setError(null);
       console.log('🔄 Carregando usuários...', { token: token ? 'Token presente' : 'Sem token' });
       
-      // O token será adicionado automaticamente pelo interceptor do axios
       const usersData = await adminApi.getAllUsers(token);
       
       console.log('✅ Dados recebidos:', usersData);
-      console.log('✅ Primeiro usuário exemplo:', usersData?.[0]);
-      console.log('✅ is_suspended do primeiro:', usersData?.[0]?.is_suspended, 'tipo:', typeof usersData?.[0]?.is_suspended);
       
-      // Normalizar is_suspended: null/undefined = false (ativo)
       const normalizedUsers = Array.isArray(usersData) 
         ? usersData.map(user => ({
             ...user,
@@ -78,8 +99,6 @@ export function AdminUsers() {
       
       setUsers(normalizedUsers);
       console.log('✅ Usuários normalizados:', normalizedUsers.length);
-      console.log('✅ Exemplo de usuário normalizado:', normalizedUsers[0]);
-      console.log('✅ Filtros ativos:', { statusFilter, roleFilter, searchTerm });
     } catch (error: any) {
       console.error("❌ Erro ao carregar usuários:", error);
       
@@ -98,128 +117,232 @@ export function AdminUsers() {
       }
       
       setError(errorMessage);
-      setUsers([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = 
+  const loadUserWebhooks = async (email: string) => {
+    setLoadingWebhooks(true);
+    try {
+      const response = await fetch(`${API_URL}/webhooks/user/${email}`, {
+        credentials: 'include',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao carregar webhooks do usuário');
+      }
+
+      const data = await response.json();
+      setUserWebhooks(data.data || []);
+    } catch (error: any) {
+      console.error('Erro ao carregar webhooks:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao carregar webhooks do usuário",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingWebhooks(false);
+    }
+  };
+
+  const handleViewUser = async (user: User) => {
+    setSelectedUser(user);
+    await loadUserWebhooks(user.email);
+  };
+
+  const handleSuspend = async (userId: string) => {
+    try {
+      setProcessingId(userId);
+      console.log('🔄 Tentando suspender usuário:', userId);
+
+      const response = await fetch(`${API_URL}/users/${userId}/suspend`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      console.log('📡 Resposta do servidor:', response.status, response.statusText);
+
+      if (!response.ok) {
+        let errorMessage = 'Erro ao suspender usuário';
+        let errorDetails: any = null;
+        
+        try {
+          const errorData = await response.json();
+          errorDetails = errorData;
+          errorMessage = errorData.message || errorData.error || errorMessage;
+          console.error('❌ Erro detalhado:', errorData);
+        } catch {
+          const errorText = await response.text();
+          errorMessage = errorText || errorMessage;
+          console.error('❌ Erro como texto:', errorText);
+        }
+        
+        // Mensagens específicas por status
+        if (response.status === 403) {
+          errorMessage = 'Você não tem permissão para suspender usuários';
+        } else if (response.status === 401) {
+          errorMessage = 'Você precisa estar autenticado';
+        } else if (response.status === 404) {
+          errorMessage = 'Usuário não encontrado';
+        }
+        
+        throw new Error(errorMessage);
+      }
+
+      const data = await response.json();
+      console.log('✅ Usuário suspendido com sucesso:', data);
+
+      toast({
+        title: "Sucesso",
+        description: data.message || "Usuário suspendido com sucesso",
+      });
+
+      await loadUsers();
+    } catch (error: any) {
+      console.error('❌ Erro completo ao suspender usuário:', error);
+      toast({
+        title: "Erro",
+        description: error.message || "Erro ao suspender usuário. Verifique o console para mais detalhes.",
+        variant: "destructive",
+      });
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  const handleUnsuspend = async (userId: string) => {
+    try {
+      setProcessingId(userId);
+
+      const response = await fetch(`${API_URL}/users/${userId}/unsuspend`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        let errorMessage = 'Erro ao reativar usuário';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorData.error || errorMessage;
+        } catch {
+          const errorText = await response.text();
+          errorMessage = errorText || errorMessage;
+        }
+        throw new Error(errorMessage);
+      }
+
+      const data = await response.json();
+
+      toast({
+        title: "Sucesso",
+        description: data.message || "Usuário reativado com sucesso",
+      });
+
+      await loadUsers();
+    } catch (error: any) {
+      console.error('Erro ao reativar usuário:', error);
+      toast({
+        title: "Erro",
+        description: error.message || "Erro ao reativar usuário",
+        variant: "destructive",
+      });
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  const getEventLabel = (event: string) => {
+    const labels: { [key: string]: string } = {
+      'PURCHASE_APPROVED': 'Compra Aprovada',
+      'PURCHASE_CANCELED': 'Compra Cancelada',
+      'PURCHASE_REFUNDED': 'Reembolsado',
+      'PURCHASE_CHARGEBACK': 'Chargeback',
+    };
+    return labels[event] || event;
+  };
+
+  const getEventColor = (event: string) => {
+    const colors: { [key: string]: string } = {
+      'PURCHASE_APPROVED': 'bg-green-100 text-green-800',
+      'PURCHASE_CANCELED': 'bg-red-100 text-red-800',
+      'PURCHASE_REFUNDED': 'bg-orange-100 text-orange-800',
+      'PURCHASE_CHARGEBACK': 'bg-red-100 text-red-800',
+    };
+    return colors[event] || 'bg-gray-100 text-gray-800';
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'processed':
+        return <CheckCircle className="w-4 h-4 text-green-600" />;
+      case 'error':
+        return <XCircle className="w-4 h-4 text-red-600" />;
+      default:
+        return <AlertCircle className="w-4 h-4 text-gray-600" />;
+    }
+  };
+
+  const filteredUsers = users.filter((user) => {
+    const matchesSearch =
+      searchTerm === "" ||
       user.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.sobrenome.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.contato.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesRole = roleFilter === "all" || user.role.toLowerCase() === roleFilter.toLowerCase();
-    
-    // Normalizar is_suspended para comparação (null/undefined = false = ativo)
-    const isSuspended = user.is_suspended === true;
-    
-    const matchesStatus = 
-      statusFilter === "all" || 
-      (statusFilter === "active" && !isSuspended) ||
-      (statusFilter === "inactive" && isSuspended);
-    
-    const matches = matchesSearch && matchesRole && matchesStatus;
-    
-    // Debug apenas para o primeiro usuário
-    if (users.indexOf(user) === 0) {
-      console.log('🔍 Debug filtro:', {
-        email: user.email,
-        matchesSearch,
-        matchesRole,
-        matchesStatus,
-        isSuspended,
-        statusFilter,
-        roleFilter,
-        searchTerm,
-        finalMatch: matches
-      });
-    }
-    
-    return matches;
+
+    const matchesRole = roleFilter === "all" || user.role === roleFilter;
+    const matchesStatus =
+      statusFilter === "all" ||
+      (statusFilter === "active" && !user.is_suspended) ||
+      (statusFilter === "suspended" && user.is_suspended);
+
+    return matchesSearch && matchesRole && matchesStatus;
   });
 
-  const togglePasswordVisibility = (userId: string) => {
-    setShowPasswords(prev => ({
-      ...prev,
-      [userId]: !prev[userId]
-    }));
-  };
-
-  const getRoleBadgeVariant = (role: string) => {
-    switch (role.toLowerCase()) {
-      case 'admin':
-        return 'destructive';
-      case 'user':
-        return 'default';
-      default:
-        return 'secondary';
-    }
-  };
-
-  const formatDate = (dateString: string | Date) => {
-    try {
-      const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
-      if (isNaN(date.getTime())) {
-        return 'Data inválida';
-      }
-      return date.toLocaleDateString('pt-BR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    } catch (error) {
-      return 'Data inválida';
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
-      </div>
-    );
-  }
+  const suspendedCount = users.filter((u) => u.is_suspended).length;
+  const activeCount = users.filter((u) => !u.is_suspended).length;
+  const adminCount = users.filter((u) => u.role === 'ADMIN').length;
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
-      >
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-            Gerenciamento de Usuários
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+            <Users className="w-8 h-8 text-purple-600" />
+            Gerenciar Usuários
           </h1>
           <p className="text-gray-600 mt-1">
-            Gerencie todos os usuários cadastrados no sistema
+            Gerencie usuários, suspensões e visualize webhooks relacionados
           </p>
         </div>
-        <Button className="bg-purple-600 hover:bg-purple-700">
-          <UserPlus className="w-4 h-4 mr-2" />
-          Novo Usuário
+        <Button onClick={loadUsers} disabled={loading}>
+          <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+          Atualizar
         </Button>
-      </motion.div>
+      </div>
 
       {/* Stats Cards */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.1 }}
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4"
-      >
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
-          <CardContent className="p-4">
+          <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Total de Usuários</p>
+                <p className="text-sm font-medium text-gray-600">Total</p>
                 <p className="text-2xl font-bold text-gray-900">{users.length}</p>
               </div>
               <Users className="w-8 h-8 text-purple-600" />
@@ -228,260 +351,282 @@ export function AdminUsers() {
         </Card>
 
         <Card>
-          <CardContent className="p-4">
+          <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Administradores</p>
-                <p className="text-2xl font-bold text-red-600">
-                  {users.filter(u => u.role.toLowerCase() === 'admin').length}
-                </p>
+                <p className="text-sm font-medium text-gray-600">Ativos</p>
+                <p className="text-2xl font-bold text-green-600">{activeCount}</p>
               </div>
-              <Shield className="w-8 h-8 text-red-600" />
+              <UserCheck className="w-8 h-8 text-green-600" />
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-4">
+          <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Usuários Comuns</p>
-                <p className="text-2xl font-bold text-blue-600">
-                  {users.filter(u => u.role.toLowerCase() === 'user').length}
-                </p>
+                <p className="text-sm font-medium text-gray-600">Suspensos</p>
+                <p className="text-2xl font-bold text-red-600">{suspendedCount}</p>
               </div>
-              <User className="w-8 h-8 text-blue-600" />
+              <UserX className="w-8 h-8 text-red-600" />
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-4">
+          <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Usuários Ativos</p>
-                <p className="text-2xl font-bold text-green-600">
-                  {users.filter(u => u.is_suspended !== true).length}
-                </p>
+                <p className="text-sm font-medium text-gray-600">Admins</p>
+                <p className="text-2xl font-bold text-purple-600">{adminCount}</p>
               </div>
-              <User className="w-8 h-8 text-green-600" />
+              <Shield className="w-8 h-8 text-purple-600" />
             </div>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Usuários Inativos</p>
-                <p className="text-2xl font-bold text-orange-600">
-                  {users.filter(u => u.is_suspended === true).length}
-                </p>
-              </div>
-              <User className="w-8 h-8 text-orange-600" />
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* Error Message */}
-      {error && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-800"
-        >
-          <div className="flex items-center gap-2">
-            <span className="font-semibold">Erro:</span>
-            <span>{error}</span>
-          </div>
-          <Button
-            onClick={loadUsers}
-            variant="outline"
-            size="sm"
-            className="mt-2 border-red-300 text-red-700 hover:bg-red-100"
-          >
-            Tentar Novamente
-          </Button>
-        </motion.div>
-      )}
+      </div>
 
       {/* Filters */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-        className="flex flex-col sm:flex-row gap-4"
-      >
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <Input
-            placeholder="Buscar usuários..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <div className="flex gap-2">
-            <Button
-              variant={roleFilter === "all" ? "default" : "outline"}
-              onClick={() => setRoleFilter("all")}
-              size="sm"
-            >
-              Todos
-            </Button>
-            <Button
-              variant={roleFilter === "admin" ? "default" : "outline"}
-              onClick={() => setRoleFilter("admin")}
-              size="sm"
-            >
-              Admins
-            </Button>
-            <Button
-              variant={roleFilter === "user" ? "default" : "outline"}
-              onClick={() => setRoleFilter("user")}
-              size="sm"
-            >
-              Usuários
-            </Button>
-          </div>
-          <div className="flex gap-2 border-l pl-2 ml-2">
-            <Button
-              variant={statusFilter === "all" ? "default" : "outline"}
-              onClick={() => setStatusFilter("all")}
-              size="sm"
-              className={statusFilter === "all" ? "bg-purple-600 hover:bg-purple-700" : ""}
-            >
-              Todos Status
-            </Button>
-            <Button
-              variant={statusFilter === "active" ? "default" : "outline"}
-              onClick={() => setStatusFilter("active")}
-              size="sm"
-              className={statusFilter === "active" ? "bg-green-600 hover:bg-green-700 text-white" : ""}
-            >
-              Ativos
-            </Button>
-            <Button
-              variant={statusFilter === "inactive" ? "default" : "outline"}
-              onClick={() => setStatusFilter("inactive")}
-              size="sm"
-              className={statusFilter === "inactive" ? "bg-orange-600 hover:bg-orange-700 text-white" : ""}
-            >
-              Inativos
-            </Button>
-          </div>
-        </div>
-      </motion.div>
+      <Card>
+        <CardContent className="p-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Input
+                placeholder="Buscar por nome, email ou contato..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9"
+              />
+            </div>
 
-      {/* Users Table */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.3 }}
-      >
+            <select
+              value={roleFilter}
+              onChange={(e) => setRoleFilter(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+            >
+              <option value="all">Todas as roles</option>
+              <option value="USER">Usuários</option>
+              <option value="ADMIN">Administradores</option>
+            </select>
+
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as any)}
+              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+            >
+              <option value="all">Todos os status</option>
+              <option value="active">Apenas ativos</option>
+              <option value="suspended">Apenas suspensos</option>
+            </select>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Users List */}
+      {loading ? (
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="w-5 h-5" />
-              Usuários ({filteredUsers.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {filteredUsers.length === 0 ? (
-              <div className="text-center py-8">
-                <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600">Nenhum usuário encontrado</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {filteredUsers.map((user, index) => (
-                  <motion.div
-                    key={user.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="flex items-center gap-4">
-                      {/* Avatar */}
-                      <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                        {user.avatar ? (
-                          <img
-                            src={user.avatar}
-                            alt={`${user.nome} ${user.sobrenome}`}
-                            className="w-12 h-12 rounded-full object-cover"
-                          />
-                        ) : (
-                          <User className="w-6 h-6 text-purple-600" />
-                        )}
-                      </div>
-
-                      {/* User Info */}
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-semibold text-gray-900">
-                            {user.nome} {user.sobrenome}
-                          </h3>
-                          <Badge variant={getRoleBadgeVariant(user.role)}>
-                            {user.role.toUpperCase()}
-                          </Badge>
-                          <Badge 
-                            variant={user.is_suspended === true ? "secondary" : "default"}
-                            className={user.is_suspended === true 
-                              ? "bg-orange-100 text-orange-800 border-orange-200" 
-                              : "bg-green-100 text-green-800 border-green-200"
-                            }
-                          >
-                            {user.is_suspended === true ? "Inativo" : "Ativo"}
-                          </Badge>
-                        </div>
-                        <div className="flex items-center gap-4 text-sm text-gray-600">
-                          <div className="flex items-center gap-1">
-                            <Mail className="w-3 h-3" />
-                            {user.email}
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Phone className="w-3 h-3" />
-                            {user.contato}
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3" />
-                            {formatDate(user.created_at)}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => togglePasswordVisibility(user.id)}
-                        title="Ver/ocultar senha"
-                      >
-                        {showPasswords[user.id] ? (
-                          <EyeOff className="w-4 h-4" />
-                        ) : (
-                          <Eye className="w-4 h-4" />
-                        )}
-                      </Button>
-                      <Button variant="ghost" size="sm" title="Editar usuário">
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm" title="Excluir usuário">
-                        <Trash2 className="w-4 h-4 text-red-500" />
-                      </Button>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            )}
+          <CardContent className="p-12 text-center">
+            <RefreshCw className="w-8 h-8 animate-spin text-purple-600 mx-auto mb-4" />
+            <p className="text-gray-600">Carregando usuários...</p>
           </CardContent>
         </Card>
-      </motion.div>
+      ) : error ? (
+        <Card>
+          <CardContent className="p-12 text-center">
+            <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+            <p className="text-red-600 font-semibold mb-2">Erro ao carregar usuários</p>
+            <p className="text-gray-600">{error}</p>
+          </CardContent>
+        </Card>
+      ) : filteredUsers.length === 0 ? (
+        <Card>
+          <CardContent className="p-12 text-center">
+            <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-600">Nenhum usuário encontrado</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-3">
+          {filteredUsers.map((user) => (
+            <motion.div
+              key={user.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-3">
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          {user.nome} {user.sobrenome}
+                        </h3>
+                        {user.is_suspended ? (
+                          <Badge className="bg-red-100 text-red-800">
+                            <UserX className="w-3 h-3 mr-1" />
+                            Suspenso
+                          </Badge>
+                        ) : (
+                          <Badge className="bg-green-100 text-green-800">
+                            <UserCheck className="w-3 h-3 mr-1" />
+                            Ativo
+                          </Badge>
+                        )}
+                        {user.role === 'ADMIN' && (
+                          <Badge className="bg-purple-100 text-purple-800">
+                            <Shield className="w-3 h-3 mr-1" />
+                            Admin
+                          </Badge>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm text-gray-600">
+                        <div className="flex items-center gap-2">
+                          <Mail className="w-4 h-4" />
+                          <span className="truncate">{user.email}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Phone className="w-4 h-4" />
+                          <span>{user.contato}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4" />
+                          <span>
+                            {new Date(user.created_at).toLocaleDateString('pt-BR')}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 ml-4">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleViewUser(user)}
+                      >
+                        <Webhook className="w-4 h-4 mr-2" />
+                        Ver Webhooks
+                      </Button>
+
+                      {user.is_suspended ? (
+                        <Button
+                          onClick={() => handleUnsuspend(user.id)}
+                          disabled={processingId === user.id}
+                          className="bg-green-600 hover:bg-green-700"
+                          size="sm"
+                        >
+                          <UserCheck className="w-4 h-4 mr-2" />
+                          {processingId === user.id ? 'Reativando...' : 'Reativar'}
+                        </Button>
+                      ) : (
+                        <Button
+                          onClick={() => handleSuspend(user.id)}
+                          disabled={processingId === user.id || user.role === 'ADMIN'}
+                          variant="destructive"
+                          size="sm"
+                        >
+                          <UserX className="w-4 h-4 mr-2" />
+                          {processingId === user.id ? 'Suspendendo...' : 'Suspender'}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
+      )}
+
+      {/* Modal de Webhooks do Usuário */}
+      {selectedUser && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+          onClick={() => setSelectedUser(null)}
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-lg max-w-4xl w-full max-h-[80vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="text-2xl font-bold text-gray-900">
+                    {selectedUser.nome} {selectedUser.sobrenome}
+                  </h3>
+                  <p className="text-gray-600">{selectedUser.email}</p>
+                </div>
+                <Button onClick={() => setSelectedUser(null)} variant="outline">
+                  Fechar
+                </Button>
+              </div>
+
+              <div className="mb-4">
+                <h4 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                  <Webhook className="w-5 h-5 text-purple-600" />
+                  Webhooks Relacionados ({userWebhooks.length})
+                </h4>
+              </div>
+
+              {loadingWebhooks ? (
+                <div className="text-center py-12">
+                  <RefreshCw className="w-8 h-8 animate-spin text-purple-600 mx-auto mb-4" />
+                  <p className="text-gray-600">Carregando webhooks...</p>
+                </div>
+              ) : userWebhooks.length === 0 ? (
+                <div className="text-center py-12">
+                  <Webhook className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-600">Nenhum webhook encontrado para este usuário</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {userWebhooks.map((webhook) => (
+                    <Card key={webhook.id}>
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-2">
+                              <Badge className={getEventColor(webhook.event)}>
+                                {getEventLabel(webhook.event)}
+                              </Badge>
+                              <div className="flex items-center gap-1">
+                                {getStatusIcon(webhook.status)}
+                                <span className="text-sm text-gray-600 capitalize">
+                                  {webhook.status}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
+                              <div className="flex items-center gap-2">
+                                <CreditCard className="w-4 h-4" />
+                                <span>{webhook.transaction_id}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Calendar className="w-4 h-4" />
+                                <span>{new Date(webhook.created_at).toLocaleString('pt-BR')}</span>
+                              </div>
+                            </div>
+                            {webhook.error_message && (
+                              <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-xs text-red-800">
+                                <strong>Erro:</strong> {webhook.error_message}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Routes, Route } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { Menu } from "lucide-react";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
 import { AdminOils } from "@/components/admin/AdminOils";
 import { AdminDiseases } from "@/components/admin/AdminDiseases";
 import { AdminUsers } from "@/components/admin/AdminUsers";
+import { AdminWebhooks } from "@/components/admin/AdminWebhooks";
 import { AdminPolicyAcceptances } from "@/components/admin/AdminPolicyAcceptances";
 import { AdminFeedbacks } from "@/components/admin/AdminFeedbacks";
 import { AdminAnalyticsSimple } from "@/components/admin/AdminAnalyticsSimple";
@@ -17,6 +19,7 @@ export default function Admin() {
   const location = useLocation();
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     // Verificar se é admin
@@ -35,6 +38,8 @@ export default function Admin() {
       setActiveTab('diseases');
     } else if (path.includes('/users')) {
       setActiveTab('users');
+    } else if (path.includes('/webhooks')) {
+      setActiveTab('webhooks');
     } else if (path.includes('/policy-acceptances')) {
       setActiveTab('policy-acceptances');
     } else if (path.includes('/feedbacks')) {
@@ -60,6 +65,8 @@ export default function Admin() {
         return <AdminDiseases />;
       case "users":
         return <AdminUsers />;
+      case "webhooks":
+        return <AdminWebhooks />;
       case "policy-acceptances":
         return <AdminPolicyAcceptances />;
       case "feedbacks":
@@ -79,11 +86,25 @@ export default function Admin() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setIsMobileMenuOpen(true)}
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-purple-600 text-white rounded-lg shadow-lg hover:bg-purple-700 transition-colors"
+        aria-label="Abrir menu"
+      >
+        <Menu className="w-6 h-6" />
+      </button>
+
       {/* Sidebar */}
-      <AdminSidebar activeTab={activeTab} onTabChange={setActiveTab} />
+      <AdminSidebar 
+        activeTab={activeTab} 
+        onTabChange={setActiveTab}
+        isMobileOpen={isMobileMenuOpen}
+        onMobileClose={() => setIsMobileMenuOpen(false)}
+      />
       
       {/* Main Content */}
-      <div className="ml-64 p-8">
+      <div className="lg:ml-64 p-4 sm:p-6 lg:p-8 pt-16 lg:pt-8">
         <div className="max-w-7xl mx-auto">
           <Routes>
             <Route path="/" element={renderContent()} />
@@ -94,6 +115,7 @@ export default function Admin() {
             <Route path="/diseases/new" element={<AdminDiseaseForm />} />
             <Route path="/diseases/edit/:id" element={<AdminDiseaseForm />} />
             <Route path="/users" element={<AdminUsers />} />
+            <Route path="/webhooks" element={<AdminWebhooks />} />
             <Route path="/policy-acceptances" element={<AdminPolicyAcceptances />} />
             <Route path="/feedbacks" element={<AdminFeedbacks />} />
           </Routes>

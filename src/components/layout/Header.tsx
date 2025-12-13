@@ -213,12 +213,12 @@ export function Header({}: HeaderProps) {
                         </Badge>
                       )}
                     </DropdownMenuItem>
-                    {user?.role === 'admin' && (
+                    {isAdmin && (
                       <>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={() => navigate("/admin")}>
                           <Shield className="w-4 h-4 mr-2" />
-                          Admin Sistema
+                          Admin
                         </DropdownMenuItem>
                       </>
                     )}
@@ -346,6 +346,21 @@ export function Header({}: HeaderProps) {
                       </Button>
                     </Link>
                     <div className="border-b border-gray-200/50 my-1" />
+
+                    {isAdmin && (
+                      <>
+                        <Link 
+                          to="/admin"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                          <Button variant="ghost" className="w-full justify-start rounded-xl">
+                            <Shield className="w-4 h-4 mr-2" />
+                            Admin
+                          </Button>
+                        </Link>
+                        <div className="border-b border-gray-200/50 my-1" />
+                      </>
+                    )}
 
                     <Button 
                       variant="ghost" 

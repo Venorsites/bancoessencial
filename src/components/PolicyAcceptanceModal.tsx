@@ -39,6 +39,7 @@ export function PolicyAcceptanceModal({ open, onAccept }: PolicyAcceptanceModalP
     try {
       const response = await fetch(`${API_URL}/policy-acceptance`, {
         method: "POST",
+        credentials: 'include', // IMPORTANTE: Enviar cookies automaticamente
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,

@@ -73,6 +73,7 @@ const Index = () => {
         // Verificar no servidor para confirmar (mas não bloquear se o servidor falhar)
         try {
           const response = await fetch(`${API_URL}/policy-acceptance/check?version=2.0`, {
+            credentials: 'include', // IMPORTANTE: Enviar cookies automaticamente
             headers: {
               Authorization: `Bearer ${token}`,
               'Content-Type': 'application/json',
@@ -108,6 +109,7 @@ const Index = () => {
 
       try {
         const response = await fetch(`${API_URL}/policy-acceptance/check?version=2.0`, {
+          credentials: 'include', // IMPORTANTE: Enviar cookies automaticamente
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
