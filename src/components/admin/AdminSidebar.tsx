@@ -14,7 +14,8 @@ import {
   FileCheck,
   LogOut,
   MessageSquare,
-  Webhook
+  Webhook,
+  DollarSign
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -57,6 +58,12 @@ const menuItems = [
     label: "Webhooks",
     icon: Webhook,
     description: "Visualizar webhooks recebidos"
+  },
+  {
+    id: "financeiro",
+    label: "Financeiro",
+    icon: DollarSign,
+    description: "Controle financeiro e vendas"
   },
   {
     id: "policy-acceptances",
@@ -122,6 +129,9 @@ export function AdminSidebar({ activeTab, onTabChange, isMobileOpen = false, onM
         break;
       case 'webhooks':
         navigate('/admin/webhooks');
+        break;
+      case 'financeiro':
+        navigate('/admin/financeiro');
         break;
       case 'policy-acceptances':
         navigate('/admin/policy-acceptances');

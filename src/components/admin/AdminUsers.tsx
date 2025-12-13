@@ -22,7 +22,11 @@ import {
   CreditCard,
   AlertCircle,
   CheckCircle,
-  XCircle
+  XCircle,
+  MessageCircle,
+  DollarSign,
+  Tag,
+  Package
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -55,6 +59,20 @@ interface WebhookData {
   status: 'pending' | 'processed' | 'error';
   error_message?: string;
   created_at: string;
+  // Dados financeiros
+  valor_pago?: number;
+  moeda?: string;
+  forma_pagamento?: string;
+  parcelas?: number;
+  codigo_oferta?: string;
+  codigo_cupom?: string;
+  plano_nome?: string;
+  plano_id?: number;
+  pais_origem?: string;
+  pais_iso?: string;
+  comissao_afiliado?: number;
+  comissao_produtor?: number;
+  valor_liquido?: number;
 }
 
 export function AdminUsers() {
@@ -70,6 +88,7 @@ export function AdminUsers() {
   const [userWebhooks, setUserWebhooks] = useState<WebhookData[]>([]);
   const [loadingWebhooks, setLoadingWebhooks] = useState(false);
   const [processingId, setProcessingId] = useState<string | null>(null);
+  const [migrating, setMigrating] = useState(false);
 
   useEffect(() => {
     if (token) {
@@ -265,6 +284,44 @@ export function AdminUsers() {
     }
   };
 
+  const handleMigrateWebhooks = async () => {
+    try {
+      setMigrating(true);
+      
+      const response = await fetch(`${API_URL}/webhooks/migrate-old-webhooks`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao migrar webhooks');
+      }
+
+      const data = await response.json();
+
+      toast({
+        title: "Sucesso",
+        description: `Migração concluída! ${data.data?.atualizados || 0} webhooks atualizados.`,
+      });
+
+      // Recarregar usuários para mostrar dados atualizados
+      await loadUsers();
+    } catch (error: any) {
+      console.error('Erro ao migrar webhooks:', error);
+      toast({
+        title: "Erro",
+        description: error.message || "Erro ao migrar webhooks antigos",
+        variant: "destructive",
+      });
+    } finally {
+      setMigrating(false);
+    }
+  };
+
   const getEventLabel = (event: string) => {
     const labels: { [key: string]: string } = {
       'PURCHASE_APPROVED': 'Compra Aprovada',
@@ -330,10 +387,21 @@ export function AdminUsers() {
             Gerencie usuários, suspensões e visualize webhooks relacionados
           </p>
         </div>
-        <Button onClick={loadUsers} disabled={loading}>
-          <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-          Atualizar
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            onClick={handleMigrateWebhooks} 
+            disabled={migrating}
+            variant="outline"
+            className="bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200"
+          >
+            <RefreshCw className={`w-4 h-4 mr-2 ${migrating ? 'animate-spin' : ''}`} />
+            {migrating ? 'Migrando...' : 'Atualizar Webhooks Antigos'}
+          </Button>
+          <Button onClick={loadUsers} disabled={loading}>
+            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            Atualizar
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -461,7 +529,10 @@ export function AdminUsers() {
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-3">
-                        <h3 className="text-lg font-semibold text-gray-900">
+                        <h3 
+                          className="text-lg font-semibold text-gray-900 cursor-pointer hover:text-purple-600 transition-colors"
+                          onClick={() => handleViewUser(user)}
+                        >
                           {user.nome} {user.sobrenome}
                         </h3>
                         {user.is_suspended ? (
@@ -489,8 +560,15 @@ export function AdminUsers() {
                           <span className="truncate">{user.email}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Phone className="w-4 h-4" />
-                          <span>{user.contato}</span>
+                          <a
+                            href={`https://wa.me/55${user.contato.replace(/\D/g, '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 text-green-600 hover:text-green-700 transition-colors"
+                          >
+                            <MessageCircle className="w-4 h-4" />
+                            <span>{user.contato}</span>
+                          </a>
                         </div>
                         <div className="flex items-center gap-2">
                           <Calendar className="w-4 h-4" />
@@ -604,13 +682,83 @@ export function AdminUsers() {
                             <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
                               <div className="flex items-center gap-2">
                                 <CreditCard className="w-4 h-4" />
-                                <span>{webhook.transaction_id}</span>
+                                <span className="truncate">{webhook.transaction_id}</span>
                               </div>
                               <div className="flex items-center gap-2">
                                 <Calendar className="w-4 h-4" />
                                 <span>{new Date(webhook.created_at).toLocaleString('pt-BR')}</span>
                               </div>
                             </div>
+
+                            {/* Informações Financeiras */}
+                            {webhook.valor_pago && (
+                              <div className="mt-3 p-3 bg-purple-50 border border-purple-100 rounded">
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+                                  <div>
+                                    <span className="text-gray-500">Valor:</span>
+                                    <div className="font-semibold text-purple-700">
+                                      {webhook.moeda} {Math.abs(webhook.valor_pago).toFixed(2)}
+                                      {webhook.parcelas && webhook.parcelas > 1 && ` (${webhook.parcelas}x)`}
+                                    </div>
+                                  </div>
+                                  
+                                  {webhook.forma_pagamento && (
+                                    <div>
+                                      <span className="text-gray-500">Pagamento:</span>
+                                      <div className="font-medium">
+                                        {webhook.forma_pagamento.replace('_', ' ')}
+                                      </div>
+                                    </div>
+                                  )}
+                                  
+                                  {webhook.plano_nome && (
+                                    <div>
+                                      <span className="text-gray-500">Plano:</span>
+                                      <div className="font-medium flex items-center gap-1">
+                                        <Package className="w-3 h-3" />
+                                        {webhook.plano_nome}
+                                      </div>
+                                    </div>
+                                  )}
+                                  
+                                  {webhook.codigo_cupom && (
+                                    <div>
+                                      <span className="text-gray-500">Cupom:</span>
+                                      <div className="font-medium flex items-center gap-1">
+                                        <Tag className="w-3 h-3" />
+                                        {webhook.codigo_cupom}
+                                      </div>
+                                    </div>
+                                  )}
+                                  
+                                  {webhook.codigo_oferta && (
+                                    <div>
+                                      <span className="text-gray-500">Oferta:</span>
+                                      <div className="font-medium">{webhook.codigo_oferta}</div>
+                                    </div>
+                                  )}
+
+                                  {webhook.pais_origem && (
+                                    <div>
+                                      <span className="text-gray-500">País:</span>
+                                      <div className="font-medium">
+                                        {webhook.pais_origem} {webhook.pais_iso && `(${webhook.pais_iso})`}
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {webhook.valor_liquido && (
+                                    <div>
+                                      <span className="text-gray-500">Líquido:</span>
+                                      <div className="font-semibold text-green-700">
+                                        {webhook.moeda} {Math.abs(webhook.valor_liquido).toFixed(2)}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+
                             {webhook.error_message && (
                               <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-xs text-red-800">
                                 <strong>Erro:</strong> {webhook.error_message}
