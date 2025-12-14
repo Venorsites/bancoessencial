@@ -32,6 +32,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { adminApi } from "@/services/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { API_URL } from "@/config/api";
@@ -89,6 +97,10 @@ export function AdminUsers() {
   const [loadingWebhooks, setLoadingWebhooks] = useState(false);
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [migrating, setMigrating] = useState(false);
+  const [showSuspendDialog, setShowSuspendDialog] = useState(false);
+  const [userToSuspend, setUserToSuspend] = useState<User | null>(null);
+  const [showUnsuspendDialog, setShowUnsuspendDialog] = useState(false);
+  const [userToUnsuspend, setUserToUnsuspend] = useState<User | null>(null);
 
   useEffect(() => {
     if (token) {
@@ -175,12 +187,20 @@ export function AdminUsers() {
     await loadUserWebhooks(user.email);
   };
 
-  const handleSuspend = async (userId: string) => {
-    try {
-      setProcessingId(userId);
-      console.log('🔄 Tentando suspender usuário:', userId);
+  const handleSuspend = (user: User) => {
+    setUserToSuspend(user);
+    setShowSuspendDialog(true);
+  };
 
-      const response = await fetch(`${API_URL}/users/${userId}/suspend`, {
+  const confirmSuspend = async () => {
+    if (!userToSuspend) return;
+
+    try {
+      setProcessingId(userToSuspend.id);
+      setShowSuspendDialog(false);
+      console.log('🔄 Tentando suspender usuário:', userToSuspend.id);
+
+      const response = await fetch(`${API_URL}/users/${userToSuspend.id}/suspend`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -188,7 +208,7 @@ export function AdminUsers() {
           'Content-Type': 'application/json',
         },
       });
-
+    
       console.log('📡 Resposta do servidor:', response.status, response.statusText);
 
       if (!response.ok) {
@@ -227,6 +247,7 @@ export function AdminUsers() {
       });
 
       await loadUsers();
+      setUserToSuspend(null);
     } catch (error: any) {
       console.error('❌ Erro completo ao suspender usuário:', error);
       toast({
@@ -239,11 +260,19 @@ export function AdminUsers() {
     }
   };
 
-  const handleUnsuspend = async (userId: string) => {
-    try {
-      setProcessingId(userId);
+  const handleUnsuspend = (user: User) => {
+    setUserToUnsuspend(user);
+    setShowUnsuspendDialog(true);
+  };
 
-      const response = await fetch(`${API_URL}/users/${userId}/unsuspend`, {
+  const confirmUnsuspend = async () => {
+    if (!userToUnsuspend) return;
+
+    try {
+      setProcessingId(userToUnsuspend.id);
+      setShowUnsuspendDialog(false);
+
+      const response = await fetch(`${API_URL}/users/${userToUnsuspend.id}/unsuspend`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -272,6 +301,7 @@ export function AdminUsers() {
       });
 
       await loadUsers();
+      setUserToUnsuspend(null);
     } catch (error: any) {
       console.error('Erro ao reativar usuário:', error);
       toast({
@@ -400,7 +430,7 @@ export function AdminUsers() {
           <Button onClick={loadUsers} disabled={loading}>
             <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Atualizar
-          </Button>
+        </Button>
         </div>
       </div>
 
@@ -453,21 +483,21 @@ export function AdminUsers() {
             </div>
           </CardContent>
         </Card>
-      </div>
+          </div>
 
       {/* Filters */}
       <Card>
         <CardContent className="p-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <Input
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <Input
                 placeholder="Buscar por nome, email ou contato..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-9"
-              />
-            </div>
+          />
+        </div>
 
             <select
               value={roleFilter}
@@ -511,15 +541,15 @@ export function AdminUsers() {
       ) : filteredUsers.length === 0 ? (
         <Card>
           <CardContent className="p-12 text-center">
-            <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600">Nenhum usuário encontrado</p>
+                <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-600">Nenhum usuário encontrado</p>
           </CardContent>
         </Card>
-      ) : (
+            ) : (
         <div className="space-y-3">
           {filteredUsers.map((user) => (
-            <motion.div
-              key={user.id}
+                  <motion.div
+                    key={user.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
@@ -591,33 +621,33 @@ export function AdminUsers() {
 
                       {user.is_suspended ? (
                         <Button
-                          onClick={() => handleUnsuspend(user.id)}
+                          onClick={() => handleUnsuspend(user)}
                           disabled={processingId === user.id}
                           className="bg-green-600 hover:bg-green-700"
                           size="sm"
                         >
                           <UserCheck className="w-4 h-4 mr-2" />
                           {processingId === user.id ? 'Reativando...' : 'Reativar'}
-                        </Button>
+                      </Button>
                       ) : (
                         <Button
-                          onClick={() => handleSuspend(user.id)}
+                          onClick={() => handleSuspend(user)}
                           disabled={processingId === user.id || user.role === 'ADMIN'}
                           variant="destructive"
                           size="sm"
                         >
                           <UserX className="w-4 h-4 mr-2" />
                           {processingId === user.id ? 'Suspendendo...' : 'Suspender'}
-                        </Button>
+                      </Button>
                       )}
                     </div>
                   </div>
                 </CardContent>
               </Card>
-            </motion.div>
-          ))}
-        </div>
-      )}
+                  </motion.div>
+                ))}
+              </div>
+            )}
 
       {/* Modal de Webhooks do Usuário */}
       {selectedUser && (
@@ -766,15 +796,164 @@ export function AdminUsers() {
                             )}
                           </div>
                         </div>
-                      </CardContent>
-                    </Card>
+          </CardContent>
+        </Card>
                   ))}
                 </div>
               )}
             </div>
-          </motion.div>
+      </motion.div>
         </div>
       )}
+
+      {/* Dialog de Confirmação de Suspensão */}
+      <Dialog open={showSuspendDialog} onOpenChange={setShowSuspendDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <UserX className="w-5 h-5" />
+              Confirmar Suspensão
+            </DialogTitle>
+            <DialogDescription className="pt-2">
+              Tem certeza que deseja suspender o acesso deste usuário?
+            </DialogDescription>
+          </DialogHeader>
+          
+          {userToSuspend && (
+            <div className="py-4">
+              <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-gray-700">Nome:</span>
+                  <span className="text-gray-900">
+                    {userToSuspend.nome} {userToSuspend.sobrenome}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-gray-700">Email:</span>
+                  <span className="text-gray-900">{userToSuspend.email}</span>
+                </div>
+                {userToSuspend.role === 'ADMIN' && (
+                  <div className="flex items-center gap-2 mt-2">
+                    <Badge className="bg-purple-100 text-purple-800">
+                      <Shield className="w-3 h-3 mr-1" />
+                      Administrador
+                    </Badge>
+                  </div>
+                )}
+              </div>
+              
+              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-sm text-red-800">
+                  <strong>⚠️ Atenção:</strong> O usuário não conseguirá fazer login enquanto estiver suspenso. 
+                  A suspensão pode ser revertida a qualquer momento.
+                </p>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowSuspendDialog(false);
+                setUserToSuspend(null);
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmSuspend}
+              disabled={processingId === userToSuspend?.id}
+            >
+              {processingId === userToSuspend?.id ? (
+                <>
+                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                  Suspendendo...
+                </>
+              ) : (
+                <>
+                  <UserX className="w-4 h-4 mr-2" />
+                  Sim, Suspender
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog de Confirmação de Reativação */}
+      <Dialog open={showUnsuspendDialog} onOpenChange={setShowUnsuspendDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-green-600">
+              <UserCheck className="w-5 h-5" />
+              Confirmar Reativação
+            </DialogTitle>
+            <DialogDescription className="pt-2">
+              Tem certeza que deseja reativar o acesso deste usuário?
+            </DialogDescription>
+          </DialogHeader>
+          
+          {userToUnsuspend && (
+            <div className="py-4">
+              <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-gray-700">Nome:</span>
+                  <span className="text-gray-900">
+                    {userToUnsuspend.nome} {userToUnsuspend.sobrenome}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-gray-700">Email:</span>
+                  <span className="text-gray-900">{userToUnsuspend.email}</span>
+                </div>
+                <div className="flex items-center gap-2 mt-2">
+                  <Badge className="bg-red-100 text-red-800">
+                    <UserX className="w-3 h-3 mr-1" />
+                    Atualmente Suspenso
+                  </Badge>
+                </div>
+              </div>
+              
+              <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                <p className="text-sm text-green-800">
+                  <strong>✅ Confirmação:</strong> O usuário terá acesso restaurado ao sistema e poderá fazer login novamente.
+                </p>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowUnsuspendDialog(false);
+                setUserToUnsuspend(null);
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button
+              className="bg-green-600 hover:bg-green-700"
+              onClick={confirmUnsuspend}
+              disabled={processingId === userToUnsuspend?.id}
+            >
+              {processingId === userToUnsuspend?.id ? (
+                <>
+                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                  Reativando...
+                </>
+              ) : (
+                <>
+                  <UserCheck className="w-4 h-4 mr-2" />
+                  Sim, Reativar
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

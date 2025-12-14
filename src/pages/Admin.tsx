@@ -9,6 +9,7 @@ import { AdminDiseases } from "@/components/admin/AdminDiseases";
 import { AdminUsers } from "@/components/admin/AdminUsers";
 import { AdminWebhooks } from "@/components/admin/AdminWebhooks";
 import { AdminFinanceiro } from "@/components/admin/AdminFinanceiro";
+import { AdminOfertasCupons } from "@/components/admin/AdminOfertasCupons";
 import { AdminPolicyAcceptances } from "@/components/admin/AdminPolicyAcceptances";
 import { AdminFeedbacks } from "@/components/admin/AdminFeedbacks";
 import { AdminAnalyticsSimple } from "@/components/admin/AdminAnalyticsSimple";
@@ -43,6 +44,8 @@ export default function Admin() {
       setActiveTab('webhooks');
     } else if (path.includes('/financeiro')) {
       setActiveTab('financeiro');
+    } else if (path.includes('/ofertas-cupons')) {
+      setActiveTab('ofertas-cupons');
     } else if (path.includes('/policy-acceptances')) {
       setActiveTab('policy-acceptances');
     } else if (path.includes('/feedbacks')) {
@@ -72,6 +75,8 @@ export default function Admin() {
         return <AdminWebhooks />;
       case "financeiro":
         return <AdminFinanceiro />;
+      case "ofertas-cupons":
+        return <AdminOfertasCupons />;
       case "policy-acceptances":
         return <AdminPolicyAcceptances />;
       case "feedbacks":
@@ -122,6 +127,7 @@ export default function Admin() {
             <Route path="/users" element={<AdminUsers />} />
             <Route path="/webhooks" element={<AdminWebhooks />} />
             <Route path="/financeiro" element={<AdminFinanceiro />} />
+            <Route path="/ofertas-cupons" element={<AdminOfertasCupons />} />
             <Route path="/policy-acceptances" element={<AdminPolicyAcceptances />} />
             <Route path="/feedbacks" element={<AdminFeedbacks />} />
           </Routes>

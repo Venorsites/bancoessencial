@@ -15,7 +15,8 @@ import {
   LogOut,
   MessageSquare,
   Webhook,
-  DollarSign
+  DollarSign,
+  Tag
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -64,6 +65,12 @@ const menuItems = [
     label: "Financeiro",
     icon: DollarSign,
     description: "Controle financeiro e vendas"
+  },
+  {
+    id: "ofertas-cupons",
+    label: "Ofertas",
+    icon: Tag,
+    description: "Gerenciar ofertas"
   },
   {
     id: "policy-acceptances",
@@ -132,6 +139,9 @@ export function AdminSidebar({ activeTab, onTabChange, isMobileOpen = false, onM
         break;
       case 'financeiro':
         navigate('/admin/financeiro');
+        break;
+      case 'ofertas-cupons':
+        navigate('/admin/ofertas-cupons');
         break;
       case 'policy-acceptances':
         navigate('/admin/policy-acceptances');
