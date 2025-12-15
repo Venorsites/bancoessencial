@@ -305,6 +305,11 @@ export default function Oleos() {
     setCurrentPage(1);
   }, [itemsPerPage, searchTerm]);
 
+  // Scroll para o topo quando mudar de página
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentPage]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-purple-50">
       {/* ===== Banner ===== */}
@@ -597,7 +602,7 @@ export default function Oleos() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-1 sm:p-4"
             onClick={closeOilModal}
           >
             <motion.div
@@ -608,11 +613,11 @@ export default function Oleos() {
               onClick={(e) => e.stopPropagation()}
             >
               {/* Modal Header */}
-              <div className="relative bg-gradient-to-br from-purple-50 to-purple-100">
+              <div className="relative bg-gradient-to-br from-purple-50 to-purple-100 min-h-[15vh] sm:min-h-0">
                 <img
                   src={selectedOil.avatar || "https://via.placeholder.com/800x300/8B5CF6/FFFFFF?text=Óleo+Essencial"}
                   alt={selectedOil.nome}
-                  className="w-full h-auto max-h-80 sm:max-h-96 object-contain rounded-t-3xl"
+                  className="w-full h-[25vh] sm:h-auto sm:max-h-[480px] object-cover sm:object-contain rounded-t-3xl"
                 />
                 <div className="absolute top-4 right-4 flex gap-2">
                   <Button
@@ -622,16 +627,13 @@ export default function Oleos() {
                     className="bg-white/90 hover:bg-white rounded-full"
                     title={selectedOil.isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}
                   >
-                    <Heart className={`w-5 h-5 ${selectedOil.isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => navigate(`/oleos/${selectedOil.id}`)}
-                    className="bg-white/90 hover:bg-white rounded-full"
-                    title="Abrir em página dedicada"
-                  >
-                    <ExternalLink className="w-5 h-5" />
+                    <Heart
+                      className={`w-5 h-5 ${
+                        selectedOil.isFavorite
+                          ? "fill-purple-600 text-purple-600"
+                          : "text-purple-900"
+                      }`}
+                    />
                   </Button>
                   <Button
                     variant="ghost"
@@ -1010,21 +1012,21 @@ export default function Oleos() {
                                 const components = JSON.parse(selectedOil.composicao_quimica_majoritaria);
                                 if (Array.isArray(components) && components.length > 0) {
                                   return (
-                                    <div className="overflow-x-auto">
-                                      <table className="w-full border-collapse border border-purple-200">
+                                    <div className="overflow-x-auto -mx-4 px-4" style={{ WebkitOverflowScrolling: 'touch' }}>
+                                      <table className="min-w-[600px] border-collapse border border-purple-200">
                                         <thead>
                                           <tr className="bg-purple-50">
-                                            <th className="border border-purple-200 px-3 py-2 text-left font-semibold text-purple-800">Componente Químico</th>
-                                            <th className="border border-purple-200 px-3 py-2 text-left font-semibold text-purple-800">Família Química</th>
-                                            <th className="border border-purple-200 px-3 py-2 text-left font-semibold text-purple-800">Concentração</th>
+                                            <th className="border border-purple-200 px-3 py-2 text-left font-semibold text-purple-800 whitespace-nowrap">Componente Químico</th>
+                                            <th className="border border-purple-200 px-3 py-2 text-left font-semibold text-purple-800 whitespace-nowrap">Família Química</th>
+                                            <th className="border border-purple-200 px-3 py-2 text-left font-semibold text-purple-800 whitespace-nowrap">Concentração</th>
                                           </tr>
                                         </thead>
                                         <tbody>
                                           {components.map((component: any, index: number) => (
                                             <tr key={index} className="hover:bg-purple-25">
-                                              <td className="border border-purple-200 px-3 py-2">{component.componente || '-'}</td>
-                                              <td className="border border-purple-200 px-3 py-2">{component.familia || '-'}</td>
-                                              <td className="border border-purple-200 px-3 py-2">{component.concentracao || '-'}</td>
+                                              <td className="border border-purple-200 px-3 py-2 whitespace-nowrap">{component.componente || '-'}</td>
+                                              <td className="border border-purple-200 px-3 py-2 whitespace-nowrap">{component.familia || '-'}</td>
+                                              <td className="border border-purple-200 px-3 py-2 whitespace-nowrap">{component.concentracao || '-'}</td>
                                             </tr>
                                           ))}
                                         </tbody>
