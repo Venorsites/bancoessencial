@@ -44,6 +44,8 @@ import { adminApi } from "@/services/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { API_URL } from "@/config/api";
 import { useToast } from "@/hooks/use-toast";
+import { CreateManualUserModal } from "./CreateManualUserModal";
+import { EditManualUserDatesModal } from "./EditManualUserDatesModal";
 
 interface User {
   id: string;
@@ -53,6 +55,16 @@ interface User {
   contato: string;
   role: string;
   is_suspended?: boolean;
+  subscription_status?: string;
+  subscription_code?: string;
+  current_plan_id?: number;
+  current_plan_name?: string;
+  plan_history?: any;
+  user_source?: string;
+  access_start_date?: string;
+  access_end_date?: string;
+  auto_suspend_on_expire?: boolean;
+  manual_notes?: string;
   created_at: string | Date;
   updated_at: string | Date;
   avatar?: string;
@@ -101,6 +113,9 @@ export function AdminUsers() {
   const [userToSuspend, setUserToSuspend] = useState<User | null>(null);
   const [showUnsuspendDialog, setShowUnsuspendDialog] = useState(false);
   const [userToUnsuspend, setUserToUnsuspend] = useState<User | null>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditDatesModalOpen, setIsEditDatesModalOpen] = useState(false);
+  const [userToEditDates, setUserToEditDates] = useState<User | null>(null);
 
   useEffect(() => {
     if (token) {
@@ -418,10 +433,19 @@ export function AdminUsers() {
               Gerencie usuários, suspensões e visualize webhooks relacionados
             </p>
           </div>
-          <Button onClick={loadUsers} disabled={loading}>
-            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-            Atualizar
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              onClick={() => setIsCreateModalOpen(true)} 
+              className="bg-green-600 hover:bg-green-700"
+            >
+              <UserPlus className="w-4 h-4 mr-2" />
+              Criar Usuário Manual
+            </Button>
+            <Button onClick={loadUsers} disabled={loading}>
+              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              Atualizar
+            </Button>
+          </div>
         </div>
         <div className="mb-4">
           <Button 
@@ -584,6 +608,12 @@ export function AdminUsers() {
                             Admin
                           </Badge>
                         )}
+                        {user.user_source === 'MANUAL' && (
+                          <Badge className="bg-blue-100 text-blue-800 text-xs">
+                            <UserPlus className="w-3 h-3 mr-1" />
+                            Manual
+                          </Badge>
+                        )}
                       </div>
 
                       <div className="space-y-2 text-sm text-gray-600">
@@ -611,7 +641,24 @@ export function AdminUsers() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 sm:ml-4">
+                    <div className="flex flex-wrap items-center gap-2 sm:ml-4">
+                      {/* Botão Editar Datas (apenas para usuários MANUAL) */}
+                      {user.user_source === 'MANUAL' && (
+                        <Button
+                          onClick={() => {
+                            setUserToEditDates(user);
+                            setIsEditDatesModalOpen(true);
+                          }}
+                          variant="outline"
+                          className="border-blue-600 text-blue-600 hover:bg-blue-50 w-full sm:w-auto"
+                          size="sm"
+                        >
+                          <Calendar className="w-4 h-4 mr-2" />
+                          Editar Datas
+                        </Button>
+                      )}
+                      
+                      {/* Botão Suspender/Reativar */}
                       {user.is_suspended ? (
                         <Button
                           onClick={() => handleUnsuspend(user)}
@@ -948,6 +995,24 @@ export function AdminUsers() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Modal de Criação de Usuário Manual */}
+      <CreateManualUserModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSuccess={loadUsers}
+      />
+
+      {/* Modal de Edição de Datas */}
+      <EditManualUserDatesModal
+        isOpen={isEditDatesModalOpen}
+        onClose={() => {
+          setIsEditDatesModalOpen(false);
+          setUserToEditDates(null);
+        }}
+        onSuccess={loadUsers}
+        user={userToEditDates}
+      />
     </div>
   );
 }
