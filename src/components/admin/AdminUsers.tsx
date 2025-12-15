@@ -557,66 +557,66 @@ export function AdminUsers() {
               transition={{ duration: 0.3 }}
             >
               <Card className="hover:shadow-lg transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-3">
+                <CardContent className="p-4 sm:p-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 mb-3">
                         <h3 
-                          className="text-lg font-semibold text-gray-900 cursor-pointer hover:text-purple-600 transition-colors"
+                          className="text-base sm:text-lg font-semibold text-gray-900 cursor-pointer hover:text-purple-600 transition-colors"
                           onClick={() => handleViewUser(user)}
                         >
                           {user.nome} {user.sobrenome}
                         </h3>
                         {user.is_suspended ? (
-                          <Badge className="bg-red-100 text-red-800">
+                          <Badge className="bg-red-100 text-red-800 text-xs">
                             <UserX className="w-3 h-3 mr-1" />
                             Suspenso
                           </Badge>
                         ) : (
-                          <Badge className="bg-green-100 text-green-800">
+                          <Badge className="bg-green-100 text-green-800 text-xs">
                             <UserCheck className="w-3 h-3 mr-1" />
                             Ativo
                           </Badge>
                         )}
                         {user.role === 'ADMIN' && (
-                          <Badge className="bg-purple-100 text-purple-800">
+                          <Badge className="bg-purple-100 text-purple-800 text-xs">
                             <Shield className="w-3 h-3 mr-1" />
                             Admin
                           </Badge>
                         )}
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm text-gray-600">
-                        <div className="flex items-center gap-2">
-                          <Mail className="w-4 h-4" />
-                          <span className="truncate">{user.email}</span>
+                      <div className="space-y-2 text-sm text-gray-600">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Mail className="w-4 h-4 flex-shrink-0" />
+                          <span className="truncate text-xs sm:text-sm">{user.email}</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <a
                             href={`https://wa.me/55${user.contato.replace(/\D/g, '')}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-2 text-green-600 hover:text-green-700 transition-colors"
+                            className="flex items-center gap-2 text-green-600 hover:text-green-700 transition-colors text-xs sm:text-sm"
                           >
-                            <MessageCircle className="w-4 h-4" />
+                            <MessageCircle className="w-4 h-4 flex-shrink-0" />
                             <span>{user.contato}</span>
                           </a>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4" />
-                          <span>
+                          <Calendar className="w-4 h-4 flex-shrink-0" />
+                          <span className="text-xs sm:text-sm">
                             {new Date(user.created_at).toLocaleDateString('pt-BR')}
                           </span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 ml-4">
+                    <div className="flex items-center gap-2 sm:ml-4">
                       {user.is_suspended ? (
                         <Button
                           onClick={() => handleUnsuspend(user)}
                           disabled={processingId === user.id}
-                          className="bg-green-600 hover:bg-green-700"
+                          className="bg-green-600 hover:bg-green-700 w-full sm:w-auto"
                           size="sm"
                         >
                           <UserCheck className="w-4 h-4 mr-2" />
@@ -627,6 +627,7 @@ export function AdminUsers() {
                           onClick={() => handleSuspend(user)}
                           disabled={processingId === user.id || user.role === 'ADMIN'}
                           variant="destructive"
+                          className="w-full sm:w-auto"
                           size="sm"
                         >
                           <UserX className="w-4 h-4 mr-2" />
