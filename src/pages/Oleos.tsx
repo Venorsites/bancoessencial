@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Heart, ChevronRight, ChevronDown, AlertTriangle, Atom, CheckSquare, Beaker, X, Info, ExternalLink } from "lucide-react";
+import { Search, Heart, ChevronRight, ChevronDown, AlertTriangle, Atom, CheckSquare, Beaker, X, Info, ExternalLink, ChevronLeft } from "lucide-react";
 import { oilsApi, Oil } from "@/services/oilsApi";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { isFavorite as isFav, toggleFavorite as toggleFav, FavoriteItem } from "@/utils/favorites";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const mockOils = [
   {
@@ -154,6 +155,8 @@ export default function Oleos() {
     substitutes: false,
     combinations: false
   });
+  const [itemsPerPage, setItemsPerPage] = useState<number | "all">(20);
+  const [currentPage, setCurrentPage] = useState(1);
   const isFirstRender = useRef(true);
 
   const loadOils = async (searchTerm?: string) => {
@@ -290,6 +293,18 @@ export default function Oleos() {
   // A busca já é feita no backend, então apenas usamos os óleos retornados
   const filteredOils = oils;
 
+  // Calcular paginação
+  const totalItems = filteredOils.length;
+  const totalPages = itemsPerPage === "all" ? 1 : Math.ceil(totalItems / itemsPerPage);
+  const startIndex = itemsPerPage === "all" ? 0 : (currentPage - 1) * itemsPerPage;
+  const endIndex = itemsPerPage === "all" ? totalItems : startIndex + itemsPerPage;
+  const displayedOils = filteredOils.slice(startIndex, endIndex);
+
+  // Resetar para página 1 quando mudar itemsPerPage ou searchTerm
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [itemsPerPage, searchTerm]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-purple-50">
       {/* ===== Banner ===== */}
@@ -389,10 +404,10 @@ export default function Oleos() {
           </div>
         )}
 
-        {/* Results Count */}
+        {/* Results Count and Items Per Page Selector */}
         {!loading && !error && (
           <motion.div
-            className="mb-6"
+            className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.3 }}
@@ -401,7 +416,29 @@ export default function Oleos() {
               {filteredOils.length} óleo
               {filteredOils.length !== 1 ? "s" : ""} encontrado
               {filteredOils.length !== 1 ? "s" : ""}
+              {itemsPerPage !== "all" && (
+                <> (mostrando {startIndex + 1}-{Math.min(endIndex, totalItems)} de {totalItems})</>
+              )}
             </p>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Itens por página:</span>
+              <Select
+                value={itemsPerPage === "all" ? "all" : itemsPerPage.toString()}
+                onValueChange={(value) => {
+                  setItemsPerPage(value === "all" ? "all" : parseInt(value));
+                }}
+              >
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="20">20</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                  <SelectItem value="100">100</SelectItem>
+                  <SelectItem value="all">Todos</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </motion.div>
         )}
 
@@ -412,7 +449,7 @@ export default function Oleos() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.4 }}
         >
-          {filteredOils.map((oil, index) => (
+          {displayedOils.map((oil, index) => (
             <motion.div
               key={oil.id}
               initial={{ opacity: 0, y: 20 }}
@@ -488,6 +525,67 @@ export default function Oleos() {
             <p className="text-muted-foreground text-lg">
               Nenhum óleo essencial encontrado com os filtros selecionados.
             </p>
+          </motion.div>
+        )}
+
+        {/* Pagination Controls */}
+        {!loading && !error && filteredOils.length > 0 && itemsPerPage !== "all" && totalPages > 1 && (
+          <motion.div
+            className="mt-8 flex flex-col sm:flex-row justify-between items-center gap-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.5 }}
+          >
+            <p className="text-sm text-muted-foreground">
+              Página {currentPage} de {totalPages}
+            </p>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className="rounded-xl"
+              >
+                <ChevronLeft className="w-4 h-4 mr-1" />
+                Anterior
+              </Button>
+              <div className="flex items-center gap-1">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum: number;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+                  return (
+                    <Button
+                      key={pageNum}
+                      variant={currentPage === pageNum ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`rounded-xl ${currentPage === pageNum ? "bg-purple-600 hover:bg-purple-700" : ""}`}
+                    >
+                      {pageNum}
+                    </Button>
+                  );
+                })}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+                className="rounded-xl"
+              >
+                Próxima
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
+            </div>
           </motion.div>
         )}
       </div>
