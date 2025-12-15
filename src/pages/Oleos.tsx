@@ -305,9 +305,12 @@ export default function Oleos() {
     setCurrentPage(1);
   }, [itemsPerPage, searchTerm]);
 
-  // Scroll para o topo quando mudar de página
+  // Scroll para o primeiro óleo da lista quando mudar de página
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    const gridElement = document.getElementById('oils-grid');
+    if (gridElement) {
+      gridElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }, [currentPage]);
 
   return (
@@ -449,6 +452,7 @@ export default function Oleos() {
 
         {/* Grid */}
         <motion.div
+          id="oils-grid"
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
