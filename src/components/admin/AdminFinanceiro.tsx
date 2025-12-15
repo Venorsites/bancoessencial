@@ -19,6 +19,8 @@ interface MoedaData {
   total_vendas: number;
   total_liquido: number;
   total_comissoes: number;
+  total_taxas_hotmart: number;
+  total_liquido_real: number;
   total_devolvido: number;
   quantidade_vendas: number;
   quantidade_devolucoes: number;
@@ -34,12 +36,16 @@ interface DashboardData {
   total_vendas: number;
   total_liquido: number;
   total_comissoes: number;
+  total_taxas_hotmart: number;
+  total_liquido_real: number;
   total_devolvido: number;
   quantidade_vendas: number;
   quantidade_devolucoes: number;
   total_consolidado_brl?: number;
   liquido_consolidado_brl?: number;
   comissoes_consolidado_brl?: number;
+  taxas_hotmart_consolidado_brl?: number;
+  liquido_real_consolidado_brl?: number;
   devolvido_consolidado_brl?: number;
   vendas_por_plano_consolidado?: { plano: string; valor: number; quantidade: number }[];
   vendas_por_oferta_consolidado?: { codigo: string; valor: number; quantidade: number }[];
@@ -216,20 +222,28 @@ export function AdminFinanceiro() {
       bgColor: "bg-green-50"
     },
     {
-      title: `Total Líquido (${moedaAtual})`,
-      value: formatCurrency(dadosMoedaAtual.total_liquido, moedaAtual),
-      subtitle: "Após comissões",
-      icon: TrendingUp,
-      color: "text-blue-600",
-      bgColor: "bg-blue-50"
-    },
-    {
       title: `Comissões Pagas (${moedaAtual})`,
       value: formatCurrency(dadosMoedaAtual.total_comissoes, moedaAtual),
       subtitle: "Afiliados e produtores",
       icon: Users,
       color: "text-purple-600",
       bgColor: "bg-purple-50"
+    },
+    {
+      title: `Taxas Hotmart (${moedaAtual})`,
+      value: formatCurrency(dadosMoedaAtual.total_taxas_hotmart, moedaAtual),
+      subtitle: "Taxas da plataforma",
+      icon: CreditCard,
+      color: "text-orange-600",
+      bgColor: "bg-orange-50"
+    },
+    {
+      title: `Líquido Real (${moedaAtual})`,
+      value: formatCurrency(dadosMoedaAtual.total_liquido_real, moedaAtual),
+      subtitle: "Após comissões e taxas",
+      icon: TrendingUp,
+      color: "text-blue-600",
+      bgColor: "bg-blue-50"
     },
     {
       title: `Reembolsos (${moedaAtual})`,
@@ -246,7 +260,7 @@ export function AdminFinanceiro() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Controle Financeiro</h1>
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Controle Financeiro</h1>
           <p className="text-gray-600">Dashboard de vendas e faturamento</p>
         </div>
         
@@ -290,44 +304,53 @@ export function AdminFinanceiro() {
               Visão Consolidada (BRL Aproximado)
             </CardTitle>
             <p className="text-sm text-gray-600 mt-1">
-              Valores convertidos usando ofertas cadastradas. Esta é uma{" "}
-              <span className="font-semibold text-gray-700">estimativa para referência</span> e não representa valores contábeis oficiais.
+              Valores convertidos usando ofertas cadastradas. Inclui cálculo de{" "}
+              <span className="font-semibold text-gray-700">taxas da Hotmart</span> (9,9% + taxa fixa ou 20% para microtransações). 
+              Esta é uma estimativa para referência e não representa valores contábeis oficiais.
             </p>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              <div className="bg-white p-4 rounded-lg border-2 border-green-200 shadow-sm">
-                <p className="text-sm text-gray-600 mb-1">Total Faturado</p>
-                <p className="text-2xl sm:text-3xl font-bold text-green-600">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
+              <div className="bg-white p-3 sm:p-4 rounded-lg border-2 border-green-200 shadow-sm">
+                <p className="text-xs sm:text-sm text-gray-600 mb-1">Total Faturado</p>
+                <p className="text-lg sm:text-xl lg:text-2xl font-bold text-green-600">
                   ≈ {formatCurrency(dashboard.total_consolidado_brl || 0, 'BRL')}
                 </p>
-                <p className="text-xs text-gray-500 mt-2">
+                <p className="text-[10px] sm:text-xs text-gray-500 mt-1">
                   {dashboard.quantidade_vendas} vendas
                 </p>
               </div>
 
-              <div className="bg-white p-4 rounded-lg border-2 border-blue-200 shadow-sm">
-                <p className="text-sm text-gray-600 mb-1">Total Líquido</p>
-                <p className="text-2xl sm:text-3xl font-bold text-blue-600">
-                  ≈ {formatCurrency(dashboard.liquido_consolidado_brl || 0, 'BRL')}
-                </p>
-                <p className="text-xs text-gray-500 mt-2">Após comissões</p>
-              </div>
-
-              <div className="bg-white p-4 rounded-lg border-2 border-purple-200 shadow-sm">
-                <p className="text-sm text-gray-600 mb-1">Comissões Pagas</p>
-                <p className="text-2xl sm:text-3xl font-bold text-purple-600">
+              <div className="bg-white p-3 sm:p-4 rounded-lg border-2 border-purple-200 shadow-sm">
+                <p className="text-xs sm:text-sm text-gray-600 mb-1">Comissões Pagas</p>
+                <p className="text-lg sm:text-xl lg:text-2xl font-bold text-purple-600">
                   ≈ {formatCurrency(dashboard.comissoes_consolidado_brl || 0, 'BRL')}
                 </p>
-                <p className="text-xs text-gray-500 mt-2">Afiliados + Produtores</p>
+                <p className="text-[10px] sm:text-xs text-gray-500 mt-1">Afiliados + Produtores</p>
               </div>
 
-              <div className="bg-white p-4 rounded-lg border-2 border-red-200 shadow-sm">
-                <p className="text-sm text-gray-600 mb-1">Reembolsos</p>
-                <p className="text-2xl sm:text-3xl font-bold text-red-600">
+              <div className="bg-white p-3 sm:p-4 rounded-lg border-2 border-orange-200 shadow-sm">
+                <p className="text-xs sm:text-sm text-gray-600 mb-1">Taxas Hotmart</p>
+                <p className="text-lg sm:text-xl lg:text-2xl font-bold text-orange-600">
+                  ≈ {formatCurrency(dashboard.taxas_hotmart_consolidado_brl || 0, 'BRL')}
+                </p>
+                <p className="text-[10px] sm:text-xs text-gray-500 mt-1">Taxas da plataforma</p>
+              </div>
+
+              <div className="bg-white p-3 sm:p-4 rounded-lg border-2 border-blue-200 shadow-sm">
+                <p className="text-xs sm:text-sm text-gray-600 mb-1">Líquido Real</p>
+                <p className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-600">
+                  ≈ {formatCurrency(dashboard.liquido_real_consolidado_brl || 0, 'BRL')}
+                </p>
+                <p className="text-[10px] sm:text-xs text-gray-500 mt-1">Após comissões e taxas</p>
+              </div>
+
+              <div className="bg-white p-3 sm:p-4 rounded-lg border-2 border-red-200 shadow-sm">
+                <p className="text-xs sm:text-sm text-gray-600 mb-1">Reembolsos</p>
+                <p className="text-lg sm:text-xl lg:text-2xl font-bold text-red-600">
                   ≈ {formatCurrency(dashboard.devolvido_consolidado_brl || 0, 'BRL')}
                 </p>
-                <p className="text-xs text-gray-500 mt-2">
+                <p className="text-[10px] sm:text-xs text-gray-500 mt-1">
                   {dashboard.quantidade_devolucoes} reembolsos
                 </p>
               </div>
@@ -366,15 +389,15 @@ export function AdminFinanceiro() {
       {/* Cards de Estatísticas - Removido quando "Todas as Moedas" está selecionado */}
       {!mostrarTodasMoedas && stats.length > 0 && (
         // Exibir cards da moeda selecionada
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
           {stats.map((stat, index) => (
             <Card key={index} className="hover:shadow-lg transition-shadow">
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <p className="text-sm text-gray-600 mb-1">{stat.title}</p>
-                    <p className="text-2xl font-bold text-gray-900 mb-1">{stat.value}</p>
-                    <p className="text-xs text-gray-500">{stat.subtitle}</p>
+                    <p className="text-xs sm:text-sm text-gray-600 mb-1">{stat.title}</p>
+                    <p className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 mb-1">{stat.value}</p>
+                    <p className="text-[10px] sm:text-xs text-gray-500">{stat.subtitle}</p>
                   </div>
                   <div className={`${stat.bgColor} p-3 rounded-full`}>
                     <stat.icon className={`w-6 h-6 ${stat.color}`} />
@@ -644,22 +667,22 @@ export function AdminFinanceiro() {
                   </div>
                   
                   <div>
-                    <p className="text-xs text-gray-600">Margem Líquida</p>
+                    <p className="text-xs text-gray-600">Margem Líquida Real</p>
                     <p className="text-lg font-semibold text-green-600">
                       {(() => {
                         if (mostrarTodasMoedas) {
                           // Usar valores consolidados quando "Todas as Moedas" está selecionado
                           const totalVendas = dashboard.total_consolidado_brl ?? 0;
-                          const totalLiquido = dashboard.liquido_consolidado_brl ?? 0;
-                          return totalVendas > 0 && totalLiquido !== null && totalLiquido !== undefined
-                            ? `${((Number(totalLiquido) / Number(totalVendas)) * 100).toFixed(1)}%`
+                          const totalLiquidoReal = dashboard.liquido_real_consolidado_brl ?? 0;
+                          return totalVendas > 0 && totalLiquidoReal !== null && totalLiquidoReal !== undefined
+                            ? `${((Number(totalLiquidoReal) / Number(totalVendas)) * 100).toFixed(1)}%`
                             : '0%';
                         } else {
                           // Usar valores da moeda selecionada
                           const totalVendas = dadosMoedaAtual?.total_vendas ?? 0;
-                          const totalLiquido = dadosMoedaAtual?.total_liquido ?? 0;
-                          return totalVendas > 0 && totalLiquido !== null && totalLiquido !== undefined
-                            ? `${((Number(totalLiquido) / Number(totalVendas)) * 100).toFixed(1)}%`
+                          const totalLiquidoReal = dadosMoedaAtual?.total_liquido_real ?? 0;
+                          return totalVendas > 0 && totalLiquidoReal !== null && totalLiquidoReal !== undefined
+                            ? `${((Number(totalLiquidoReal) / Number(totalVendas)) * 100).toFixed(1)}%`
                             : '0%';
                         }
                       })()}
