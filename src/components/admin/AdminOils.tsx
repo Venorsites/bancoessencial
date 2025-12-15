@@ -176,7 +176,7 @@ export function AdminOils() {
         </Card>
       </motion.div>
 
-      {/* Table */}
+      {/* Cards Grid */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -192,91 +192,85 @@ export function AdminOils() {
                 <p>Nenhum óleo encontrado</p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-50 border-b">
-                    <tr>
-                      <th className="text-left p-4 font-semibold text-gray-700">Nome</th>
-                      <th className="text-left p-4 font-semibold text-gray-700">Família</th>
-                      <th className="text-left p-4 font-semibold text-gray-700">Status</th>
-                      <th className="text-right p-4 font-semibold text-gray-700">Ações</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredOils.map((oil, index) => (
-                      <motion.tr
-                        key={oil.id}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.05 }}
-                        className="border-b hover:bg-gray-50 transition-colors"
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredOils.map((oil, index) => (
+                  <motion.div
+                    key={oil.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    className="border rounded-lg p-4 hover:shadow-md transition-shadow bg-white"
+                  >
+                    <div className="flex items-start gap-3 mb-3">
+                      <img
+                        src={oil.avatar || "https://via.placeholder.com/60"}
+                        alt={oil.nome}
+                        className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-gray-900 truncate">{oil.nome}</h3>
+                        <p className="text-sm text-gray-500 italic truncate">
+                          {oil.nome_cientifico}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2 mb-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-gray-600">Família:</span>
+                        <span className="text-sm font-medium text-gray-900">{oil.familia_botanica || '-'}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-gray-600">Status:</span>
+                        <Badge 
+                          variant={oil.ativo ? "default" : "secondary"}
+                          className={oil.ativo ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}
+                        >
+                          {oil.ativo ? "Ativo" : "Inativo"}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-end gap-2 pt-3 border-t">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => navigate(`/oleos/${oil.id}`)}
+                        className="text-blue-600 hover:bg-blue-50"
+                        title="Visualizar"
                       >
-                        <td className="p-4">
-                          <div className="flex items-center gap-3">
-                            <img
-                              src={oil.avatar || "https://via.placeholder.com/40"}
-                              alt={oil.nome}
-                              className="w-10 h-10 rounded-lg object-cover"
-                            />
-                            <div>
-                              <p className="font-medium text-gray-900">{oil.nome}</p>
-                              <p className="text-sm text-gray-500 italic">
-                                {oil.nome_cientifico}
-                              </p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="p-4">
-                          <span className="text-sm text-gray-700">{oil.familia_botanica}</span>
-                        </td>
-                        <td className="p-4">
-                          <Badge 
-                            variant={oil.ativo ? "default" : "secondary"}
-                            className={oil.ativo ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}
-                          >
-                            {oil.ativo ? "Ativo" : "Inativo"}
-                          </Badge>
-                        </td>
-                        <td className="p-4">
-                          <div className="flex items-center justify-end gap-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => navigate(`/oleos/${oil.id}`)}
-                              className="text-blue-600 hover:bg-blue-50"
-                            >
-                              <Eye className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => navigate(`/admin/oils/edit/${oil.id}`)}
-                              className="text-purple-600 hover:bg-purple-50"
-                            >
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleActivationToggle(oil)}
-                              className={oil.ativo ? "text-orange-600 hover:bg-orange-50" : "text-green-600 hover:bg-green-50"}
-                            >
-                              {oil.ativo ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDelete(oil.id)}
-                              className="text-red-600 hover:bg-red-50"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </td>
-                      </motion.tr>
-                    ))}
-                  </tbody>
-                </table>
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => navigate(`/admin/oils/edit/${oil.id}`)}
+                        className="text-purple-600 hover:bg-purple-50"
+                        title="Editar"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleActivationToggle(oil)}
+                        className={oil.ativo ? "text-orange-600 hover:bg-orange-50" : "text-green-600 hover:bg-green-50"}
+                        title={oil.ativo ? "Desativar" : "Ativar"}
+                      >
+                        {oil.ativo ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDelete(oil.id)}
+                        className="text-red-600 hover:bg-red-50"
+                        title="Excluir"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </motion.div>
+                ))}
               </div>
             )}
           </CardContent>

@@ -82,8 +82,8 @@ export function ChemicalCompositionTable({
           </div>
         ) : (
           <div className="space-y-4">
-            {/* Header da tabela */}
-            <div className="grid grid-cols-12 gap-4 font-semibold text-sm text-gray-700 border-b pb-2">
+            {/* Header da tabela - oculto em mobile, visível em desktop */}
+            <div className="hidden md:grid grid-cols-12 gap-4 font-semibold text-sm text-gray-700 border-b pb-2">
               <div className="col-span-4">Componente Químico</div>
               <div className="col-span-4">Família Química em Maior Proporção</div>
               <div className="col-span-3">Concentração</div>
@@ -92,41 +92,86 @@ export function ChemicalCompositionTable({
 
             {/* Linhas da tabela */}
             {components.map((component, index) => (
-              <div key={component.id} className="grid grid-cols-12 gap-4 items-center">
-                <div className="col-span-4">
-                  <Input
-                    value={component.componente}
-                    onChange={(e) => updateComponent(component.id, 'componente', e.target.value)}
-                    placeholder="Ex: 1,8-cineol"
-                    className="text-sm"
-                  />
+              <div key={component.id} className="space-y-3 md:space-y-0">
+                {/* Mobile: layout vertical */}
+                <div className="md:hidden space-y-3 p-4 border rounded-lg bg-gray-50">
+                  <div>
+                    <Label className="text-xs text-gray-600 mb-1 block">Componente Químico</Label>
+                    <Input
+                      value={component.componente}
+                      onChange={(e) => updateComponent(component.id, 'componente', e.target.value)}
+                      placeholder="Ex: 1,8-cineol"
+                      className="text-sm"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-gray-600 mb-1 block">Família Química</Label>
+                    <Input
+                      value={component.familia}
+                      onChange={(e) => updateComponent(component.id, 'familia', e.target.value)}
+                      placeholder="Ex: Óxido terpênico"
+                      className="text-sm"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-gray-600 mb-1 block">Concentração</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        value={component.concentracao}
+                        onChange={(e) => updateComponent(component.id, 'concentracao', e.target.value)}
+                        placeholder="Ex: 38 - 55%"
+                        className="text-sm flex-1"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeComponent(component.id)}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
                 </div>
-                <div className="col-span-4">
-                  <Input
-                    value={component.familia}
-                    onChange={(e) => updateComponent(component.id, 'familia', e.target.value)}
-                    placeholder="Ex: Óxido terpênico"
-                    className="text-sm"
-                  />
-                </div>
-                <div className="col-span-3">
-                  <Input
-                    value={component.concentracao}
-                    onChange={(e) => updateComponent(component.id, 'concentracao', e.target.value)}
-                    placeholder="Ex: 38 - 55%"
-                    className="text-sm"
-                  />
-                </div>
-                <div className="col-span-1">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removeComponent(component.id)}
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                
+                {/* Desktop: layout horizontal */}
+                <div className="hidden md:grid grid-cols-12 gap-4 items-center">
+                  <div className="col-span-4">
+                    <Input
+                      value={component.componente}
+                      onChange={(e) => updateComponent(component.id, 'componente', e.target.value)}
+                      placeholder="Ex: 1,8-cineol"
+                      className="text-sm"
+                    />
+                  </div>
+                  <div className="col-span-4">
+                    <Input
+                      value={component.familia}
+                      onChange={(e) => updateComponent(component.id, 'familia', e.target.value)}
+                      placeholder="Ex: Óxido terpênico"
+                      className="text-sm"
+                    />
+                  </div>
+                  <div className="col-span-3">
+                    <Input
+                      value={component.concentracao}
+                      onChange={(e) => updateComponent(component.id, 'concentracao', e.target.value)}
+                      placeholder="Ex: 38 - 55%"
+                      className="text-sm"
+                    />
+                  </div>
+                  <div className="col-span-1">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeComponent(component.id)}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
               </div>
             ))}

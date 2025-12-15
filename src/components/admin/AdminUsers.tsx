@@ -407,17 +407,23 @@ export function AdminUsers() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <Users className="w-8 h-8 text-purple-600" />
-            Gerenciar Usuários
-          </h1>
-          <p className="text-gray-600 mt-1">
-            Gerencie usuários, suspensões e visualize webhooks relacionados
-          </p>
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+              <Users className="w-8 h-8 text-purple-600" />
+              Gerenciar Usuários
+            </h1>
+            <p className="text-gray-600 mt-1">
+              Gerencie usuários, suspensões e visualize webhooks relacionados
+            </p>
+          </div>
+          <Button onClick={loadUsers} disabled={loading}>
+            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            Atualizar
+          </Button>
         </div>
-        <div className="flex gap-2">
+        <div className="mb-4">
           <Button 
             onClick={handleMigrateWebhooks} 
             disabled={migrating}
@@ -427,10 +433,6 @@ export function AdminUsers() {
             <RefreshCw className={`w-4 h-4 mr-2 ${migrating ? 'animate-spin' : ''}`} />
             {migrating ? 'Migrando...' : 'Atualizar Webhooks Antigos'}
           </Button>
-          <Button onClick={loadUsers} disabled={loading}>
-            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-            Atualizar
-        </Button>
         </div>
       </div>
 
@@ -610,15 +612,6 @@ export function AdminUsers() {
                     </div>
 
                     <div className="flex items-center gap-2 ml-4">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleViewUser(user)}
-                      >
-                        <Webhook className="w-4 h-4 mr-2" />
-                        Ver Webhooks
-                      </Button>
-
                       {user.is_suspended ? (
                         <Button
                           onClick={() => handleUnsuspend(user)}
