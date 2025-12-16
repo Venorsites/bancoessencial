@@ -166,7 +166,11 @@ export function AdminWebhooks() {
             Gerencie e monitore webhooks recebidos da Hotmart
           </p>
         </div>
-        <Button onClick={loadWebhooks} disabled={loading}>
+        <Button 
+          onClick={loadWebhooks} 
+          disabled={loading}
+          className="bg-[#8b5cf6] hover:bg-[#7c3aed] text-white"
+        >
           <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
           Atualizar
         </Button>

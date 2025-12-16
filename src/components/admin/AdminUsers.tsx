@@ -441,7 +441,11 @@ export function AdminUsers() {
               <UserPlus className="w-4 h-4 mr-2" />
               Criar Usuário Manual
             </Button>
-            <Button onClick={loadUsers} disabled={loading}>
+            <Button 
+              onClick={loadUsers} 
+              disabled={loading}
+              className="bg-[#8b5cf6] hover:bg-[#7c3aed] text-white"
+            >
               <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
               Atualizar
             </Button>

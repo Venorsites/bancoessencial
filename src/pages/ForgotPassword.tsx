@@ -140,8 +140,12 @@ export default function ForgotPassword() {
                   {/* Submit Button */}
                   <Button
                     type="submit"
-                    className="w-full rounded-2xl gradient-primary text-white font-medium py-3 hover:opacity-90 transition-opacity"
-                    disabled={isLoading}
+                    className={`w-full rounded-2xl text-white font-medium py-3 transition-all ${
+                      email.trim() 
+                        ? 'bg-[#8b5cf6] hover:bg-[#7c3aed]' 
+                        : 'bg-[#8b5cf6]/50 cursor-not-allowed'
+                    }`}
+                    disabled={isLoading || !email.trim()}
                   >
                     {isLoading ? "Enviando..." : "Enviar Email"}
                   </Button>

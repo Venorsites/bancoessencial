@@ -269,7 +269,10 @@ export function AdminOfertasCupons() {
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Ofertas</h1>
           <p className="text-gray-600">Cadastre ofertas para conversão aproximada de moedas</p>
         </div>
-        <Button onClick={() => setShowCreateModal(true)} className="w-full sm:w-auto">
+        <Button 
+          onClick={() => setShowCreateModal(true)} 
+          className="w-full sm:w-auto bg-[#8b5cf6] hover:bg-[#7c3aed] text-white"
+        >
           <Plus className="w-4 h-4 mr-2" />
           Nova Oferta
         </Button>
