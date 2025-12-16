@@ -12,6 +12,7 @@ import { AdminFinanceiro } from "@/components/admin/AdminFinanceiro";
 import { AdminOfertasCupons } from "@/components/admin/AdminOfertasCupons";
 import { AdminPolicyAcceptances } from "@/components/admin/AdminPolicyAcceptances";
 import { AdminFeedbacks } from "@/components/admin/AdminFeedbacks";
+import { AdminEmailTemplates } from "@/components/admin/AdminEmailTemplates";
 import { AdminAnalyticsSimple } from "@/components/admin/AdminAnalyticsSimple";
 import AdminOilForm from "./AdminOilForm";
 import AdminDiseaseForm from "./AdminDiseaseForm";
@@ -50,8 +51,8 @@ export default function Admin() {
       setActiveTab('policy-acceptances');
     } else if (path.includes('/feedbacks')) {
       setActiveTab('feedbacks');
-    } else if (path.includes('/analytics')) {
-      setActiveTab('analytics');
+    } else if (path.includes('/email-templates')) {
+      setActiveTab('email-templates');
     } else {
       setActiveTab('dashboard');
     }
@@ -81,14 +82,8 @@ export default function Admin() {
         return <AdminPolicyAcceptances />;
       case "feedbacks":
         return <AdminFeedbacks />;
-      case "analytics":
-        return (
-          <div className="text-center py-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Analytics</h2>
-            <p className="text-gray-600">Testando se o componente carrega...</p>
-            <AdminAnalyticsSimple />
-          </div>
-        );
+      case "email-templates":
+        return <AdminEmailTemplates />;
       default:
         return <AdminDashboard />;
     }
@@ -130,6 +125,7 @@ export default function Admin() {
             <Route path="/ofertas-cupons" element={<AdminOfertasCupons />} />
             <Route path="/policy-acceptances" element={<AdminPolicyAcceptances />} />
             <Route path="/feedbacks" element={<AdminFeedbacks />} />
+            <Route path="/email-templates" element={<AdminEmailTemplates />} />
           </Routes>
         </div>
       </div>

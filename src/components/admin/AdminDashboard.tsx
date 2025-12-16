@@ -8,19 +8,31 @@ import {
   Activity,
   Calendar,
   BarChart3,
-  CheckCircle2
+  CheckCircle2,
+  Stethoscope,
+  Mail,
+  MessageSquare,
+  Webhook,
+  Tag
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { oilsApi } from "@/services/oilsApi";
 import { adminApi } from "@/services/api";
 import { useAuth } from "@/contexts/AuthContext";
+import api from "@/services/api";
 
 interface DashboardStats {
   totalOils: number;
   activeOils: number;
   totalUsers: number;
   activeUsers: number;
-  recentActivity: number;
+  totalDiseases: number;
+  totalEmailTemplates: number;
+  activeEmailTemplates: number;
+  totalFeedbacks: number;
+  pendingFeedbacks: number;
+  totalWebhooks: number;
+  totalOfertas: number;
 }
 
 export function AdminDashboard() {
@@ -30,7 +42,13 @@ export function AdminDashboard() {
     activeOils: 0,
     totalUsers: 0,
     activeUsers: 0,
-    recentActivity: 0
+    totalDiseases: 0,
+    totalEmailTemplates: 0,
+    activeEmailTemplates: 0,
+    totalFeedbacks: 0,
+    pendingFeedbacks: 0,
+    totalWebhooks: 0,
+    totalOfertas: 0,
   });
   const [loading, setLoading] = useState(true);
 
@@ -56,8 +74,56 @@ export function AdminDashboard() {
         }
       } catch (error) {
         console.error("Erro ao carregar estatísticas de usuários:", error);
-        // Fallback para dados simulados se a API falhar
         usersStats = { totalUsers: 0, activeUsers: 0 };
+      }
+
+      // Carregar doenças
+      let totalDiseases = 0;
+      try {
+        const diseasesResponse = await api.get('/doencas');
+        totalDiseases = diseasesResponse.data.length || 0;
+      } catch (error) {
+        console.error("Erro ao carregar doenças:", error);
+      }
+
+      // Carregar templates de email
+      let emailTemplatesStats = { total: 0, active: 0 };
+      try {
+        const templatesResponse = await api.get('/email-templates');
+        const templates = templatesResponse.data || [];
+        emailTemplatesStats.total = templates.length;
+        emailTemplatesStats.active = templates.filter((t: any) => t.is_active).length;
+      } catch (error) {
+        console.error("Erro ao carregar templates de email:", error);
+      }
+
+      // Carregar feedbacks
+      let feedbacksStats = { total: 0, pending: 0 };
+      try {
+        const feedbacksResponse = await api.get('/feedback?page=1&limit=1000');
+        const feedbacks = feedbacksResponse.data.data || [];
+        feedbacksStats.total = feedbacksResponse.data.total || 0;
+        feedbacksStats.pending = feedbacks.filter((f: any) => !f.resolved).length;
+      } catch (error) {
+        console.error("Erro ao carregar feedbacks:", error);
+      }
+
+      // Carregar webhooks
+      let totalWebhooks = 0;
+      try {
+        const webhooksResponse = await api.get('/webhooks?page=1&limit=1');
+        totalWebhooks = webhooksResponse.data.total || 0;
+      } catch (error) {
+        console.error("Erro ao carregar webhooks:", error);
+      }
+
+      // Carregar ofertas
+      let totalOfertas = 0;
+      try {
+        const ofertasResponse = await api.get('/ofertas');
+        totalOfertas = ofertasResponse.data.length || 0;
+      } catch (error) {
+        console.error("Erro ao carregar ofertas:", error);
       }
       
       setStats({
@@ -65,7 +131,13 @@ export function AdminDashboard() {
         activeOils: activeOilsCount,
         totalUsers: usersStats.totalUsers,
         activeUsers: usersStats.activeUsers,
-        recentActivity: 12 // Simular atividades recentes por enquanto
+        totalDiseases,
+        totalEmailTemplates: emailTemplatesStats.total,
+        activeEmailTemplates: emailTemplatesStats.active,
+        totalFeedbacks: feedbacksStats.total,
+        pendingFeedbacks: feedbacksStats.pending,
+        totalWebhooks,
+        totalOfertas,
       });
     } catch (error) {
       console.error("Erro ao carregar dados do dashboard:", error);
@@ -76,49 +148,76 @@ export function AdminDashboard() {
 
   const statCards = [
     {
-      title: "Óleos Cadastrados",
-      value: stats.totalOils,
-      icon: Droplets,
-      color: "from-blue-500 to-blue-600",
-      bgColor: "bg-blue-50",
-      iconColor: "text-blue-600",
-      description: "Total de óleos no sistema"
-    },
-    {
-      title: "Óleos Ativos",
-      value: stats.activeOils,
-      icon: CheckCircle2,
-      color: "from-emerald-500 to-emerald-600",
-      bgColor: "bg-emerald-50",
-      iconColor: "text-emerald-600",
-      description: "Óleos visíveis aos usuários"
-    },
-    {
       title: "Usuários Cadastrados",
       value: stats.totalUsers,
       icon: Users,
-      color: "from-green-500 to-green-600",
-      bgColor: "bg-green-50",
-      iconColor: "text-green-600",
+      color: "from-blue-500 to-blue-600",
+      bgColor: "bg-blue-50",
+      iconColor: "text-blue-600",
       description: "Total de usuários registrados"
     },
     {
       title: "Usuários Ativos",
       value: stats.activeUsers,
       icon: UserCheck,
+      color: "from-green-500 to-green-600",
+      bgColor: "bg-green-50",
+      iconColor: "text-green-600",
+      description: "Usuários não suspensos"
+    },
+    {
+      title: "Óleos Essenciais",
+      value: stats.totalOils,
+      icon: Droplets,
       color: "from-purple-500 to-purple-600",
       bgColor: "bg-purple-50",
       iconColor: "text-purple-600",
-      description: "Usuários ativos recentemente"
+      description: `${stats.activeOils} ativos`
     },
     {
-      title: "Atividade Recente",
-      value: stats.recentActivity,
-      icon: Activity,
+      title: "Doenças",
+      value: stats.totalDiseases,
+      icon: Stethoscope,
+      color: "from-pink-500 to-pink-600",
+      bgColor: "bg-pink-50",
+      iconColor: "text-pink-600",
+      description: "Doenças cadastradas"
+    },
+    {
+      title: "Templates de Email",
+      value: stats.totalEmailTemplates,
+      icon: Mail,
+      color: "from-indigo-500 to-indigo-600",
+      bgColor: "bg-indigo-50",
+      iconColor: "text-indigo-600",
+      description: `${stats.activeEmailTemplates} ativos`
+    },
+    {
+      title: "Feedbacks",
+      value: stats.totalFeedbacks,
+      icon: MessageSquare,
+      color: "from-yellow-500 to-yellow-600",
+      bgColor: "bg-yellow-50",
+      iconColor: "text-yellow-600",
+      description: `${stats.pendingFeedbacks} pendentes`
+    },
+    {
+      title: "Webhooks",
+      value: stats.totalWebhooks,
+      icon: Webhook,
+      color: "from-cyan-500 to-cyan-600",
+      bgColor: "bg-cyan-50",
+      iconColor: "text-cyan-600",
+      description: "Webhooks recebidos"
+    },
+    {
+      title: "Ofertas",
+      value: stats.totalOfertas,
+      icon: Tag,
       color: "from-orange-500 to-orange-600",
       bgColor: "bg-orange-50",
       iconColor: "text-orange-600",
-      description: "Ações nas últimas 24h"
+      description: "Ofertas cadastradas"
     }
   ];
 
@@ -146,7 +245,7 @@ export function AdminDashboard() {
       </motion.div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {statCards.map((card, index) => {
           const Icon = card.icon;
           return (
@@ -197,26 +296,41 @@ export function AdminDashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-100">
                   <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-sm">Novo óleo cadastrado</span>
+                    <Users className="w-4 h-4 text-blue-600" />
+                    <div>
+                      <div className="text-sm font-medium">Usuários Ativos</div>
+                      <div className="text-xs text-gray-500">{stats.activeUsers} de {stats.totalUsers} usuários</div>
+                    </div>
                   </div>
-                  <span className="text-xs text-gray-500">2h atrás</span>
+                  <span className="text-lg font-bold text-blue-600">
+                    {stats.totalUsers > 0 ? Math.round((stats.activeUsers / stats.totalUsers) * 100) : 0}%
+                  </span>
                 </div>
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg border border-purple-100">
                   <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    <span className="text-sm">Usuário registrado</span>
+                    <Droplets className="w-4 h-4 text-purple-600" />
+                    <div>
+                      <div className="text-sm font-medium">Óleos Ativos</div>
+                      <div className="text-xs text-gray-500">{stats.activeOils} de {stats.totalOils} óleos</div>
+                    </div>
                   </div>
-                  <span className="text-xs text-gray-500">4h atrás</span>
+                  <span className="text-lg font-bold text-purple-600">
+                    {stats.totalOils > 0 ? Math.round((stats.activeOils / stats.totalOils) * 100) : 0}%
+                  </span>
                 </div>
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg border border-yellow-100">
                   <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                    <span className="text-sm">Óleo atualizado</span>
+                    <MessageSquare className="w-4 h-4 text-yellow-600" />
+                    <div>
+                      <div className="text-sm font-medium">Feedbacks Pendentes</div>
+                      <div className="text-xs text-gray-500">{stats.pendingFeedbacks} de {stats.totalFeedbacks} feedbacks</div>
+                    </div>
                   </div>
-                  <span className="text-xs text-gray-500">6h atrás</span>
+                  <span className="text-lg font-bold text-yellow-600">
+                    {stats.totalFeedbacks > 0 ? Math.round((stats.pendingFeedbacks / stats.totalFeedbacks) * 100) : 0}%
+                  </span>
                 </div>
               </div>
             </CardContent>
@@ -238,21 +352,35 @@ export function AdminDashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Taxa de crescimento</span>
-                  <span className="text-sm font-semibold text-green-600">+12.5%</span>
+                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <Mail className="w-4 h-4 text-indigo-600" />
+                    <span className="text-sm text-gray-600">Templates Ativos</span>
+                  </div>
+                  <span className="text-sm font-semibold text-indigo-600">
+                    {stats.activeEmailTemplates}/{stats.totalEmailTemplates}
+                  </span>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Usuários ativos hoje</span>
-                  <span className="text-sm font-semibold text-blue-600">{stats.activeUsers}</span>
+                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <Webhook className="w-4 h-4 text-cyan-600" />
+                    <span className="text-sm text-gray-600">Total de Webhooks</span>
+                  </div>
+                  <span className="text-sm font-semibold text-cyan-600">{stats.totalWebhooks}</span>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Óleos mais populares</span>
-                  <span className="text-sm font-semibold text-purple-600">Lavanda</span>
+                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <Tag className="w-4 h-4 text-orange-600" />
+                    <span className="text-sm text-gray-600">Ofertas Cadastradas</span>
+                  </div>
+                  <span className="text-sm font-semibold text-orange-600">{stats.totalOfertas}</span>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Última atualização</span>
-                  <span className="text-sm font-semibold text-gray-600">Agora</span>
+                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <Stethoscope className="w-4 h-4 text-pink-600" />
+                    <span className="text-sm text-gray-600">Doenças Cadastradas</span>
+                  </div>
+                  <span className="text-sm font-semibold text-pink-600">{stats.totalDiseases}</span>
                 </div>
               </div>
             </CardContent>

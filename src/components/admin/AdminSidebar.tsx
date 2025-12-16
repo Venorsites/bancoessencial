@@ -16,7 +16,8 @@ import {
   MessageSquare,
   Webhook,
   DollarSign,
-  Tag
+  Tag,
+  Mail
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -85,10 +86,10 @@ const menuItems = [
     description: "Relatos e sugestões dos usuários"
   },
   {
-    id: "analytics",
-    label: "Analytics",
-    icon: BarChart3,
-    description: "Relatórios e métricas"
+    id: "email-templates",
+    label: "E-mails Automáticos",
+    icon: Mail,
+    description: "Gerenciar templates de e-mails"
   }
 ];
 
@@ -149,8 +150,8 @@ export function AdminSidebar({ activeTab, onTabChange, isMobileOpen = false, onM
       case 'feedbacks':
         navigate('/admin/feedbacks');
         break;
-      case 'analytics':
-        navigate('/admin');
+      case 'email-templates':
+        navigate('/admin/email-templates');
         break;
       default:
         navigate('/admin');
