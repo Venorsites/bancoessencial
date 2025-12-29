@@ -139,7 +139,7 @@ export function Footer() {
                 © {new Date().getFullYear()} Banco de Dados Essencial. Todos os direitos reservados.
               </p>
               <Link 
-                to="/politica-e-termos" 
+                to="/politica-termos" 
                 className="text-white text-sm underline hover:text-purple-200 transition-colors"
               >
                 Política de Privacidade e Termos de Uso

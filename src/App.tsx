@@ -29,6 +29,7 @@ import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import Admin from "./pages/Admin";
 import AdminOilForm from "./pages/AdminOilForm";
+import LandingPage from "./pages/LandingPage";
 
 const queryClient = new QueryClient();
 
@@ -42,9 +43,11 @@ const App = () => (
           <UserProvider>
             <Routes>
               {/* Rotas públicas (sem menu) */}
+              <Route path="/vendas" element={<LandingPage />} />
               <Route path="/login" element={<Login />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password/:token" element={<ResetPassword />} />
+              <Route path="/politica-termos" element={<PoliticaTermos />} />
               
               {/* Rotas administrativas (sem menu) */}
               <Route path="/admin/*" element={
@@ -107,7 +110,6 @@ const App = () => (
                       <Route path="/favoritos" element={<Favoritos />} />
                       <Route path="/profile" element={<Profile />} />
                       <Route path="/notificacoes" element={<Notificacoes />} />
-                      <Route path="/politica-e-termos" element={<PoliticaTermos />} />
                       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                       <Route path="*" element={<NotFound />} />
                     </Routes>
