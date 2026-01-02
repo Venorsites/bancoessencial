@@ -135,7 +135,7 @@ export default function Login() {
             <img
               src={logo}
               alt="Logo Banco de Dados Essencial"
-              className="h-16 w-auto md:h-24 object-contain"
+              className="h-24 w-auto md:h-32 object-contain"
             />
           </div>
 

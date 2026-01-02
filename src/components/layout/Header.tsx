@@ -110,7 +110,7 @@ export function Header({}: HeaderProps) {
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2 relative">
             <motion.div 
-              className="h-16 flex items-center justify-center relative"
+              className="h-20 flex items-center justify-center relative"
               style={{ width: 'auto' }}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}

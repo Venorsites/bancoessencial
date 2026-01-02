@@ -19,7 +19,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import logo from "@/assets/logo-banco-branca.svg";
+import logo from "@/assets/logo-banco.svg";
 import { Link } from "react-router-dom";
 
 export default function LandingPage() {
@@ -162,10 +162,9 @@ export default function LandingPage() {
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-purple-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between h-20 md:h-24">
             <div className="flex items-center gap-3">
-              <img src={logo} alt="Banco Essencial" className="h-10 w-auto" />
-              <span className="text-xl font-bold text-purple-900">Banco Essencial</span>
+              <img src={logo} alt="Banco Essencial" className="h-16 w-auto md:h-20" />
             </div>
             <div className="flex items-center gap-4">
               <Link to="/login">
@@ -185,7 +184,7 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
+      <section className="pt-36 md:pt-40 pb-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -620,7 +619,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>
-              <img src={logo} alt="Banco Essencial" className="h-10 w-auto mb-4" />
+              <img src={logo} alt="Banco Essencial" className="h-16 w-auto md:h-20 mb-4" />
               <p className="text-gray-400 text-sm">
                 O banco de dados mais completo de óleos essenciais do Brasil
               </p>
