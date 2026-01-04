@@ -23,9 +23,10 @@ export interface CreateDoencaGeralData {
   forma_uso?: string;
 }
 
-export const doencasApi = {
+function createDoencasApi(endpoint: string) {
+  return {
   async getAll(searchTerm?: string, categoria?: string, activeOnly: boolean = true): Promise<DoencaGeral[]> {
-    let url = `${API_URL}/doencas-geral`;
+      let url = `${API_URL}/${endpoint}`;
     const params = new URLSearchParams();
     
     if (searchTerm) {
@@ -47,6 +48,7 @@ export const doencasApi = {
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
     });
 
     if (!response.ok) {
@@ -57,11 +59,12 @@ export const doencasApi = {
   },
 
   async getById(id: string): Promise<DoencaGeral> {
-    const response = await fetch(`${API_URL}/doencas-geral/${id}`, {
+    const response = await fetch(`${API_URL}/${endpoint}/${id}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
     });
 
     if (!response.ok) {
@@ -71,89 +74,148 @@ export const doencasApi = {
     return response.json();
   },
 
-  async create(data: CreateDoencaGeralData, token: string): Promise<DoencaGeral> {
-    const response = await fetch(`${API_URL}/doencas-geral`, {
+    async create(data: CreateDoencaGeralData, token?: string): Promise<DoencaGeral> {
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      
+      // Só adiciona Authorization se token for válido e não for 'cookie'
+      if (token && token !== 'cookie') {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      console.log('Fazendo POST para:', `${API_URL}/${endpoint}`);
+      console.log('Headers:', headers);
+      console.log('Credentials: include');
+      
+      const response = await fetch(`${API_URL}/${endpoint}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
+      headers,
+      credentials: 'include', // IMPORTANTE: Enviar cookies
       body: JSON.stringify(data),
     });
 
+    console.log('Response status:', response.status);
+    console.log('Response ok:', response.ok);
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => null);
-      const errorMessage = errorData?.message || 'Erro ao criar doença';
+      const errorMessage = errorData?.message || errorData?.error || `Erro ao criar doença (${response.status})`;
+      console.error('Erro ao criar doença:', {
+        status: response.status,
+        statusText: response.statusText,
+        errorData,
+      });
       throw new Error(errorMessage);
     }
 
     return response.json();
   },
 
-  async update(id: string, data: Partial<CreateDoencaGeralData>, token: string): Promise<DoencaGeral> {
-    const response = await fetch(`${API_URL}/doencas-geral/${id}`, {
+  async update(id: string, data: Partial<CreateDoencaGeralData>, token?: string): Promise<DoencaGeral> {
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      
+      // Só adiciona Authorization se token for válido e não for 'cookie'
+      if (token && token !== 'cookie') {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      const response = await fetch(`${API_URL}/${endpoint}/${id}`, {
       method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
+      headers,
+      credentials: 'include',
       body: JSON.stringify(data),
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => null);
-      const errorMessage = errorData?.message || 'Erro ao atualizar doença';
+      const errorMessage = errorData?.message || errorData?.error || 'Erro ao atualizar doença';
+      console.error('Erro ao atualizar doença:', errorData);
       throw new Error(errorMessage);
     }
 
     return response.json();
   },
 
-  async delete(id: string, token: string): Promise<void> {
-    const response = await fetch(`${API_URL}/doencas-geral/${id}`, {
+    async delete(id: string, token?: string): Promise<void> {
+      const headers: HeadersInit = {};
+      
+      // Só adiciona Authorization se token for válido e não for 'cookie'
+      if (token && token !== 'cookie') {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      const response = await fetch(`${API_URL}/${endpoint}/${id}`, {
       method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
+      headers,
+      credentials: 'include',
     });
 
     if (!response.ok) {
-      throw new Error('Erro ao deletar doença');
+        const errorData = await response.json().catch(() => null);
+        const errorMessage = errorData?.message || errorData?.error || 'Erro ao deletar doença';
+        throw new Error(errorMessage);
     }
   },
 
   async toggleActivation(id: string, ativo: boolean, data_liberacao?: string, token?: string): Promise<DoencaGeral> {
-    const response = await fetch(`${API_URL}/doencas-geral/${id}/toggle-activation`, {
-      method: 'PATCH',
-      headers: {
+      const headers: HeadersInit = {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
+      };
+      
+      // Só adiciona Authorization se token for válido e não for 'cookie'
+      if (token && token !== 'cookie') {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      const response = await fetch(`${API_URL}/${endpoint}/${id}/toggle-activation`, {
+      method: 'PATCH',
+      headers,
+      credentials: 'include',
       body: JSON.stringify({ ativo, data_liberacao }),
     });
 
     if (!response.ok) {
-      throw new Error('Erro ao alterar status da doença');
+      const errorData = await response.json().catch(() => null);
+      const errorMessage = errorData?.message || errorData?.error || 'Erro ao alterar status da doença';
+      throw new Error(errorMessage);
     }
 
     return response.json();
   },
 
-  async scheduleRelease(id: string, data_liberacao: string, token: string): Promise<DoencaGeral> {
-    const response = await fetch(`${API_URL}/doencas-geral/${id}/schedule-release`, {
-      method: 'PATCH',
-      headers: {
+    async scheduleRelease(id: string, data_liberacao: string, token?: string): Promise<DoencaGeral> {
+      const headers: HeadersInit = {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
+      };
+      
+      // Só adiciona Authorization se token for válido e não for 'cookie'
+      if (token && token !== 'cookie') {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      const response = await fetch(`${API_URL}/${endpoint}/${id}/schedule-release`, {
+      method: 'PATCH',
+      headers,
+      credentials: 'include',
       body: JSON.stringify({ data_liberacao }),
     });
 
     if (!response.ok) {
-      throw new Error('Erro ao agendar liberação da doença');
+      const errorData = await response.json().catch(() => null);
+      const errorMessage = errorData?.message || errorData?.error || 'Erro ao agendar liberação da doença';
+      throw new Error(errorMessage);
     }
 
     return response.json();
   },
 };
+}
+
+export const doencasApi = createDoencasApi('doencas-geral');
+export const doencasGestacaoApi = createDoencasApi('doencas-gestacao');
+export const doencasMenopausaApi = createDoencasApi('doencas-menopausa');
+export const doencasPediatricaApi = createDoencasApi('doencas-pediatrica');
 

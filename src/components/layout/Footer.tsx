@@ -50,7 +50,7 @@ export function Footer() {
               <img 
                 src={logo} 
                 alt="Banco de Óleos Essenciais" 
-                className="h-10 w-auto"
+                className="h-16 w-auto md:h-20"
               />
             </Link>
             <p className="text-white text-sm">

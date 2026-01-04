@@ -1,90 +1,225 @@
-import { useState } from "react";
-import { Search, Heart, ChevronRight, ArrowLeft, X, AlertTriangle } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Search, Heart, ArrowLeft, X, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
+import { doencasMenopausaApi as doencasApi, DoencaGeral } from "@/services/doencasApi";
 
-const mockMenopausaDiseases = [
-  {
-    id: 1,
-    name: "Fogachos",
-    category: "Vasomotor",
-    description: "Ondas de calor súbitas e intensas, sintoma mais comum da menopausa.",
-    recommendedOils: ["Sálvia", "Hortelã-pimenta", "Lavanda"],
-    symptoms: ["Ondas de calor", "Suor excessivo", "Vermelhidão"],
-    isFavorite: false,
-    severity: "Leve a moderado",
-  },
-  {
-    id: 2,
-    name: "Insônia",
-    category: "Sono",
-    description: "Dificuldade para dormir devido a mudanças hormonais e fogachos noturnos.",
-    recommendedOils: ["Lavanda", "Camomila", "Cedro"],
-    symptoms: ["Dificuldade para dormir", "Despertar frequente", "Fadiga diurna"],
-    isFavorite: true,
-    severity: "Moderado",
-  },
-  {
-    id: 3,
-    name: "Ansiedade",
-    category: "Emocional",
-    description: "Preocupações e nervosismo relacionados às mudanças hormonais.",
-    recommendedOils: ["Lavanda", "Bergamota", "Ylang Ylang"],
-    symptoms: ["Preocupação excessiva", "Nervosismo", "Tensão"],
-    isFavorite: false,
-    severity: "Leve a moderado",
-  },
-  {
-    id: 4,
-    name: "Secura Vaginal",
-    category: "Ginecológico",
-    description: "Redução da lubrificação natural devido à diminuição do estrogênio.",
-    recommendedOils: ["Rosa", "Lavanda", "Camomila"],
-    symptoms: ["Secura", "Coceira", "Desconforto"],
-    isFavorite: false,
-    severity: "Moderado",
-  },
-  {
-    id: 5,
-    name: "Osteoporose",
-    category: "Ósseo",
-    description: "Perda de densidade óssea que pode levar a fraturas.",
-    recommendedOils: ["Gengibre", "Cúrcuma", "Eucalipto"],
-    symptoms: ["Dor óssea", "Fragilidade", "Postura curvada"],
-    isFavorite: false,
-    severity: "Moderado a grave",
-  },
-  {
-    id: 6,
-    name: "Alterações de Humor",
-    category: "Emocional",
-    description: "Mudanças bruscas de humor e irritabilidade.",
-    recommendedOils: ["Bergamota", "Lavanda", "Ylang Ylang"],
-    symptoms: ["Irritabilidade", "Mudanças de humor", "Choro fácil"],
-    isFavorite: false,
-    severity: "Leve a moderado",
-  },
-];
+interface Disease {
+  id: string;
+  name: string;
+  category: string;
+  description?: string | null;
+  recommendedOils: string[];
+  symptoms: string[];
+  usageForm?: string;
+  isFavorite: boolean;
+}
 
 const alphabetLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
-export default function DoencasMenopausa() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedLetter, setSelectedLetter] = useState("");
-  const [diseases, setDiseases] = useState(mockMenopausaDiseases);
-  const [selectedDisease, setSelectedDisease] = useState<typeof mockMenopausaDiseases[0] | null>(null);
+// Componente para exibir óleos com detecção inteligente de overflow
+function OilsDisplay({ oils }: { oils: string[] }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [visibleCount, setVisibleCount] = useState(oils.length);
+  const [showMore, setShowMore] = useState(false);
+  const [isMeasuring, setIsMeasuring] = useState(true);
 
-  const toggleFavorite = (id: number) => {
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const checkOverflow = () => {
+      const container = containerRef.current;
+      if (!container) return;
+
+      const maxHeight = 120;
+      const gap = 4;
+      
+      const allBadges = Array.from(container.querySelectorAll('[data-oil-item]')) as HTMLElement[];
+      if (allBadges.length === 0) return;
+
+      const containerWidth = container.offsetWidth;
+      const badgeWidths = allBadges.map(badge => badge.offsetWidth);
+      const badgeHeight = allBadges[0].offsetHeight;
+      
+      let currentLineWidth = 0;
+      let currentHeight = badgeHeight;
+      let count = 0;
+      
+      for (let i = 0; i < badgeWidths.length; i++) {
+        const badgeWidth = badgeWidths[i];
+        
+        if (currentLineWidth + badgeWidth <= containerWidth) {
+          currentLineWidth += badgeWidth + gap;
+          count++;
+        } else {
+          currentHeight += badgeHeight + gap;
+          
+          if (currentHeight + badgeHeight <= maxHeight) {
+            currentLineWidth = badgeWidth + gap;
+            count++;
+          } else {
+            break;
+          }
+        }
+      }
+
+      if (count >= oils.length) {
+        setVisibleCount(oils.length);
+        setShowMore(false);
+        setIsMeasuring(false);
+        return;
+      }
+
+      if (count > 0) {
+        const remainingCount = oils.length - count;
+        const moreBadgeText = `+${remainingCount} mais`;
+        
+        const tempBadge = document.createElement('span');
+        tempBadge.className = 'inline-flex items-center rounded-lg border px-2 py-1 text-xs font-semibold';
+        tempBadge.textContent = moreBadgeText;
+        tempBadge.style.position = 'absolute';
+        tempBadge.style.visibility = 'hidden';
+        document.body.appendChild(tempBadge);
+        
+        const moreBadgeWidth = tempBadge.offsetWidth;
+        document.body.removeChild(tempBadge);
+
+        let finalLineWidth = 0;
+        let finalHeight = badgeHeight;
+        let finalCount = 0;
+        
+        for (let i = 0; i < count; i++) {
+          const badgeWidth = badgeWidths[i];
+          
+          if (finalLineWidth + badgeWidth <= containerWidth) {
+            finalLineWidth += badgeWidth + gap;
+            finalCount++;
+          } else {
+            finalHeight += badgeHeight + gap;
+            if (finalHeight + badgeHeight <= maxHeight) {
+              finalLineWidth = badgeWidth + gap;
+              finalCount++;
+            } else {
+              break;
+            }
+          }
+        }
+        
+        if (finalLineWidth + moreBadgeWidth > containerWidth) {
+          if (finalCount > 1) {
+            finalCount--;
+          }
+        }
+        
+        setVisibleCount(Math.max(1, finalCount));
+        setShowMore(true);
+      } else {
+        setVisibleCount(1);
+        setShowMore(true);
+      }
+      
+      setIsMeasuring(false);
+    };
+
+    const timeoutId = setTimeout(checkOverflow, 150);
+    window.addEventListener('resize', checkOverflow);
+
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('resize', checkOverflow);
+    };
+  }, [oils]);
+
+  return (
+    <div>
+      <h4 className="font-medium text-foreground mb-2 text-sm">Óleos Recomendados:</h4>
+      <div 
+        ref={containerRef}
+        className="flex flex-wrap gap-1"
+      >
+        {oils.map((oil, index) => (
+          <Badge 
+            key={oil} 
+            data-oil-item
+            variant="default" 
+            className="text-xs rounded-lg"
+            style={{ 
+              display: isMeasuring || index < visibleCount ? 'inline-flex' : 'none'
+            }}
+          >
+            {oil}
+          </Badge>
+        ))}
+        {showMore && !isMeasuring && (
+          <Badge 
+            variant="outline" 
+            className="text-xs rounded-lg"
+          >
+            +{oils.length - visibleCount} mais
+          </Badge>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default function DoencasMenopausa() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialSearch = searchParams.get('search') || '';
+  const [searchTerm, setSearchTerm] = useState(initialSearch);
+  const [selectedLetter, setSelectedLetter] = useState("");
+  const [diseases, setDiseases] = useState<Disease[]>([]);
+  const [selectedDisease, setSelectedDisease] = useState<Disease | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadDiseases();
+  }, []);
+
+  // Atualizar searchTerm quando a URL mudar
+  useEffect(() => {
+    const urlSearch = searchParams.get('search');
+    if (urlSearch && urlSearch !== searchTerm) {
+      setSearchTerm(urlSearch);
+    }
+  }, [searchParams]);
+
+  const loadDiseases = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await doencasApi.getAll(undefined, undefined, true); // activeOnly = true
+      const transformedData: Disease[] = data.map((doenca: DoencaGeral) => ({
+        id: doenca.id,
+        name: doenca.nome,
+        category: doenca.categoria,
+        description: doenca.descricao_short,
+        recommendedOils: doenca.oleos_recomendados || [],
+        symptoms: doenca.sintomas_comuns || [],
+        usageForm: doenca.forma_uso,
+        isFavorite: false,
+      }));
+      setDiseases(transformedData);
+    } catch (err) {
+      setError('Erro ao carregar doenças. Por favor, tente novamente.');
+      console.error('Erro ao carregar doenças:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleFavorite = (id: string) => {
     setDiseases(diseases.map(disease => 
       disease.id === id ? { ...disease, isFavorite: !disease.isFavorite } : disease
     ));
   };
 
-  const openDiseaseModal = (disease: typeof mockMenopausaDiseases[0]) => {
+  const openDiseaseModal = (disease: Disease) => {
     setSelectedDisease(disease);
   };
 
@@ -94,11 +229,27 @@ export default function DoencasMenopausa() {
 
   const filteredDiseases = diseases.filter(disease => {
     const matchesSearch = disease.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         disease.description.toLowerCase().includes(searchTerm.toLowerCase());
+                         (disease.description && disease.description.trim() && disease.description.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesLetter = selectedLetter === "" || disease.name.charAt(0).toUpperCase() === selectedLetter;
     
     return matchesSearch && matchesLetter;
   });
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-purple-50 flex items-center justify-center">
+        <p className="text-gray-600">Carregando doenças...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-purple-50 flex items-center justify-center">
+        <p className="text-red-600">{error}</p>
+      </div>
+    );
+  }
 
   const groupedDiseases = alphabetLetters.reduce((acc, letter) => {
     const diseasesForLetter = filteredDiseases.filter(disease => 
@@ -237,7 +388,7 @@ export default function DoencasMenopausa() {
                     transition={{ duration: 0.4, delay: 0.1 * index }}
                   >
                     <Card 
-                      className="card-organic rounded-3xl hover:shadow-medium transition-all duration-300 cursor-pointer border-2 border-purple-200"
+                      className="card-organic rounded-3xl hover:shadow-medium transition-all duration-300 cursor-pointer border-2 border-purple-200 h-[280px] flex flex-col"
                       onClick={() => openDiseaseModal(disease)}
                     >
                       <CardHeader className="pb-4">
@@ -251,49 +402,45 @@ export default function DoencasMenopausa() {
                                 {disease.category}
                               </Badge>
                             </div>
+                            {disease.description && disease.description.trim() && (
                             <p className="text-sm text-muted-foreground">
                               {disease.description}
                             </p>
+                            )}
+                            {disease.severity && disease.severity.trim() && (
                             <Badge variant="outline" className="mt-2 text-xs">
                               {disease.severity}
                             </Badge>
+                            )}
                           </div>
                           <div className="flex items-center gap-2">
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => toggleFavorite(disease.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleFavorite(disease.id);
+                              }}
                               className="rounded-xl"
                             >
                               <Heart 
                                 className={`w-4 h-4 ${disease.isFavorite ? 'fill-purple-600 text-purple-600' : 'text-purple-900'}`} 
                               />
                             </Button>
-                            <ChevronRight className="w-4 h-4 text-muted-foreground" />
                           </div>
                         </div>
                       </CardHeader>
 
-                      <CardContent className="space-y-3">
-                        <div>
-                          <h4 className="font-medium text-foreground mb-2 text-sm">Óleos Recomendados:</h4>
-                          <div className="flex flex-wrap gap-1">
-                            {disease.recommendedOils.map((oil) => (
-                              <Badge 
-                                key={oil} 
-                                variant="default" 
-                                className="text-xs rounded-lg"
-                              >
-                                {oil}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
+                      <CardContent className="space-y-3 flex-1 flex flex-col overflow-hidden">
+                        {disease.recommendedOils && disease.recommendedOils.length > 0 && (
+                        <OilsDisplay oils={disease.recommendedOils} />
+                        )}
 
+                        {disease.symptoms && disease.symptoms.length > 0 && (
                         <div>
                           <h4 className="font-medium text-foreground mb-2 text-sm">Sintomas Comuns:</h4>
                           <div className="flex flex-wrap gap-1">
-                            {disease.symptoms.map((symptom) => (
+                            {disease.symptoms.slice(0, 3).map((symptom) => (
                               <Badge 
                                 key={symptom} 
                                 variant="outline" 
@@ -302,9 +449,25 @@ export default function DoencasMenopausa() {
                                 {symptom}
                               </Badge>
                             ))}
+                            {disease.symptoms.length > 3 && (
+                              <Badge 
+                                variant="outline" 
+                                className="text-xs rounded-lg"
+                              >
+                                +{disease.symptoms.length - 3} mais
+                              </Badge>
+                            )}
                           </div>
                         </div>
+                        )}
                       </CardContent>
+                      
+                      <div className="relative pt-3 pb-3">
+                        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-200 to-transparent"></div>
+                        <p className="text-sm text-purple-600 font-medium text-center cursor-pointer hover:text-purple-700 transition-colors">
+                          Ver mais
+                        </p>
+                      </div>
                     </Card>
                   </motion.div>
                 ))}
@@ -372,9 +535,11 @@ export default function DoencasMenopausa() {
                           {selectedDisease.category}
                         </Badge>
                       </div>
+                      {selectedDisease.description && selectedDisease.description.trim() && (
                       <p className="text-muted-foreground">
                         {selectedDisease.description}
                       </p>
+                      )}
                       <Badge variant="outline" className="mt-2 text-xs">
                         {selectedDisease.severity}
                       </Badge>
@@ -393,6 +558,7 @@ export default function DoencasMenopausa() {
                 {/* Modal Content */}
                 <div className="p-6 space-y-6">
                   {/* Óleos Recomendados */}
+                  {selectedDisease.recommendedOils && selectedDisease.recommendedOils.length > 0 && (
                   <div>
                     <h3 className="font-semibold text-foreground mb-3 text-lg">Óleos Recomendados:</h3>
                     <div className="flex flex-wrap gap-2">
@@ -407,8 +573,10 @@ export default function DoencasMenopausa() {
                       ))}
                     </div>
                   </div>
+                  )}
 
                   {/* Sintomas Comuns */}
+                  {selectedDisease.symptoms && selectedDisease.symptoms.length > 0 && (
                   <div>
                     <h3 className="font-semibold text-foreground mb-3 text-lg">Sintomas Comuns:</h3>
                     <div className="flex flex-wrap gap-2">
@@ -416,38 +584,32 @@ export default function DoencasMenopausa() {
                         <Badge 
                           key={symptom} 
                           variant="outline" 
-                          className="text-sm rounded-lg"
+                            className="text-sm rounded-lg text-white"
                         >
                           {symptom}
                         </Badge>
                       ))}
                     </div>
                   </div>
+                  )}
 
                   {/* Modo de Uso */}
+                  {selectedDisease.usageForm && selectedDisease.usageForm.trim() && (
                   <div>
                     <h3 className="font-semibold text-foreground mb-3 text-lg">Modo de Uso:</h3>
                     <div className="flex flex-wrap gap-2">
+                        {selectedDisease.usageForm.split(',').map((usage, index) => (
                       <Badge 
+                            key={index} 
                         variant="secondary" 
-                        className="text-sm rounded-lg"
+                            className="text-sm rounded-lg text-white"
                       >
-                        Não substitui o tratamento médico
+                            {usage.trim()}
                       </Badge>
-                      <Badge 
-                        variant="secondary" 
-                        className="text-sm rounded-lg"
-                      >
-                        Consulte seu ginecologista antes de usar
-                      </Badge>
-                      <Badge 
-                        variant="secondary" 
-                        className="text-sm rounded-lg"
-                      >
-                        Especialmente se estiver fazendo terapia hormonal
-                      </Badge>
+                        ))}
                     </div>
                   </div>
+                  )}
 
                   {/* Alert Message */}
                   <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">

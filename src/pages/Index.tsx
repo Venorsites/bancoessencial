@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { PolicyAcceptanceModal } from "@/components/PolicyAcceptanceModal";
 import { BetaVersionModal, shouldShowBetaNotification } from "@/components/BetaVersionModal";
 import { API_URL } from "@/config/api";
+import bannerHome from "@/assets/bannerhome.webp";
 
 const Index = () => {
   const { user, token, loading: authLoading } = useAuth();
@@ -371,9 +372,9 @@ const Index = () => {
       {/* ===== Banner full-width com imagem ===== */}
       <section className="relative w-full h-32 sm:h-32 lg:h-40 flex items-center">
         <img
-          src="https://i.ibb.co/xtPW4mv4/fundo.webp"
+          src={bannerHome}
           alt="Banner aromaterapia"
-          className="absolute inset-0 w-full h-full object-cover object-center sm:object-[center_91%]"
+          className="absolute inset-0 w-full h-full object-cover object-center sm:object-[center_50%]"
         />
       </section>
 

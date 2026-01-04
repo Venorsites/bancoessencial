@@ -5,13 +5,23 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { doencasApi, DoencaGeral } from "@/services/doencasApi";
+import { doencasApi, doencasGestacaoApi, doencasMenopausaApi, doencasPediatricaApi, DoencaGeral } from "@/services/doencasApi";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+
+type DiseaseCategory = 'geral' | 'gestacao' | 'menopausa' | 'pediatrica';
+
+const categoryConfig = {
+  geral: { label: 'Geral', api: doencasApi, route: '/doencas/geral' },
+  gestacao: { label: 'Gestação', api: doencasGestacaoApi, route: '/doencas/gestacao' },
+  menopausa: { label: 'Menopausa', api: doencasMenopausaApi, route: '/doencas/menopausa' },
+  pediatrica: { label: 'Pediátrica', api: doencasPediatricaApi, route: '/doencas/pediatrica' },
+};
 
 export function AdminDiseases() {
   const navigate = useNavigate();
   const { token } = useAuth();
+  const [selectedCategory, setSelectedCategory] = useState<DiseaseCategory>('geral');
   const [diseases, setDiseases] = useState<DoencaGeral[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
@@ -21,13 +31,16 @@ export function AdminDiseases() {
 
   useEffect(() => {
     loadDiseases();
-  }, []);
+  }, [selectedCategory]);
+
+  const getCurrentApi = () => categoryConfig[selectedCategory].api;
 
   const loadDiseases = async () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await doencasApi.getAll(undefined, undefined, false); // activeOnly = false para admin
+      const api = getCurrentApi();
+      const data = await api.getAll(undefined, undefined, false); // activeOnly = false para admin
       setDiseases(data);
     } catch (err) {
       setError("Erro ao carregar doenças");
@@ -43,7 +56,8 @@ export function AdminDiseases() {
     }
 
     try {
-      await doencasApi.delete(id, token!);
+      const api = getCurrentApi();
+      await api.delete(id, token!);
       setDiseases(diseases.filter(disease => disease.id !== id));
     } catch (err) {
       alert("Erro ao deletar doença");
@@ -61,7 +75,8 @@ export function AdminDiseases() {
 
     try {
       const ativo = action === 'activate';
-      const updatedDisease = await doencasApi.toggleActivation(selectedDisease.id, ativo, undefined, token);
+      const api = getCurrentApi();
+      const updatedDisease = await api.toggleActivation(selectedDisease.id, ativo, undefined, token);
 
       // Atualizar a lista local
       const updatedDiseases = diseases.map(disease => 
@@ -107,12 +122,36 @@ export function AdminDiseases() {
           <p className="text-gray-600">Gerencie o banco de dados de doenças e condições</p>
         </div>
         <Button
-          onClick={() => navigate('/admin/diseases/new')}
+          onClick={() => navigate(`/admin/diseases/new?category=${selectedCategory}`)}
           className="bg-purple-600 hover:bg-purple-700 text-white"
         >
           <Plus className="w-4 h-4 mr-2" />
           Nova Doença
         </Button>
+      </motion.div>
+
+      {/* Category Tabs */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.05 }}
+      >
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex flex-wrap gap-2">
+              {(Object.keys(categoryConfig) as DiseaseCategory[]).map((category) => (
+                <Button
+                  key={category}
+                  variant={selectedCategory === category ? "default" : "outline"}
+                  onClick={() => setSelectedCategory(category)}
+                  className={selectedCategory === category ? "bg-purple-600 hover:bg-purple-700" : ""}
+                >
+                  {categoryConfig[category].label}
+                </Button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </motion.div>
 
       {/* Search */}
@@ -247,7 +286,7 @@ export function AdminDiseases() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => navigate(`/doencas/geral`)}
+                              onClick={() => navigate(categoryConfig[selectedCategory].route)}
                               title="Visualizar"
                             >
                               <Eye className="w-4 h-4" />
@@ -255,7 +294,7 @@ export function AdminDiseases() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => navigate(`/admin/diseases/edit/${disease.id}`)}
+                              onClick={() => navigate(`/admin/diseases/edit/${disease.id}?category=${selectedCategory}`)}
                               className="text-blue-600 hover:text-blue-700"
                             >
                               <Edit className="w-4 h-4" />

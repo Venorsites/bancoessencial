@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import api from '@/services/api';
 import { useToast } from '@/hooks/use-toast';
 
@@ -38,6 +38,88 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  
+  // Refs para controlar timers de refresh
+  const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const lastActivityRef = useRef<number>(Date.now());
+  const isRefreshingRef = useRef<boolean>(false);
+
+  // Função para fazer refresh silencioso do token
+  const refreshTokenSilently = async () => {
+    if (isRefreshingRef.current || !user) return;
+    
+    try {
+      isRefreshingRef.current = true;
+      await api.post('/auth/refresh');
+      // Token foi renovado automaticamente no cookie
+    } catch (error) {
+      // Se o refresh falhar, limpar sessão silenciosamente
+      setUser(null);
+      setToken(null);
+    } finally {
+      isRefreshingRef.current = false;
+    }
+  };
+
+  // Função para agendar refresh preventivo
+  const scheduleRefresh = () => {
+    // Limpar timer anterior se existir
+    if (refreshTimerRef.current) {
+      clearInterval(refreshTimerRef.current);
+    }
+
+    // Fazer refresh a cada 50 minutos (antes dos 60 minutos de expiração)
+    // Isso garante que o token seja renovado antes de expirar
+    refreshTimerRef.current = setInterval(() => {
+      if (user) {
+        refreshTokenSilently();
+      }
+    }, 50 * 60 * 1000); // 50 minutos
+  };
+
+  // Detectar atividade do usuário e fazer refresh se necessário
+  useEffect(() => {
+    if (!user) {
+      // Limpar timer se não houver usuário
+      if (refreshTimerRef.current) {
+        clearInterval(refreshTimerRef.current);
+        refreshTimerRef.current = null;
+      }
+      return;
+    }
+
+    const handleUserActivity = async () => {
+      const now = Date.now();
+      const timeSinceLastActivity = now - lastActivityRef.current;
+      
+      // Se o usuário voltou após mais de 30 minutos de inatividade, fazer refresh
+      if (timeSinceLastActivity > 30 * 60 * 1000) {
+        await refreshTokenSilently();
+      }
+      
+      lastActivityRef.current = now;
+    };
+
+    // Eventos que indicam atividade do usuário
+    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
+    
+    events.forEach(event => {
+      window.addEventListener(event, handleUserActivity, { passive: true });
+    });
+
+    // Agendar refresh preventivo
+    scheduleRefresh();
+
+    // Cleanup
+    return () => {
+      events.forEach(event => {
+        window.removeEventListener(event, handleUserActivity);
+      });
+      if (refreshTimerRef.current) {
+        clearInterval(refreshTimerRef.current);
+      }
+    };
+  }, [user, refreshTokenSilently, scheduleRefresh]);
 
   useEffect(() => {
     let isMounted = true; // Flag para evitar atualizações após desmontagem
@@ -51,6 +133,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (isMounted) {
           setUser(response.data);
           setToken('cookie'); // Placeholder - token está no cookie httpOnly
+          lastActivityRef.current = Date.now();
         }
       } catch (error: any) {
         // Sem sessão válida - não é um erro crítico, apenas não há usuário logado
@@ -79,6 +162,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     setUser(userData);
     setToken('cookie'); // Token está no cookie httpOnly
+    lastActivityRef.current = Date.now();
 
     toast({
       title: 'Login realizado com sucesso!',
@@ -93,6 +177,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       setUser(userData);
       setToken('cookie'); // Token está no cookie httpOnly
+      lastActivityRef.current = Date.now();
 
       toast({
         title: 'Cadastro realizado com sucesso!',
@@ -113,6 +198,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await api.post('/auth/logout');
     } catch (error) {
       // Ignorar erro de logout
+    }
+    
+    // Limpar timers
+    if (refreshTimerRef.current) {
+      clearInterval(refreshTimerRef.current);
+      refreshTimerRef.current = null;
     }
     
     setUser(null);

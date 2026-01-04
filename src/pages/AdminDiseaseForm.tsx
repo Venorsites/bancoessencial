@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Save, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,14 +8,27 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { doencasApi, CreateDoencaGeralData } from "@/services/doencasApi";
+import { doencasApi, doencasGestacaoApi, doencasMenopausaApi, doencasPediatricaApi, CreateDoencaGeralData } from "@/services/doencasApi";
 import { useAuth } from "@/contexts/AuthContext";
+
+type DiseaseCategory = 'geral' | 'gestacao' | 'menopausa' | 'pediatrica';
+
+const categoryConfig = {
+  geral: { label: 'Geral', api: doencasApi },
+  gestacao: { label: 'Gestação', api: doencasGestacaoApi },
+  menopausa: { label: 'Menopausa', api: doencasMenopausaApi },
+  pediatrica: { label: 'Pediátrica', api: doencasPediatricaApi },
+};
 
 export default function AdminDiseaseForm() {
   const navigate = useNavigate();
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
   const { token } = useAuth();
   const isEditing = !!id;
+  
+  const categoryParam = searchParams.get('category') as DiseaseCategory;
+  const [selectedCategory] = useState<DiseaseCategory>(categoryParam || 'geral');
 
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(isEditing);
@@ -43,10 +56,13 @@ export default function AdminDiseaseForm() {
     }
   }, [id]);
 
+  const getCurrentApi = () => categoryConfig[selectedCategory].api;
+
   const loadDisease = async () => {
     try {
       setLoadingData(true);
-      const disease = await doencasApi.getById(id!);
+      const api = getCurrentApi();
+      const disease = await api.getById(id!);
       
       // Parse forma_uso from string to array
       let formaUsoArrayData: string[] = [];
@@ -81,7 +97,7 @@ export default function AdminDiseaseForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.nome || !formData.categoria || !formData.descricao_short) {
+    if (!formData.nome || !formData.categoria) {
       setError("Por favor, preencha todos os campos obrigatórios");
       return;
     }
@@ -90,22 +106,36 @@ export default function AdminDiseaseForm() {
       setLoading(true);
       setError(null);
 
+      if (!token) {
+        setError('Você precisa estar autenticado para criar/editar doenças');
+        setLoading(false);
+        return;
+      }
+
       // Prepare data for submission - convert forma_uso array to string
       const dataToSubmit = {
         ...formData,
         forma_uso: formaUsoArray.join(', '),
       };
 
+      console.log('Criando doença com categoria:', selectedCategory);
+      console.log('Dados:', dataToSubmit);
+      console.log('Token:', token);
+
+      const api = getCurrentApi();
       if (isEditing) {
-        await doencasApi.update(id!, dataToSubmit, token!);
+        await api.update(id!, dataToSubmit, token);
       } else {
-        await doencasApi.create(dataToSubmit, token!);
+        await api.create(dataToSubmit, token);
       }
 
       navigate("/admin/diseases");
-    } catch (err) {
-      setError(`Erro ao ${isEditing ? "atualizar" : "criar"} doença`);
-      console.error(err);
+    } catch (err: any) {
+      const errorMessage = err?.message || `Erro ao ${isEditing ? "atualizar" : "criar"} doença`;
+      setError(errorMessage);
+      console.error('Erro completo:', err);
+      console.error('Status:', err?.response?.status);
+      console.error('Response:', err?.response);
     } finally {
       setLoading(false);
     }
@@ -195,9 +225,14 @@ export default function AdminDiseaseForm() {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Voltar
           </Button>
+          <div className="flex items-center gap-3">
           <h1 className="text-3xl font-bold text-gray-900">
             {isEditing ? "Editar Doença" : "Nova Doença"}
           </h1>
+            <Badge className="bg-purple-600 text-white">
+              {categoryConfig[selectedCategory].label}
+            </Badge>
+          </div>
           <p className="text-gray-600 mt-2">
             {isEditing
               ? "Atualize as informações da doença"
@@ -256,15 +291,14 @@ export default function AdminDiseaseForm() {
                   </div>
 
                   <div>
-                    <Label htmlFor="descricao_short">Descrição *</Label>
+                    <Label htmlFor="descricao_short">Descrição</Label>
                     <Textarea
                       id="descricao_short"
                       name="descricao_short"
                       value={formData.descricao_short}
                       onChange={handleInputChange}
-                      placeholder="Descrição breve da doença ou condição"
+                      placeholder="Descrição breve da doença ou condição (opcional)"
                       rows={3}
-                      required
                     />
                   </div>
                 </CardContent>
