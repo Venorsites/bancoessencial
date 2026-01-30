@@ -3,7 +3,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { TagInput } from "@/components/ui/tag-input";
@@ -43,6 +42,7 @@ export default function AdminOilForm() {
     substitutos: "",
     combinacoes: "",
     galeria_fotos: "",
+    notas: "",
   });
 
   // Estados para tags (arrays)
@@ -57,6 +57,8 @@ export default function AdminOilForm() {
   const [espiritualTags, setEspiritualTags] = useState<string[]>([]);
   const [ambientalTags, setAmbientalTags] = useState<string[]>([]);
   const [contraindicacaoTags, setContraindicacaoTags] = useState<string[]>([]);
+  const [farmacologiaNeuroTags, setFarmacologiaNeuroTags] = useState<string[]>([]);
+  const [interacaoTags, setInteracaoTags] = useState<string[]>([]);
   const [galleryPhotos, setGalleryPhotos] = useState<string[]>([]);
   const [chemicalComponents, setChemicalComponents] = useState<ChemicalComponent[]>([]);
 
@@ -88,6 +90,8 @@ export default function AdminOilForm() {
       setEspiritualTags(oil.espirituais ? oil.espirituais.split(',').map(tag => tag.trim()).filter(Boolean) : []);
       setAmbientalTags(oil.ambientais ? oil.ambientais.split(',').map(tag => tag.trim()).filter(Boolean) : []);
       setContraindicacaoTags(oil.contraindicacao ? oil.contraindicacao.split(',').map(tag => tag.trim()).filter(Boolean) : []);
+      setFarmacologiaNeuroTags(oil.farmacologia_neuro ? oil.farmacologia_neuro.split(',').map(tag => tag.trim()).filter(Boolean) : []);
+      setInteracaoTags(oil.interacao ? oil.interacao.split(',').map(tag => tag.trim()).filter(Boolean) : []);
       setGalleryPhotos(oil.galeria_fotos ? oil.galeria_fotos.split(',').map(url => url.trim()).filter(Boolean) : []);
       
       // Carregar componentes químicos da composição
@@ -135,7 +139,10 @@ export default function AdminOilForm() {
         espirituais: espiritualTags.join(', '),
         ambientais: ambientalTags.join(', '),
         contraindicacao: contraindicacaoTags.join(', '),
+        farmacologia_neuro: farmacologiaNeuroTags.join(', '),
+        interacao: interacaoTags.join(', '),
         galeria_fotos: galleryPhotos.join(', '),
+        notas: formData.notas || '',
       };
 
       if (id) {
@@ -446,6 +453,36 @@ export default function AdminOilForm() {
                   value={formData.contraindicacoes_preocupacoes}
                   onChange={(value) => setFormData(prev => ({ ...prev, contraindicacoes_preocupacoes: value }))}
                   placeholder="Informações adicionais sobre contraindicações..."
+                  className="mt-1"
+                />
+              </div>
+
+              <div>
+                <Label>Farmacologia e Neuropsicofarmacologia</Label>
+                <TagInput
+                  value={farmacologiaNeuroTags}
+                  onChange={setFarmacologiaNeuroTags}
+                  placeholder="Digite as propriedades de farmacologia e neuropsicofarmacologia..."
+                  className="mt-1"
+                />
+              </div>
+
+              <div>
+                <Label>Interações Medicamentosas - Interações</Label>
+                <TagInput
+                  value={interacaoTags}
+                  onChange={setInteracaoTags}
+                  placeholder="Digite as interações medicamentosas..."
+                  className="mt-1"
+                />
+              </div>
+
+              <div>
+                <Label>Interações Medicamentosas - Notas</Label>
+                <RichTextEditor
+                  value={formData.notas || ''}
+                  onChange={(value) => setFormData(prev => ({ ...prev, notas: value }))}
+                  placeholder="Digite as notas sobre interações medicamentosas..."
                   className="mt-1"
                 />
               </div>

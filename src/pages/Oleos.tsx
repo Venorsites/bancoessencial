@@ -927,9 +927,66 @@ export default function Oleos() {
                            )}
                          </div>
                        </div>
+                       <div>
+                         <h3 className="font-semibold text-purple-800">Farmacologia e Neuropsicofarmacologia:</h3>
+                         <div className="flex flex-wrap gap-1 mt-1">
+                           {selectedOil.farmacologia_neuro ? (
+                             selectedOil.farmacologia_neuro.split(',').map((tag, index) => (
+                               <span
+                                 key={index}
+                                 className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800"
+                               >
+                                 {tag.trim()}
+                               </span>
+                             ))
+                           ) : (
+                             <span className="text-gray-500 text-sm">Não informado</span>
+                           )}
+                         </div>
+                       </div>
                      </div>
                   </div>
                 </div>
+
+                {/* Interações Medicamentosas */}
+                {(selectedOil.interacao || selectedOil.notas) && (
+                  <div className="space-y-4">
+                    <h2 className="text-xl font-bold text-purple-800 border-b-2 border-purple-200 pb-2">Interações Medicamentosas</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-3">
+                        <div>
+                          <h3 className="font-semibold text-purple-800">Interações:</h3>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {selectedOil.interacao ? (
+                              selectedOil.interacao.split(',').map((tag, index) => (
+                                <span
+                                  key={index}
+                                  className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-800"
+                                >
+                                  {tag.trim()}
+                                </span>
+                              ))
+                            ) : (
+                              <span className="text-gray-500 text-sm">Não informado</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="space-y-3">
+                        <div>
+                          <h3 className="font-semibold text-purple-800">Notas:</h3>
+                          <div className="mt-1 text-gray-700">
+                            {selectedOil.notas ? (
+                              <div className="text-sm" dangerouslySetInnerHTML={{ __html: highlightLinks(selectedOil.notas) }} />
+                            ) : (
+                              <span className="text-gray-500 text-sm">Não informado</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Galeria de Fotos */}
                 {selectedOil.galeria_fotos && (

@@ -25,6 +25,9 @@ export interface Oil {
   substitutos?: string;
   combinacoes?: string;
   galeria_fotos?: string;
+  farmacologia_neuro?: string;
+  interacao?: string;
+  notas?: string;
   ativo: boolean;
   data_liberacao?: string | null;
   created_at: string;
@@ -55,6 +58,9 @@ export interface CreateOilData {
   substitutos?: string;
   combinacoes?: string;
   galeria_fotos?: string;
+  farmacologia_neuro?: string;
+  interacao?: string;
+  notas?: string;
 }
 
 export const oilsApi = {
@@ -103,9 +109,9 @@ export const oilsApi = {
   async create(data: CreateOilData, token: string): Promise<Oil> {
     const response = await fetch(`${API_URL}/oils`, {
       method: 'POST',
+      credentials: 'include', // IMPORTANTE: Enviar cookies automaticamente
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
       },
       body: JSON.stringify(data),
     });
@@ -122,9 +128,9 @@ export const oilsApi = {
   async update(id: string, data: Partial<CreateOilData>, token: string): Promise<Oil> {
     const response = await fetch(`${API_URL}/oils/${id}`, {
       method: 'PATCH',
+      credentials: 'include', // IMPORTANTE: Enviar cookies automaticamente
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
       },
       body: JSON.stringify(data),
     });
@@ -141,8 +147,9 @@ export const oilsApi = {
   async delete(id: string, token: string): Promise<void> {
     const response = await fetch(`${API_URL}/oils/${id}`, {
       method: 'DELETE',
+      credentials: 'include', // IMPORTANTE: Enviar cookies automaticamente
       headers: {
-        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
       },
     });
 
@@ -154,9 +161,9 @@ export const oilsApi = {
   async toggleActivation(id: string, ativo: boolean, data_liberacao?: string, token?: string): Promise<Oil> {
     const response = await fetch(`${API_URL}/oils/${id}/toggle-activation`, {
       method: 'PATCH',
+      credentials: 'include', // IMPORTANTE: Enviar cookies automaticamente
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
       },
       body: JSON.stringify({ ativo, data_liberacao }),
     });
@@ -171,9 +178,9 @@ export const oilsApi = {
   async scheduleRelease(id: string, data_liberacao: string, token: string): Promise<Oil> {
     const response = await fetch(`${API_URL}/oils/${id}/schedule-release`, {
       method: 'PATCH',
+      credentials: 'include', // IMPORTANTE: Enviar cookies automaticamente
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
       },
       body: JSON.stringify({ data_liberacao }),
     });
