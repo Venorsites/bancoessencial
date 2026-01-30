@@ -3,15 +3,15 @@ import { API_URL } from '@/config/api';
 export interface Oil {
   id: string;
   avatar?: string;
-  nome: string;
-  nome_cientifico: string;
-  descricao: string;
-  familia_botanica: string;
-  forma_extracao: string;
-  aroma: string;
-  parte_planta: string;
+  nome?: string;
+  nome_cientifico?: string;
+  descricao?: string;
+  familia_botanica?: string;
+  forma_extracao?: string;
+  aroma?: string;
+  parte_planta?: string;
   origem?: string;
-  familia_quimica: string;
+  familia_quimica?: string;
   composto_quimico?: string;
   categoria_aromatica?: string;
   psicoaromas?: string;
@@ -36,15 +36,15 @@ export interface Oil {
 
 export interface CreateOilData {
   avatar?: string;
-  nome: string;
-  nome_cientifico: string;
-  descricao: string;
-  familia_botanica: string;
-  forma_extracao: string;
-  aroma: string;
-  parte_planta: string;
+  nome?: string;
+  nome_cientifico?: string;
+  descricao?: string;
+  familia_botanica?: string;
+  forma_extracao?: string;
+  aroma?: string;
+  parte_planta?: string;
   origem?: string;
-  familia_quimica: string;
+  familia_quimica?: string;
   composto_quimico?: string;
   categoria_aromatica?: string;
   psicoaromas?: string;

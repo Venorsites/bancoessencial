@@ -60,8 +60,8 @@ export default function OilDetail() {
     const toggled = toggleFav((): FavoriteItem => ({
       id: `oil-${oil.id}`,
       type: 'oil',
-      title: oil.nome,
-      subtitle: oil.nome_cientifico,
+      title: oil.nome || 'Óleo Essencial',
+      subtitle: oil.nome_cientifico || '',
       description: oil.descricao || '',
       tags: [
         ...(oil.categoria_aromatica ? oil.categoria_aromatica.split(',').map((t: string) => t.trim()) : []),
@@ -197,7 +197,7 @@ export default function OilDetail() {
             <div className="absolute inset-0 bg-gray-200 animate-pulse" />
             <img
               src={oil.avatar || "https://via.placeholder.com/1200x400/8B5CF6/FFFFFF?text=Óleo+Essencial"}
-              alt={oil.nome}
+              alt={oil.nome || 'Óleo Essencial'}
               loading="eager"
               fetchPriority="high"
               className="relative w-full h-auto max-h-80 sm:max-h-96 object-contain"

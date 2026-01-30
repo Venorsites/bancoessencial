@@ -126,7 +126,7 @@ export default function AdminOilForm() {
       
       setFormData({
         ...oilData,
-        nome: `${oil.nome} (Cópia)`, // Adicionar sufixo para diferenciar
+        nome: `${oil.nome || 'Óleo Essencial'} (Cópia)`, // Adicionar sufixo para diferenciar
       });
       
       // Converter strings em arrays para as tags
@@ -255,26 +255,24 @@ export default function AdminOilForm() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="nome">Nome *</Label>
+                  <Label htmlFor="nome">Nome</Label>
                   <Input
                     id="nome"
                     name="nome"
                     value={formData.nome}
                     onChange={handleChange}
-                    required
                     placeholder="Ex: Lavanda Francesa"
                     className="mt-1"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="nome_cientifico">Nome Científico *</Label>
+                  <Label htmlFor="nome_cientifico">Nome Científico</Label>
                   <Input
                     id="nome_cientifico"
                     name="nome_cientifico"
                     value={formData.nome_cientifico}
                     onChange={handleChange}
-                    required
                     placeholder="Ex: Lavandula angustifolia"
                     className="mt-1"
                   />

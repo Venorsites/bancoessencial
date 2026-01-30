@@ -210,8 +210,8 @@ export default function Oleos() {
     const toggled = toggleFav((): FavoriteItem => ({
       id: `oil-${oil.id}`,
       type: 'oil',
-      title: oil.nome,
-      subtitle: oil.nome_cientifico,
+      title: oil.nome || 'Óleo Essencial',
+      subtitle: oil.nome_cientifico || '',
       description: oil.descricao || '',
       tags: [
         ...(oil.categoria_aromatica ? oil.categoria_aromatica.split(',').map((t: string) => t.trim()) : []),
@@ -478,7 +478,7 @@ export default function Oleos() {
                   <div className="absolute inset-0 bg-gray-200 animate-pulse rounded-t-3xl" />
                   <img
                     src={oil.avatar || "https://via.placeholder.com/400x200/8B5CF6/FFFFFF?text=Óleo+Essencial"}
-                    alt={oil.nome}
+                    alt={oil.nome || 'Óleo Essencial'}
                     loading="lazy"
                     className="relative w-full h-full object-cover"
                     onLoad={(e) => {
@@ -491,7 +491,7 @@ export default function Oleos() {
                 {/* TÍTULO + FAVORITO lado a lado */}
                 <div className="px-6 pt-4 pb-2 flex items-center justify-between">
                   <h3 className="text-xl font-bold text-purple-800 leading-tight">
-                    {oil.nome}
+                    {oil.nome || 'Óleo Essencial'}
                   </h3>
                   <Button
                     variant="ghost"
@@ -634,7 +634,7 @@ export default function Oleos() {
                 <div className="absolute inset-0 bg-gray-200 animate-pulse rounded-t-3xl" />
                 <img
                   src={selectedOil.avatar || "https://via.placeholder.com/800x300/8B5CF6/FFFFFF?text=Óleo+Essencial"}
-                  alt={selectedOil.nome}
+                  alt={selectedOil.nome || 'Óleo Essencial'}
                   loading="eager"
                   className="relative w-full h-[25vh] sm:h-auto sm:max-h-[480px] object-cover sm:object-contain rounded-t-3xl"
                   onLoad={(e) => {
@@ -1021,7 +1021,7 @@ export default function Oleos() {
                             <div className="absolute inset-0 bg-gray-200 animate-pulse rounded-lg" />
                             <img
                               src={trimmedUrl}
-                              alt={`Foto ${index + 1} do ${selectedOil.nome}`}
+                              alt={`Foto ${index + 1} do ${selectedOil.nome || 'Óleo Essencial'}`}
                               loading="lazy"
                               className="relative w-full h-32 object-cover rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300"
                               onLoad={(e) => {

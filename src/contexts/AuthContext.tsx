@@ -68,13 +68,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       clearInterval(refreshTimerRef.current);
     }
 
-    // Fazer refresh a cada 50 minutos (antes dos 60 minutos de expiração)
+    // Fazer refresh a cada 25 dias (antes dos 30 dias de expiração)
     // Isso garante que o token seja renovado antes de expirar
     refreshTimerRef.current = setInterval(() => {
       if (user) {
         refreshTokenSilently();
       }
-    }, 50 * 60 * 1000); // 50 minutos
+    }, 25 * 24 * 60 * 60 * 1000); // 25 dias
   };
 
   // Detectar atividade do usuário e fazer refresh se necessário
@@ -92,8 +92,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const now = Date.now();
       const timeSinceLastActivity = now - lastActivityRef.current;
       
-      // Se o usuário voltou após mais de 30 minutos de inatividade, fazer refresh
-      if (timeSinceLastActivity > 30 * 60 * 1000) {
+      // Se o usuário voltou após mais de 20 dias de inatividade, fazer refresh
+      // Isso evita refresh desnecessário durante uso normal
+      if (timeSinceLastActivity > 20 * 24 * 60 * 60 * 1000) {
         await refreshTokenSilently();
       }
       
