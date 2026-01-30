@@ -322,7 +322,7 @@ export default function Oleos() {
           src="https://i.ibb.co/N2CVmNZL/Banco-de-Dados-leos-Essenciais-Fichas-Completas.webp"
           alt="Banner Banco de Dados Essencial - Óleos Essenciais"
           loading="eager"
-          fetchPriority="high"
+          fetchpriority="high"
           className="relative w-full h-full object-cover object-center"
           onLoad={(e) => {
             const placeholder = e.currentTarget.previousElementSibling as HTMLElement;

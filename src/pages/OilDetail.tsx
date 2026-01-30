@@ -199,7 +199,7 @@ export default function OilDetail() {
               src={oil.avatar || "https://via.placeholder.com/1200x400/8B5CF6/FFFFFF?text=Óleo+Essencial"}
               alt={oil.nome || 'Óleo Essencial'}
               loading="eager"
-              fetchPriority="high"
+              fetchpriority="high"
               className="relative w-full h-auto max-h-80 sm:max-h-96 object-contain"
               onLoad={(e) => {
                 const placeholder = e.currentTarget.previousElementSibling as HTMLElement;

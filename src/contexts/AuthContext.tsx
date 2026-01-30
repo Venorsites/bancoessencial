@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '@/services/api';
 import { useToast } from '@/hooks/use-toast';
 
@@ -39,91 +39,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   
-  // Refs para controlar timers de refresh
-  const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const lastActivityRef = useRef<number>(Date.now());
-  const isRefreshingRef = useRef<boolean>(false);
-
-  // Função para fazer refresh silencioso do token
-  const refreshTokenSilently = async () => {
-    if (isRefreshingRef.current || !user) return;
-    
-    try {
-      isRefreshingRef.current = true;
-      await api.post('/auth/refresh');
-      // Token foi renovado automaticamente no cookie
-    } catch (error) {
-      // Se o refresh falhar, limpar sessão silenciosamente
-      setUser(null);
-      setToken(null);
-    } finally {
-      isRefreshingRef.current = false;
-    }
-  };
-
-  // Função para agendar refresh preventivo
-  const scheduleRefresh = () => {
-    // Limpar timer anterior se existir
-    if (refreshTimerRef.current) {
-      clearInterval(refreshTimerRef.current);
-    }
-
-    // Fazer refresh a cada 25 dias (antes dos 30 dias de expiração)
-    // Isso garante que o token seja renovado antes de expirar
-    refreshTimerRef.current = setInterval(() => {
-      if (user) {
-        refreshTokenSilently();
-      }
-    }, 25 * 24 * 60 * 60 * 1000); // 25 dias
-  };
-
-  // Detectar atividade do usuário e fazer refresh se necessário
-  useEffect(() => {
-    if (!user) {
-      // Limpar timer se não houver usuário
-      if (refreshTimerRef.current) {
-        clearInterval(refreshTimerRef.current);
-        refreshTimerRef.current = null;
-      }
-      return;
-    }
-
-    const handleUserActivity = async () => {
-      const now = Date.now();
-      const timeSinceLastActivity = now - lastActivityRef.current;
-      
-      // Se o usuário voltou após mais de 20 dias de inatividade, fazer refresh
-      // Isso evita refresh desnecessário durante uso normal
-      if (timeSinceLastActivity > 20 * 24 * 60 * 60 * 1000) {
-        await refreshTokenSilently();
-      }
-      
-      lastActivityRef.current = now;
-    };
-
-    // Eventos que indicam atividade do usuário
-    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
-    
-    events.forEach(event => {
-      window.addEventListener(event, handleUserActivity, { passive: true });
-    });
-
-    // Agendar refresh preventivo
-    scheduleRefresh();
-
-    // Cleanup
-    return () => {
-      events.forEach(event => {
-        window.removeEventListener(event, handleUserActivity);
-      });
-      if (refreshTimerRef.current) {
-        clearInterval(refreshTimerRef.current);
-      }
-    };
-  }, [user, refreshTokenSilently, scheduleRefresh]);
+  // O refresh automático é feito pelo interceptor do axios quando necessário
+  // Não precisamos de timers ou verificações manuais aqui
 
   useEffect(() => {
     let isMounted = true; // Flag para evitar atualizações após desmontagem
+    let timeoutId: NodeJS.Timeout;
 
     const loadStorageData = async () => {
       try {
@@ -134,10 +55,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (isMounted) {
           setUser(response.data);
           setToken('cookie'); // Placeholder - token está no cookie httpOnly
-          lastActivityRef.current = Date.now();
         }
       } catch (error: any) {
         // Sem sessão válida - não é um erro crítico, apenas não há usuário logado
+        // Não tentar fazer refresh aqui para evitar loops - o interceptor já cuida disso
         if (isMounted) {
           setUser(null);
           setToken(null);
@@ -149,11 +70,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     };
 
-    loadStorageData();
+    // Timeout de segurança: garantir que o loading sempre termine após 5 segundos
+    timeoutId = setTimeout(() => {
+      if (isMounted) {
+        setLoading(false);
+      }
+    }, 5000);
+
+    loadStorageData().finally(() => {
+      // Limpar timeout se a requisição terminar antes
+      clearTimeout(timeoutId);
+    });
 
     // Cleanup: evitar atualizações se o componente for desmontado
     return () => {
       isMounted = false;
+      clearTimeout(timeoutId);
     };
   }, []);
 
@@ -163,7 +95,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     setUser(userData);
     setToken('cookie'); // Token está no cookie httpOnly
-    lastActivityRef.current = Date.now();
 
     toast({
       title: 'Login realizado com sucesso!',
@@ -178,7 +109,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       setUser(userData);
       setToken('cookie'); // Token está no cookie httpOnly
-      lastActivityRef.current = Date.now();
 
       toast({
         title: 'Cadastro realizado com sucesso!',
@@ -199,12 +129,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await api.post('/auth/logout');
     } catch (error) {
       // Ignorar erro de logout
-    }
-    
-    // Limpar timers
-    if (refreshTimerRef.current) {
-      clearInterval(refreshTimerRef.current);
-      refreshTimerRef.current = null;
     }
     
     setUser(null);

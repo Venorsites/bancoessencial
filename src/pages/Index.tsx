@@ -376,7 +376,7 @@ const Index = () => {
           src={bannerHome}
           alt="Banner aromaterapia"
           loading="eager"
-          fetchPriority="high"
+          fetchpriority="high"
           className="relative w-full h-full object-cover object-center sm:object-[center_50%]"
           onLoad={(e) => {
             const placeholder = e.currentTarget.previousElementSibling as HTMLElement;

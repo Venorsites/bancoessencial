@@ -20,7 +20,7 @@ api.interceptors.response.use(
   async (error) => {
     const original = error.config;
 
-    // NÃO tentar refresh em rotas de autenticação ou verificação inicial
+    // NÃO tentar refresh em rotas de autenticação ou verificação inicial (para evitar loops)
     const isAuthRoute = original?.url?.includes('/auth/login') || 
                         original?.url?.includes('/auth/register') ||
                         original?.url?.includes('/auth/refresh') ||
@@ -51,12 +51,20 @@ api.interceptors.response.use(
         
         // Retentar requisição original
         return api(original);
-      } catch (err) {
+      } catch (err: any) {
         isRefreshing = false;
         onRefreshed(false);
         
-        // Redirecionar para login
-        window.location.href = '/login';
+        // Se o refresh também retornou 401, não há sessão válida
+        // Não redirecionar se já estiver na página de login para evitar loops
+        if (err.response?.status === 401 && !window.location.pathname.includes('/login')) {
+          // Limpar cookies e redirecionar apenas uma vez
+          if (!original._redirected) {
+            original._redirected = true;
+            window.location.href = '/login';
+          }
+        }
+        
         return Promise.reject(err);
       }
     }
