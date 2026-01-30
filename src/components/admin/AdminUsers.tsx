@@ -618,6 +618,17 @@ export function AdminUsers() {
                             Manual
                           </Badge>
                         )}
+                        {user.current_plan_name ? (
+                          <Badge className="bg-orange-100 text-orange-800 text-xs">
+                            <Package className="w-3 h-3 mr-1" />
+                            {user.current_plan_name}
+                          </Badge>
+                        ) : (
+                          <Badge className="bg-gray-100 text-gray-600 text-xs">
+                            <Package className="w-3 h-3 mr-1" />
+                            Sem plano
+                          </Badge>
+                        )}
                       </div>
 
                       <div className="space-y-2 text-sm text-gray-600">
