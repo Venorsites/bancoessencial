@@ -194,10 +194,17 @@ export default function OilDetail() {
         >
           {/* Hero Section */}
           <div className="relative bg-gradient-to-br from-purple-50 to-purple-100">
+            <div className="absolute inset-0 bg-gray-200 animate-pulse" />
             <img
               src={oil.avatar || "https://via.placeholder.com/1200x400/8B5CF6/FFFFFF?text=Óleo+Essencial"}
               alt={oil.nome}
-              className="w-full h-auto max-h-80 sm:max-h-96 object-contain"
+              loading="eager"
+              fetchPriority="high"
+              className="relative w-full h-auto max-h-80 sm:max-h-96 object-contain"
+              onLoad={(e) => {
+                const placeholder = e.currentTarget.previousElementSibling as HTMLElement;
+                if (placeholder) placeholder.style.display = 'none';
+              }}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
             <div className="absolute bottom-6 left-6 right-6 hidden sm:block">
@@ -559,12 +566,20 @@ export default function OilDetail() {
                     
                     return (
                       <div key={index} className="relative group">
+                        <div className="absolute inset-0 bg-gray-200 animate-pulse rounded-lg" />
                         <img
                           src={trimmedUrl}
                           alt={`Foto ${index + 1} do ${oil.nome}`}
-                          className="w-full h-32 object-cover rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300"
+                          loading="lazy"
+                          className="relative w-full h-32 object-cover rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300"
+                          onLoad={(e) => {
+                            const placeholder = e.currentTarget.previousElementSibling as HTMLElement;
+                            if (placeholder) placeholder.style.display = 'none';
+                          }}
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
+                            const placeholder = target.previousElementSibling as HTMLElement;
+                            if (placeholder) placeholder.style.display = 'none';
                             target.style.display = 'none';
                           }}
                         />

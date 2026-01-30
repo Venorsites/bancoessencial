@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,8 @@ import { motion } from "framer-motion";
 export default function AdminOilForm() {
   const navigate = useNavigate();
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
+  const duplicateId = searchParams.get('duplicate');
   const { user, token } = useAuth();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<CreateOilData>({
@@ -70,8 +72,11 @@ export default function AdminOilForm() {
 
     if (id) {
       loadOil();
+    } else if (duplicateId) {
+      // Se há um ID para duplicar, carregar os dados mas sem o ID
+      loadOilForDuplicate(duplicateId);
     }
-  }, [id, user, navigate]);
+  }, [id, duplicateId, user, navigate]);
 
   const loadOil = async () => {
     try {
@@ -108,6 +113,51 @@ export default function AdminOilForm() {
       }
     } catch (err) {
       alert("Erro ao carregar óleo");
+      navigate('/admin/oils');
+    }
+  };
+
+  const loadOilForDuplicate = async (oilId: string) => {
+    try {
+      const oil = await oilsApi.getById(oilId);
+      
+      // Remover o ID e campos que não devem ser duplicados
+      const { id, created_at, updated_at, ...oilData } = oil;
+      
+      setFormData({
+        ...oilData,
+        nome: `${oil.nome} (Cópia)`, // Adicionar sufixo para diferenciar
+      });
+      
+      // Converter strings em arrays para as tags
+      setAromaTags(oil.aroma ? oil.aroma.split(',').map(tag => tag.trim()).filter(Boolean) : []);
+      setCategoriaTags(oil.categoria_aromatica ? oil.categoria_aromatica.split(',').map(tag => tag.trim()).filter(Boolean) : []);
+      setFamiliaQuimicaTags(oil.familia_quimica ? oil.familia_quimica.split(',').map(tag => tag.trim()).filter(Boolean) : []);
+      setCompostoQuimicoTags(oil.composto_quimico ? oil.composto_quimico.split(',').map(tag => tag.trim()).filter(Boolean) : []);
+      setOrigemTags(oil.origem ? oil.origem.split(',').map(tag => tag.trim()).filter(Boolean) : []);
+      setPsicoaromaTags(oil.psicoaromas ? oil.psicoaromas.split(',').map(tag => tag.trim()).filter(Boolean) : []);
+      setEsteticaTags(oil.estetica ? oil.estetica.split(',').map(tag => tag.trim()).filter(Boolean) : []);
+      setSaudeTags(oil.saude_fisica ? oil.saude_fisica.split(',').map(tag => tag.trim()).filter(Boolean) : []);
+      setEspiritualTags(oil.espirituais ? oil.espirituais.split(',').map(tag => tag.trim()).filter(Boolean) : []);
+      setAmbientalTags(oil.ambientais ? oil.ambientais.split(',').map(tag => tag.trim()).filter(Boolean) : []);
+      setContraindicacaoTags(oil.contraindicacao ? oil.contraindicacao.split(',').map(tag => tag.trim()).filter(Boolean) : []);
+      setFarmacologiaNeuroTags(oil.farmacologia_neuro ? oil.farmacologia_neuro.split(',').map(tag => tag.trim()).filter(Boolean) : []);
+      setInteracaoTags(oil.interacao ? oil.interacao.split(',').map(tag => tag.trim()).filter(Boolean) : []);
+      setGalleryPhotos(oil.galeria_fotos ? oil.galeria_fotos.split(',').map(url => url.trim()).filter(Boolean) : []);
+      
+      // Carregar componentes químicos
+      if (oil.composicao_quimica_majoritaria) {
+        try {
+          const components = JSON.parse(oil.composicao_quimica_majoritaria);
+          setChemicalComponents(Array.isArray(components) ? components : []);
+        } catch {
+          setChemicalComponents([]);
+        }
+      } else {
+        setChemicalComponents([]);
+      }
+    } catch (err) {
+      alert("Erro ao carregar óleo para duplicação");
       navigate('/admin/oils');
     }
   };
@@ -183,7 +233,7 @@ export default function AdminOilForm() {
             Voltar
           </Button>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-            {id ? "Editar" : "Novo"} Óleo Essencial
+            {id ? "Editar" : duplicateId ? "Duplicar" : "Novo"} Óleo Essencial
           </h1>
         </div>
       </motion.div>
@@ -537,7 +587,7 @@ export default function AdminOilForm() {
               className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-2"
             >
               <Save className="w-4 h-4 mr-2" />
-              {loading ? "Salvando..." : id ? "Atualizar" : "Criar"} Óleo
+              {loading ? "Salvando..." : id ? "Atualizar" : duplicateId ? "Criar Cópia" : "Criar"} Óleo
             </Button>
           </div>
         </form>

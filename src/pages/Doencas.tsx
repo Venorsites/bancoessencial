@@ -88,12 +88,17 @@ export default function Doencas() {
                 <Card className="card-organic rounded-3xl hover:shadow-medium transition-all duration-300 group cursor-pointer overflow-hidden h-full w-full flex flex-col">
                 {/* Image */}
                 <div className="relative h-36 sm:h-40 lg:h-44 overflow-hidden flex-shrink-0">
+                  <div className="absolute inset-0 bg-gray-200 animate-pulse" />
                   <img
                     src={category.image}
                     alt={category.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    loading="lazy"
+                    className="relative w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    onLoad={(e) => {
+                      const placeholder = e.currentTarget.previousElementSibling as HTMLElement;
+                      if (placeholder) placeholder.style.display = 'none';
+                    }}
                   />
-
                 </div>
 
                 {/* Content */}

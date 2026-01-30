@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Plus, Edit, Trash2, Search, Eye, ToggleLeft, ToggleRight } from "lucide-react";
+import { Plus, Edit, Trash2, Search, Eye, ToggleLeft, ToggleRight, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -74,6 +74,10 @@ export function AdminOils() {
       alert("Erro ao atualizar status do óleo");
       console.error(err);
     }
+  };
+
+  const handleDuplicate = (oil: Oil) => {
+    navigate(`/admin/oils/new?duplicate=${oil.id}`);
   };
 
   const filteredOils = oils.filter((oil) =>
@@ -240,6 +244,15 @@ export function AdminOils() {
                         title="Visualizar"
                       >
                         <Eye className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDuplicate(oil)}
+                        className="text-teal-600 hover:bg-teal-50"
+                        title="Duplicar"
+                      >
+                        <Copy className="w-4 h-4" />
                       </Button>
                       <Button
                         variant="ghost"

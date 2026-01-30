@@ -107,13 +107,21 @@ export function PhotoGalleryInput({
                   className="relative group border border-gray-200 rounded-lg overflow-hidden bg-gray-50 hover:shadow-md transition-shadow"
                 >
                   {/* Preview da imagem */}
-                  <div className="aspect-video bg-gray-100 flex items-center justify-center">
+                  <div className="aspect-video bg-gray-100 flex items-center justify-center relative">
+                    <div className="absolute inset-0 bg-gray-200 animate-pulse" />
                     <img
                       src={url}
                       alt={`Foto ${index + 1}`}
-                      className="w-full h-full object-cover"
+                      loading="lazy"
+                      className="relative w-full h-full object-cover"
+                      onLoad={(e) => {
+                        const placeholder = e.currentTarget.previousElementSibling as HTMLElement;
+                        if (placeholder) placeholder.style.display = 'none';
+                      }}
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
+                        const placeholder = target.previousElementSibling as HTMLElement;
+                        if (placeholder) placeholder.style.display = 'none';
                         target.style.display = 'none';
                         const parent = target.parentElement;
                         if (parent) {

@@ -168,10 +168,16 @@ export default function Conteudos() {
           >
             <Card className="card-organic rounded-3xl hover:shadow-medium transition-all duration-300 h-full overflow-hidden group cursor-pointer">
               <div className="relative overflow-hidden">
+                <div className="absolute inset-0 bg-gray-200 animate-pulse" />
                 <img 
                   src={item.image} 
                   alt={item.title}
-                  className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
+                  loading="lazy"
+                  className="relative w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
+                  onLoad={(e) => {
+                    const placeholder = e.currentTarget.previousElementSibling as HTMLElement;
+                    if (placeholder) placeholder.style.display = 'none';
+                  }}
                 />
                 <div className="absolute top-4 left-4">
                   <Badge variant="secondary" className="rounded-xl bg-white/90 backdrop-blur-sm">

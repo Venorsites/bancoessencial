@@ -371,10 +371,17 @@ const Index = () => {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-purple-50">
       {/* ===== Banner full-width com imagem ===== */}
       <section className="relative w-full h-32 sm:h-32 lg:h-40 flex items-center">
+        <div className="absolute inset-0 bg-gray-200 animate-pulse" />
         <img
           src={bannerHome}
           alt="Banner aromaterapia"
-          className="absolute inset-0 w-full h-full object-cover object-center sm:object-[center_50%]"
+          loading="eager"
+          fetchPriority="high"
+          className="relative w-full h-full object-cover object-center sm:object-[center_50%]"
+          onLoad={(e) => {
+            const placeholder = e.currentTarget.previousElementSibling as HTMLElement;
+            if (placeholder) placeholder.style.display = 'none';
+          }}
         />
       </section>
 
@@ -404,10 +411,16 @@ const Index = () => {
                   >
                     <Card className="dashboard-card group flex flex-col overflow-hidden">
                       <div className="relative w-full aspect-[16/9]">
+                        <div className="absolute inset-0 bg-gray-200 animate-pulse" />
                         <img
                           src={card.image}
                           alt={card.title}
-                          className="absolute inset-0 w-full h-full object-cover"
+                          loading="lazy"
+                          className="relative w-full h-full object-cover"
+                          onLoad={(e) => {
+                            const placeholder = e.currentTarget.previousElementSibling as HTMLElement;
+                            if (placeholder) placeholder.style.display = 'none';
+                          }}
                         />
                         {card.href !== '/oleos' && (
                           <span className="absolute top-2 right-2 flex items-center gap-1 rounded-full bg-purple-100 text-purple-800 border border-purple-200 px-2 py-0.5 text-[10px] font-semibold shadow">

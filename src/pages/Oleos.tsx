@@ -317,10 +317,17 @@ export default function Oleos() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-purple-50">
       {/* ===== Banner ===== */}
       <section className="relative w-full h-32 sm:h-32 lg:h-40 overflow-hidden flex items-center justify-center">
+        <div className="absolute inset-0 bg-gray-200 animate-pulse" />
         <img
           src="https://i.ibb.co/N2CVmNZL/Banco-de-Dados-leos-Essenciais-Fichas-Completas.webp"
           alt="Banner Banco de Dados Essencial - Óleos Essenciais"
-          className="w-full h-full object-cover object-center"
+          loading="eager"
+          fetchPriority="high"
+          className="relative w-full h-full object-cover object-center"
+          onLoad={(e) => {
+            const placeholder = e.currentTarget.previousElementSibling as HTMLElement;
+            if (placeholder) placeholder.style.display = 'none';
+          }}
         />
       </section>
 
@@ -467,11 +474,17 @@ export default function Oleos() {
             >
               <Card className="bg-white rounded-3xl border-2 border-purple-200 hover:shadow-lg transition-all duration-300 h-full overflow-hidden cursor-pointer" onClick={() => openOilModal(oil)}>
                 {/* Image Section */}
-                <div className="relative w-full h-40">
+                <div className="relative w-full h-40 overflow-hidden">
+                  <div className="absolute inset-0 bg-gray-200 animate-pulse rounded-t-3xl" />
                   <img
                     src={oil.avatar || "https://via.placeholder.com/400x200/8B5CF6/FFFFFF?text=Óleo+Essencial"}
                     alt={oil.nome}
-                    className="w-full h-full object-cover"
+                    loading="lazy"
+                    className="relative w-full h-full object-cover"
+                    onLoad={(e) => {
+                      const placeholder = e.currentTarget.previousElementSibling as HTMLElement;
+                      if (placeholder) placeholder.style.display = 'none';
+                    }}
                   />
                 </div>
 
@@ -618,10 +631,16 @@ export default function Oleos() {
             >
               {/* Modal Header */}
               <div className="relative bg-gradient-to-br from-purple-50 to-purple-100 min-h-[15vh] sm:min-h-0">
+                <div className="absolute inset-0 bg-gray-200 animate-pulse rounded-t-3xl" />
                 <img
                   src={selectedOil.avatar || "https://via.placeholder.com/800x300/8B5CF6/FFFFFF?text=Óleo+Essencial"}
                   alt={selectedOil.nome}
-                  className="w-full h-[25vh] sm:h-auto sm:max-h-[480px] object-cover sm:object-contain rounded-t-3xl"
+                  loading="eager"
+                  className="relative w-full h-[25vh] sm:h-auto sm:max-h-[480px] object-cover sm:object-contain rounded-t-3xl"
+                  onLoad={(e) => {
+                    const placeholder = e.currentTarget.previousElementSibling as HTMLElement;
+                    if (placeholder) placeholder.style.display = 'none';
+                  }}
                 />
                 <div className="absolute top-4 right-4 flex gap-2">
                   <Button
@@ -999,15 +1018,23 @@ export default function Oleos() {
                         
                         return (
                           <div key={index} className="relative group">
-                        <img
-                          src={trimmedUrl}
-                          alt={`Foto ${index + 1} do ${selectedOil.nome}`}
-                          className="w-full h-32 object-cover rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = 'none';
-                          }}
-                        />
+                            <div className="absolute inset-0 bg-gray-200 animate-pulse rounded-lg" />
+                            <img
+                              src={trimmedUrl}
+                              alt={`Foto ${index + 1} do ${selectedOil.nome}`}
+                              loading="lazy"
+                              className="relative w-full h-32 object-cover rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300"
+                              onLoad={(e) => {
+                                const placeholder = e.currentTarget.previousElementSibling as HTMLElement;
+                                if (placeholder) placeholder.style.display = 'none';
+                              }}
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                const placeholder = target.previousElementSibling as HTMLElement;
+                                if (placeholder) placeholder.style.display = 'none';
+                                target.style.display = 'none';
+                              }}
+                            />
                         <div 
                           className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 rounded-lg transition-all duration-300 flex items-center justify-center cursor-pointer"
                           onClick={() => openImageModal(trimmedUrl)}
@@ -1181,10 +1208,16 @@ export default function Oleos() {
                 className="relative max-w-4xl max-h-[90vh] w-full flex items-center justify-center"
                 onClick={(e) => e.stopPropagation()}
               >
+                <div className="absolute inset-0 bg-gray-800 animate-pulse rounded-lg" />
                 <img
                   src={selectedImage}
                   alt="Imagem ampliada"
-                  className="max-w-full max-h-[85vh] object-contain rounded-lg"
+                  loading="eager"
+                  className="relative max-w-full max-h-[85vh] object-contain rounded-lg"
+                  onLoad={(e) => {
+                    const placeholder = e.currentTarget.previousElementSibling as HTMLElement;
+                    if (placeholder) placeholder.style.display = 'none';
+                  }}
                 />
                 <Button
                   variant="ghost"
