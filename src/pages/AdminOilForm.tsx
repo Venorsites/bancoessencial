@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { TagInput } from "@/components/ui/tag-input";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { PhotoGalleryInput } from "@/components/ui/photo-gallery-input";
+import { ImageUploadInput } from "@/components/ui/image-upload-input";
+import { PhotoGalleryUpload } from "@/components/ui/photo-gallery-upload";
 import { ChemicalCompositionTable, ChemicalComponent } from "@/components/ui/chemical-composition-table";
 import { oilsApi, CreateOilData } from "@/services/oilsApi";
 import { useAuth } from "@/contexts/AuthContext";
@@ -325,13 +327,11 @@ export default function AdminOilForm() {
                 </div>
 
                 <div>
-                  <Label htmlFor="avatar">URL da Imagem</Label>
-                  <Input
-                    id="avatar"
-                    name="avatar"
+                  <Label htmlFor="avatar">Imagem do Óleo</Label>
+                  <ImageUploadInput
                     value={formData.avatar}
-                    onChange={handleChange}
-                    placeholder="https://exemplo.com/imagem.jpg"
+                    onChange={(url) => setFormData(prev => ({ ...prev, avatar: url }))}
+                    placeholder="Faça upload de uma imagem ou cole uma URL"
                     className="mt-1"
                   />
                 </div>
@@ -567,11 +567,12 @@ export default function AdminOilForm() {
             <CardContent>
               <div>
                 <Label>Adicionar Fotos</Label>
-                <PhotoGalleryInput
+                <PhotoGalleryUpload
                   value={galleryPhotos}
                   onChange={setGalleryPhotos}
-                  placeholder="Digite a URL da foto e pressione Enter"
+                  placeholder="Faça upload de fotos ou cole URLs"
                   className="mt-1"
+                  maxPhotos={20}
                 />
               </div>
             </CardContent>
