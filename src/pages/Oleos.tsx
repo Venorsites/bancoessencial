@@ -322,7 +322,7 @@ export default function Oleos() {
           src="https://i.ibb.co/N2CVmNZL/Banco-de-Dados-leos-Essenciais-Fichas-Completas.webp"
           alt="Banner Banco de Dados Essencial - Óleos Essenciais"
           loading="eager"
-          fetchpriority="high"
+          fetchPriority="high"
           className="relative w-full h-full object-cover object-center"
           onLoad={(e) => {
             const placeholder = e.currentTarget.previousElementSibling as HTMLElement;
@@ -1132,6 +1132,9 @@ export default function Oleos() {
                             <p>Não informado</p>
                           )}
                         </div>
+                        <p className="text-sm text-gray-600 italic mt-4 pt-3 border-t border-gray-200">
+                          <strong>Valores médios</strong> — podem variar conforme marca, lote origem e/ou quimiotipo
+                        </p>
                       </div>
                     )}
                   </div>
@@ -1157,6 +1160,9 @@ export default function Oleos() {
                             <p>Não informado</p>
                           )}
                         </div>
+                        <p className="text-sm text-gray-600 italic mt-4 pt-3 border-t border-gray-200">
+                          <strong>Valores médios</strong> — podem variar conforme marca, lote origem e/ou quimiotipo
+                        </p>
                       </div>
                     )}
                   </div>

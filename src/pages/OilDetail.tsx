@@ -680,6 +680,9 @@ export default function OilDetail() {
                         <p>Não informado</p>
                       )}
                     </div>
+                    <p className="text-sm text-gray-600 italic mt-4 pt-3 border-t border-gray-200">
+                      <strong>Valores médios</strong> — podem variar conforme marca, lote origem e/ou quimiotipo
+                    </p>
                   </div>
                 )}
               </div>
@@ -705,6 +708,9 @@ export default function OilDetail() {
                         <p>Não informado</p>
                       )}
                     </div>
+                    <p className="text-sm text-gray-600 italic mt-4 pt-3 border-t border-gray-200">
+                      <strong>Valores médios</strong> — podem variar conforme marca, lote origem e/ou quimiotipo
+                    </p>
                   </div>
                 )}
               </div>

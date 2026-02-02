@@ -616,7 +616,7 @@ export default function DoencasGestacao() {
                     <div className="flex items-start gap-3">
                       <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
                       <p className="text-amber-800 text-sm leading-relaxed">
-                        Consulte um profissional de aromaterapia para orientações específicas sobre dosagem, método de aplicação e contraindicações para esta condição ou verifique a aula respectiva.
+                        Consulte um profissional de aromaterapia para orientações específicas sobre dosagem, método de aplicação e contraindicações para esta condição ou verifique a aula respectiva se for assinante da "Comunidade Aromaterapia na Prática".
                       </p>
                     </div>
                   </div>

@@ -17,8 +17,6 @@ import DoencasPediatrica from "./pages/DoencasPediatrica";
 import DoencasGestacao from "./pages/DoencasGestacao";
 import DoencasMenopausa from "./pages/DoencasMenopausa";
 import Quimica from "./pages/Quimica";
-import Conteudos from "./pages/Conteudos";
-import Receitas from "./pages/Receitas";
 import Favoritos from "./pages/Favoritos";
 import Profile from "./pages/Profile";
 import Notificacoes from "./pages/Notificacoes";
@@ -65,45 +63,17 @@ const App = () => (
                       <Route path="/oleos" element={<Oleos />} />
                       <Route path="/oleos/:id" element={<OilDetail />} />
                       
+                      {/* Rotas de Doenças - Acessíveis para todos os usuários autenticados */}
+                      <Route path="/doencas" element={<Doencas />} />
+                      <Route path="/doencas/geral" element={<DoencasGeral />} />
+                      <Route path="/doencas/pediatrica" element={<DoencasPediatrica />} />
+                      <Route path="/doencas/gestacao" element={<DoencasGestacao />} />
+                      <Route path="/doencas/menopausa" element={<DoencasMenopausa />} />
+                      
                       {/* Rotas restritas apenas para ADMIN */}
-                      <Route path="/doencas" element={
-                        <AdminRoute>
-                          <Doencas />
-                        </AdminRoute>
-                      } />
-                      <Route path="/doencas/geral" element={
-                        <AdminRoute>
-                          <DoencasGeral />
-                        </AdminRoute>
-                      } />
-                      <Route path="/doencas/pediatrica" element={
-                        <AdminRoute>
-                          <DoencasPediatrica />
-                        </AdminRoute>
-                      } />
-                      <Route path="/doencas/gestacao" element={
-                        <AdminRoute>
-                          <DoencasGestacao />
-                        </AdminRoute>
-                      } />
-                      <Route path="/doencas/menopausa" element={
-                        <AdminRoute>
-                          <DoencasMenopausa />
-                        </AdminRoute>
-                      } />
                       <Route path="/quimica" element={
                         <AdminRoute>
                           <Quimica />
-                        </AdminRoute>
-                      } />
-                      <Route path="/conteudos" element={
-                        <AdminRoute>
-                          <Conteudos />
-                        </AdminRoute>
-                      } />
-                      <Route path="/receitas" element={
-                        <AdminRoute>
-                          <Receitas />
                         </AdminRoute>
                       } />
                       

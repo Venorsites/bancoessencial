@@ -91,7 +91,7 @@ export default function Quimica() {
       <section className="relative w-full h-32 sm:h-32 lg:h-40">
         <img
           src="https://i.ibb.co/twk59f8d/DALLE-2024-11-19-17-34-33-A-wide-artistic-watercolor-representation-of-essential-oil-chemical-groups.webp"
-          alt="Banner Grupos Químicos"
+          alt="Banner Grupos e Famílias Químicas"
           className="absolute inset-0 w-full h-full object-cover object-center sm:object-top"
         />
       </section>
@@ -105,7 +105,7 @@ export default function Quimica() {
         transition={{ duration: 0.6 }}
       >
         <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-          Grupos Químicos
+          Grupos e Famílias Químicas
         </h1>
         <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
           Compreenda a química dos óleos essenciais e como diferentes grupos de compostos influenciam suas propriedades terapêuticas.

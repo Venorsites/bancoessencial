@@ -73,7 +73,7 @@ export function Header({}: HeaderProps) {
     };
   }, [location.pathname]);
 
-  const adminOnlyRoutes = ['/doencas', '/quimica', '/conteudos'];
+  const adminOnlyRoutes = ['/quimica'];
 
   const handleNavClick = (e: React.MouseEvent, href: string) => {
     if (adminOnlyRoutes.some(route => href.startsWith(route)) && !isAdmin) {
@@ -94,8 +94,7 @@ export function Header({}: HeaderProps) {
   const navItems = [
     { href: "/oleos", label: "Óleos Essenciais", active: location.pathname === "/oleos" },
     { href: "/doencas", label: "Guia de Doenças", active: location.pathname === "/doencas" },
-    { href: "/quimica", label: "Grupos Químicos", active: location.pathname === "/quimica" },
-    { href: "/conteudos", label: "Conteúdos", active: location.pathname === "/conteudos" },
+    { href: "/quimica", label: "Grupos e Famílias Químicas", active: location.pathname === "/quimica" },
   ];
 
   return (
@@ -141,7 +140,7 @@ export function Header({}: HeaderProps) {
                   <span className="inline-flex items-center">
                     {item.label}
                   </span>
-                  {(item.href === '/doencas' || item.href === '/quimica' || item.href === '/conteudos') && (
+                  {item.href === '/quimica' && (
                     <span className="absolute -top-3 -right-2 flex items-center gap-1 rounded-full bg-purple-100 text-purple-800 border border-purple-200 px-2 py-0.5 text-[10px] font-semibold shadow-sm">
                       <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" />
                       Em breve
@@ -286,7 +285,7 @@ export function Header({}: HeaderProps) {
                         <span className="inline-flex items-center">
                           {item.label}
                         </span>
-                        {(item.href === '/doencas' || item.href === '/quimica' || item.href === '/conteudos') && (
+                        {item.href === '/quimica' && (
                           <span className="absolute top-1/2 -translate-y-1/2 right-2 flex items-center gap-1 rounded-full bg-purple-100 text-purple-800 border border-purple-200 px-2 py-0.5 text-[10px] font-semibold shadow-sm">
                             <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" />
                             Em breve

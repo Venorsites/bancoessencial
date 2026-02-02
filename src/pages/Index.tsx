@@ -232,7 +232,7 @@ const Index = () => {
         "Recomendações de óleos essenciais para diferentes condições de saúde",
       href: "/doencas",
       color: "from-pink-400 to-pink-600",
-      adminOnly: true,
+      adminOnly: false,
     },
     {
       image:
@@ -242,25 +242,7 @@ const Index = () => {
         "Compreenda a química por trás dos óleos essenciais e suas propriedades",
       href: "/quimica",
       color: "from-green-400 to-green-600",
-      adminOnly: true,
-    },
-    {
-      image: "https://i.ibb.co/whpd6f5J/Banco-de-Conte-dos-Insta-da-Dai.webp",
-      title: "Banco de Conteúdos - Insta da Dai",
-      description: "Acesso organizado aos conteúdos educativos do Instagram",
-      href: "/conteudos",
-      color: "from-blue-400 to-blue-600",
-      adminOnly: true,
-    },
-    {
-      image:
-        "https://i.ibb.co/b5SmSFzS/Chat-GPT-Image-9-de-abr-de-2025-17-30-51.webp",
-      title: "Repositório de receitas e protocolos prontos",
-      description:
-        "Coleção de receitas e protocolos para uso dos óleos essenciais",
-      href: "/receitas",
-      color: "from-orange-400 to-orange-600",
-      adminOnly: true,
+      adminOnly: false,
     },
   ];
 
@@ -422,7 +404,7 @@ const Index = () => {
                             if (placeholder) placeholder.style.display = 'none';
                           }}
                         />
-                        {card.href !== '/oleos' && (
+                        {card.href === '/quimica' && (
                           <span className="absolute top-2 right-2 flex items-center gap-1 rounded-full bg-purple-100 text-purple-800 border border-purple-200 px-2 py-0.5 text-[10px] font-semibold shadow">
                             <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" />
                             Em breve
